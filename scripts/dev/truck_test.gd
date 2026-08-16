@@ -24,6 +24,7 @@ const CARGO_COUNT: int = 5
 @export var travel_slider: HSlider
 @export var motor_slider: HSlider
 @export var lean_slider: HSlider
+@export var wall_slider: HSlider
 @export var spawn_button: Button
 @export var clear_button: Button
 @export var reset_button: Button
@@ -76,6 +77,9 @@ func _init_sliders() -> void:
 		func(v: float) -> void: truck.motor_torque = v)
 	_setup_slider(lean_slider, 100000.0, 3000000.0, 10000.0, truck.lean_torque,
 		func(v: float) -> void: truck.lean_torque = v)
+	_setup_slider(wall_slider, "Высота бортов", 24.0, 200.0, 4.0,
+		truck.bed_wall_height, 0,
+		func(v: float) -> void: truck.bed_wall_height = v)
 
 
 ## Callable — это «ссылка на функцию», аналог делегата в C#.
@@ -92,9 +96,13 @@ func _setup_slider(
 
 
 func _on_spawn_cargo() -> void:
+	var bounds := truck.get_bed_bounds()
+	var span := bounds.y - bounds.x
+	# Раскладываем груз равномерно по длине кузова, с отступом от стенок.
+	var step := span / float(CARGO_COUNT + 1)
 	for i in CARGO_COUNT:
-		var local_x := -92.0 + i * 46.0
-		var at := truck.chassis.to_global(Vector2(local_x, -56.0))
+		var local_x := bounds.x + step * (i + 1)
+		var at := truck.chassis.to_global(Vector2(local_x, -54.0))
 		Destruction.spawn_item(ItemCatalog.vase(), cargo_root, at)
 
 

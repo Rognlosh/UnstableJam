@@ -12,6 +12,7 @@ extends Node2D
 enum Kind {
 	RECTANGLE,
 	CIRCLE,
+	POLYGON,
 }
 
 @export var kind: Kind = Kind.RECTANGLE:
@@ -29,6 +30,14 @@ enum Kind {
 @export var radius: float = 24.0:
 	set(value):
 		radius = value
+		queue_redraw()
+		
+## Точки для Kind.POLYGON, в координатах самого узла.
+## Полигон должен быть выпуклым: draw_colored_polygon рисует вогнутые
+## с артефактами. Кабина-трапеция и окно этому условию отвечают.
+@export var polygon: PackedVector2Array = PackedVector2Array():
+	set(value):
+		polygon = value
 		queue_redraw()
 
 @export var color: Color = Color(0.62, 0.52, 0.38):
@@ -60,3 +69,12 @@ func _draw() -> void:
 				draw_arc(Vector2.ZERO, radius, 0.0, TAU, 28, outline_color, outline_width)
 				# Спица: без неё вращение колеса на однотонном круге не видно.
 				draw_line(Vector2.ZERO, Vector2(radius * 0.8, 0.0), outline_color, outline_width)
+		Kind.POLYGON:
+			if polygon.size() < 3:
+				return
+			draw_colored_polygon(polygon, color)
+			if outline_width > 0.0:
+				# Замкнутая ломаная: последняя точка соединяется с первой.
+				var closed := polygon.duplicate()
+				closed.append(polygon[0])
+				draw_polyline(closed, outline_color, outline_width)

@@ -62,6 +62,26 @@ extends Node2D
 ## Момент, которым A/D крутят раму.
 @export_range(50000.0, 3000000.0, 10000.0) var lean_torque: float = 900000.0
 
+@export_group("Кузов")
+
+## Высота бортов над полом кузова. Прокачиваемый параметр:
+## 64 — первый уровень, дальше выше.
+@export_range(24.0, 200.0, 2.0) var bed_wall_height: float = 64.0:
+	set(value):
+		bed_wall_height = maxf(8.0, value)
+		_apply_bed_walls()
+
+## Коллизии бортов. Перетащить в инспекторе; порядок неважен.
+@export var bed_wall_shapes: Array[CollisionShape2D] = []
+## Визуал бортов, по одному на каждую коллизию из bed_wall_shapes.
+## Сопоставляются по X, поэтому борта не должны стоять в одной колонке.
+@export var bed_wall_visuals: Array[DebugShape] = []
+
+## Уровень пола кузова в координатах рамы — верхняя грань рамы.
+const BED_FLOOR_Y: float = -18.0
+## Толщина борта.
+const BED_WALL_THICKNESS: float = 8.0
+
 ## Запас паза на отбой: чтобы колесо не упиралось в конец направляющей,
 ## когда машина в воздухе и пружина полностью разжата.
 const REBOUND_SLACK: float = 4.0
@@ -75,6 +95,48 @@ var _grooves: Array[GrooveJoint2D] = []
 func _ready() -> void:
 	_collect_parts()
 	_push_spring_params()
+	_apply_bed_walls()
+	
+	## Перестраивает борта под текущую высоту: обе стенки растут от пола кузова
+## вверх, поэтому правило одинаковое для задней и передней.
+## Передняя стенка стоит внутри габарита кабины — так кузов не теряет длину,
+## а при высоте больше кабины над крышей появляется «шапка», как у настоящих
+## грузовиков с высоким передком.
+func _apply_bed_walls() -> void:
+	if bed_wall_shapes.is_empty():
+		return
+
+	# Форма создаётся заново, а не правится на месте: если борта копировали
+	# в редакторе через дублирование узла, RectangleShape2D у них общий,
+	# и правка одного молча меняла бы оба.
+	for shape_node: CollisionShape2D in bed_wall_shapes:
+		if shape_node == null:
+			continue
+		var rect := RectangleShape2D.new()
+		rect.size = Vector2(BED_WALL_THICKNESS, bed_wall_height)
+		shape_node.shape = rect
+		shape_node.position.y = BED_FLOOR_Y - bed_wall_height * 0.5
+
+	for visual: DebugShape in bed_wall_visuals:
+		if visual == null:
+			continue
+		visual.kind = DebugShape.Kind.RECTANGLE
+		visual.size = Vector2(BED_WALL_THICKNESS, bed_wall_height)
+		visual.position.y = BED_FLOOR_Y - bed_wall_height * 0.5
+
+
+## Внутренние границы кузова по X, в координатах рамы: x — задняя стенка,
+## y — передняя. Отсюда стадия погрузки узнает, куда класть товар.
+func get_bed_bounds() -> Vector2:
+	if bed_wall_shapes.size() < 2:
+		return Vector2.ZERO
+	var xs: Array[float] = []
+	for shape_node: CollisionShape2D in bed_wall_shapes:
+		if shape_node != null:
+			xs.append(shape_node.position.x)
+	xs.sort()
+	var half := BED_WALL_THICKNESS * 0.5
+	return Vector2(xs[0] + half, xs[xs.size() - 1] - half)
 	
 ## Ищем части грузовика по типу, а не по именам: узлы в сцене можно
 ## переименовывать и переставлять, скрипт от этого не сломается.
