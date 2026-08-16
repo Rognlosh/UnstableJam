@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://yyrac1e6v6dv" path="res://scripts/dev/truck_test.gd" id="1_4oko1"]
 [ext_resource type="PackedScene" uid="uid://xqnjgajvj31k" path="res://scenes/vehicle/Truck.tscn" id="2_xar6b"]
 
-[node name="TruckTest" type="Node2D" unique_id=794685419 node_paths=PackedStringArray("truck", "camera", "cargo_root", "info_label", "stiffness_slider", "damping_slider", "rest_slider", "travel_slider", "motor_slider", "lean_slider", "spawn_button", "clear_button", "reset_button")]
+[node name="TruckTest" type="Node2D" unique_id=794685419 node_paths=PackedStringArray("truck", "camera", "cargo_root", "info_label", "stiffness_slider", "damping_slider", "rest_slider", "travel_slider", "motor_slider", "lean_slider", "wall_slider", "spawn_button", "clear_button", "reset_button")]
 script = ExtResource("1_4oko1")
 truck = NodePath("Truck")
 camera = NodePath("Camera2D")
@@ -15,6 +15,7 @@ rest_slider = NodePath("UILayer/Panel/VBoxContainer/RestSlider")
 travel_slider = NodePath("UILayer/Panel/VBoxContainer/TravelSlider")
 motor_slider = NodePath("UILayer/Panel/VBoxContainer/MotorSlider")
 lean_slider = NodePath("UILayer/Panel/VBoxContainer/LeanSlider")
+wall_slider = NodePath("UILayer/Panel/VBoxContainer/WallSlider")
 spawn_button = NodePath("UILayer/Panel/VBoxContainer/SpawnButton")
 clear_button = NodePath("UILayer/Panel/VBoxContainer/ClearButton")
 reset_button = NodePath("UILayer/Panel/VBoxContainer/ResetButton")
@@ -72,7 +73,7 @@ layout_mode = 2
 
 [node name="MotorLabel" type="Label" parent="UILayer/Panel/VBoxContainer" unique_id=1389716094]
 layout_mode = 2
-text = "Motor (Момент сотора)"
+text = "Motor (Момент мотора)"
 
 [node name="MotorSlider" type="HSlider" parent="UILayer/Panel/VBoxContainer" unique_id=733220369]
 layout_mode = 2
@@ -82,6 +83,13 @@ layout_mode = 2
 text = "Lean (Момент наклона)"
 
 [node name="LeanSlider" type="HSlider" parent="UILayer/Panel/VBoxContainer" unique_id=171543497]
+layout_mode = 2
+
+[node name="WallLabel" type="Label" parent="UILayer/Panel/VBoxContainer" unique_id=622140913]
+layout_mode = 2
+text = "Walls (Высота бортов)"
+
+[node name="WallSlider" type="HSlider" parent="UILayer/Panel/VBoxContainer" unique_id=1099274655]
 layout_mode = 2
 
 [node name="SpawnButton" type="Button" parent="UILayer/Panel/VBoxContainer" unique_id=1675553183]
