@@ -1,5 +1,12 @@
 # План проекта — обновлён: 2026-08-16
 
+> **Claude, прочти это первым.**
+> Актуальная версия этого файла живёт в ветке **`docs/plan`**, а не в `main`.
+> Если ты читаешь копию из `main` — она может быть устаревшей, возьми версию из `docs/plan`:
+> `git fetch --all && git show origin/docs/plan:plan.md`
+> **Код** при этом читай из `main` — в `docs/plan` он заморожен на момент ответвления.
+> Порядок действий в начале чата описан ниже, в разделе «Решения по архитектуре».
+
 Игра для джема [Do you WANNA Jam?! 2026](https://itch.io/jam/do-you-wanna-jam-2026), тема — **Unstable**.
 Дедлайн сабмишена: **24 августа 2026, 14:00**. Движок: Godot 4.7 (stable), GDScript.
 Цель платформы: ПК + веб (HTML5, рендер Compatibility / WebGL 2.0).
@@ -83,8 +90,29 @@ autoload `GameState`, менеджер стадий с тремя сценами
   используем. Следим за весом билда, Safari отдельно проверяем.
 - **Режим работы с репозиторием (зафиксировано 2026-08-16):**
   код (`.gd`) и сцены (`.tscn`) Claude **не коммитит** — выдаёт в чате, разработчик применяет
-  в редакторе. Claude ведёт только документацию (`plan.md`, `planning/roadmap.md`) и коммитит
-  её в отдельную ветку `docs/plan`. В `main` Claude не пушит и не мержит никогда.
+  в редакторе. Claude ведёт только документацию (`plan.md`, `planning/roadmap.md`).
+  В `main` Claude не пушит и не мержит никогда.
+
+- **`docs/plan` — долгоживущая ветка документации.** Не закрывается после фичи, живёт всё
+  время проекта. Claude пишет план только туда и читает план только оттуда.
+  Разработчик мержит её в `main` редко, по своему усмотрению.
+
+  Порядок в начале каждого чата:
+  ```bash
+  cd /home/claude/UnstableJam && git fetch --all --quiet
+  git checkout main --quiet && git pull --quiet     # актуальный КОД
+  git show origin/docs/plan:plan.md                 # актуальный ПЛАН
+  git show origin/docs/plan:planning/roadmap.md
+  ```
+  Порядок записи плана в конце фичи:
+  ```bash
+  git checkout docs/plan --quiet && git pull --quiet
+  # правки plan.md / planning/roadmap.md
+  git commit -m "docs: ..." && git push
+  git checkout main --quiet                         # вернуться к коду
+  ```
+  Ветку `docs/plan` в `main` не ребейзим и от `main` не обновляем — она содержит только
+  документацию, конфликтовать с кодом ей нечем.
 
 ---
 
