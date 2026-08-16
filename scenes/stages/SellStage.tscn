@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://qoa0labdxmof"]
+
+[ext_resource type="Script" uid="uid://cs67475y3gisk" path="res://scripts/stages/sell_stage.gd" id="1_qo4s3"]
+
+[node name="SellStage" type="Control" unique_id=2091320303]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_qo4s3")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1895023362]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="InfoLabel" type="Label" parent="VBoxContainer" unique_id=2135634275]
+layout_mode = 2
+
+[node name="NextDayButton" type="Button" parent="VBoxContainer" unique_id=116342288]
+layout_mode = 2
+text = "Следующий день"
