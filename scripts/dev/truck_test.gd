@@ -48,6 +48,7 @@ func _process(_delta: float) -> void:
 		+ "Жёсткость %d · демпфер %.1f\n"
 		+ "Длина %d · ход %d\n"
 		+ "Момент %d · наклон %d\n"
+		+ "Борта %d\n"
 		+ "Тел: %d · FPS %d"
 	) % [
 		int(truck.get_speed()),
@@ -55,6 +56,7 @@ func _process(_delta: float) -> void:
 		int(truck.suspension_stiffness), truck.suspension_damping,
 		int(truck.suspension_rest_length), int(truck.suspension_travel),
 		int(truck.motor_torque), int(truck.lean_torque),
+		int(truck.bed_wall_height),
 		get_tree().get_nodes_in_group(&"cargo").size(),
 		Engine.get_frames_per_second(),
 	]
@@ -73,12 +75,11 @@ func _init_sliders() -> void:
 		func(v: float) -> void:
 			truck.suspension_travel = v
 			truck.rebuild_suspension())
-	_setup_slider(motor_slider, 50000.0, 1500000.0, 10000.0, truck.motor_torque,
+	_setup_slider(motor_slider, 50000.0, 2000000.0, 10000.0, truck.motor_torque,
 		func(v: float) -> void: truck.motor_torque = v)
-	_setup_slider(lean_slider, 100000.0, 3000000.0, 10000.0, truck.lean_torque,
+	_setup_slider(lean_slider, 100000.0, 4000000.0, 10000.0, truck.lean_torque,
 		func(v: float) -> void: truck.lean_torque = v)
-	_setup_slider(wall_slider, "Высота бортов", 24.0, 200.0, 4.0,
-		truck.bed_wall_height, 0,
+	_setup_slider(wall_slider, 24.0, 200.0, 4.0, truck.bed_wall_height,
 		func(v: float) -> void: truck.bed_wall_height = v)
 
 
