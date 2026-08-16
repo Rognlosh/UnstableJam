@@ -1,0 +1,117 @@
+[gd_scene format=3 uid="uid://xqnjgajvj31k"]
+
+[ext_resource type="Script" uid="uid://djryh52yiipuh" path="res://scripts/vehicle/truck.gd" id="1_bnfew"]
+[ext_resource type="Script" uid="uid://5wxv1gs56ldx" path="res://scripts/dev/debug_shape.gd" id="1_chhu4"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_g4v7s"]
+friction = 0.4
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_chhu4"]
+size = Vector2(320, 36)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bnfew"]
+size = Vector2(8, 64)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_01dag"]
+size = Vector2(8, 64)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_f4ujx"]
+radius = 28.0
+
+[node name="Truck" type="Node2D" unique_id=791205458]
+script = ExtResource("1_bnfew")
+
+[node name="Shassis" type="RigidBody2D" parent="." unique_id=2104440076]
+mass = 48.0
+physics_material_override = SubResource("PhysicsMaterial_g4v7s")
+angular_damp = 1.5
+
+[node name="Frame" type="CollisionShape2D" parent="Shassis" unique_id=910165287]
+shape = SubResource("RectangleShape2D_chhu4")
+
+[node name="FrameVisual" type="Node2D" parent="Shassis" unique_id=670920823]
+script = ExtResource("1_chhu4")
+size = Vector2(320, 36)
+metadata/_custom_type_script = "uid://5wxv1gs56ldx"
+
+[node name="BedWallLeft" type="CollisionShape2D" parent="Shassis" unique_id=1084818749]
+position = Vector2(-125, -50)
+shape = SubResource("RectangleShape2D_bnfew")
+
+[node name="BedWallLeftVisual" type="Node2D" parent="Shassis" unique_id=273825004]
+position = Vector2(-125, -50)
+script = ExtResource("1_chhu4")
+size = Vector2(8, 64)
+metadata/_custom_type_script = "uid://5wxv1gs56ldx"
+
+[node name="BedWallRight" type="CollisionShape2D" parent="Shassis" unique_id=556789065]
+position = Vector2(125, -50)
+shape = SubResource("RectangleShape2D_01dag")
+
+[node name="BedWallRightVisual" type="Node2D" parent="Shassis" unique_id=352823232]
+position = Vector2(125, -50)
+script = ExtResource("1_chhu4")
+size = Vector2(8, 64)
+metadata/_custom_type_script = "uid://5wxv1gs56ldx"
+
+[node name="GrooveRear" type="GrooveJoint2D" parent="Shassis" unique_id=1565570365]
+position = Vector2(-124, 24)
+node_a = NodePath("..")
+node_b = NodePath("../../WheelRear")
+length = 34.0
+initial_offset = 30.0
+
+[node name="SpringRear" type="DampedSpringJoint2D" parent="Shassis" unique_id=818175225]
+position = Vector2(-124, 8)
+node_a = NodePath("..")
+node_b = NodePath("../../WheelRear")
+length = 46.0
+rest_length = 46.0
+stiffness = 64.0
+damping = 1.5
+
+[node name="GrooveFront" type="GrooveJoint2D" parent="Shassis" unique_id=35157528]
+position = Vector2(124, 24)
+node_a = NodePath("..")
+node_b = NodePath("../../WheelFront")
+length = 34.0
+initial_offset = 30.0
+
+[node name="SpringFront" type="DampedSpringJoint2D" parent="Shassis" unique_id=2083920586]
+position = Vector2(124, 8)
+node_a = NodePath("..")
+node_b = NodePath("../../WheelFront")
+length = 46.0
+rest_length = 46.0
+stiffness = 64.0
+damping = 1.5
+
+[node name="WheelRear" type="RigidBody2D" parent="." unique_id=943384503]
+position = Vector2(-124, 54)
+mass = 7.0
+physics_material_override = SubResource("PhysicsMaterial_g4v7s")
+angular_damp = 0.3
+
+[node name="Shape" type="CollisionShape2D" parent="WheelRear" unique_id=2113671368]
+shape = SubResource("CircleShape2D_f4ujx")
+
+[node name="Visual" type="Node2D" parent="WheelRear" unique_id=141094887]
+script = ExtResource("1_chhu4")
+kind = 1
+radius = 28.0
+metadata/_custom_type_script = "uid://5wxv1gs56ldx"
+
+[node name="WheelFront" type="RigidBody2D" parent="." unique_id=639193781]
+position = Vector2(124, 54)
+mass = 7.0
+physics_material_override = SubResource("PhysicsMaterial_g4v7s")
+angular_damp = 0.3
+
+[node name="Shape" type="CollisionShape2D" parent="WheelFront" unique_id=92956155]
+shape = SubResource("CircleShape2D_f4ujx")
+
+[node name="Visual" type="Node2D" parent="WheelFront" unique_id=1842547281]
+script = ExtResource("1_chhu4")
+kind = 1
+radius = 28.0
+metadata/_custom_type_script = "uid://5wxv1gs56ldx"
