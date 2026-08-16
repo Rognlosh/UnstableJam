@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://jgka00sxqvf7"]
+
+[ext_resource type="Script" uid="uid://coobpy5jlkgnf" path="res://scripts/main/stage_manager.gd" id="1_hyk8p"]
+
+[node name="Main" type="Node" unique_id=840666399]
+script = ExtResource("1_hyk8p")
+
+[node name="StageContainer" type="Node" parent="." unique_id=1717135673]
+
+[node name="FadeLayer" type="CanvasLayer" parent="." unique_id=2077044262]
+layer = 128
+
+[node name="FadeRect" type="ColorRect" parent="FadeLayer" unique_id=1224884220]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)

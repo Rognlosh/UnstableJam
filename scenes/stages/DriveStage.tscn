@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://inxn12u2rauc"]
+
+[ext_resource type="Script" uid="uid://csgvmryxm7t2q" path="res://scripts/stages/drive_stage.gd" id="1_s5v58"]
+
+[node name="DriveStage" type="Control" unique_id=820032217]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_s5v58")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1451251076]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="InfoLabel" type="Label" parent="VBoxContainer" unique_id=1206268085]
+layout_mode = 2
+
+[node name="FinishButton" type="Button" parent="VBoxContainer" unique_id=1551000548]
+layout_mode = 2
+text = "Доехать"
