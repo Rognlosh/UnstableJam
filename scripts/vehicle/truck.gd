@@ -1,7 +1,8 @@
 class_name Truck
 extends Node2D
 
-## Грузовик: рама (Chassis) и два ведущих колеса на пружинной подвеске.
+## Грузовик: рама (Chassis) с кабиной и бортами кузова, два ведущих колеса
+## на пружинной подвеске.
 ##
 ## На каждое колесо — пара суставов:
 ##   GrooveJoint2D       — направляющая: задаёт ход и держит колесо на линии;
@@ -25,7 +26,7 @@ extends Node2D
 
 ## Сила пружины на пиксель сжатия. Свою массу грузовик держит
 ## на просадке ~12 px, поэтому счёт идёт на тысячи, а не на дефолтные 20.
-@export_range(200.0, 8000.0, 10.0) var suspension_stiffness: float = 2300.0:
+@export_range(200.0, 8000.0, 10.0) var suspension_stiffness: float = 2900.0:
 	set(value):
 		suspension_stiffness = maxf(0.0, value)
 		_push_spring_params()
@@ -51,16 +52,16 @@ extends Node2D
 @export_group("Мотор")
 
 ## Момент на каждое колесо при газе.
-@export_range(20000.0, 1500000.0, 10000.0) var motor_torque: float = 350000.0
+@export_range(20000.0, 2000000.0, 10000.0) var motor_torque: float = 450000.0
 ## Момент при торможении (газ против текущего вращения) — сильнее тяги.
-@export_range(20000.0, 1500000.0, 10000.0) var brake_torque: float = 500000.0
+@export_range(20000.0, 2000000.0, 10000.0) var brake_torque: float = 600000.0
 ## Потолок раскрутки колеса, рад/с. При радиусе 28 px даёт ~24 * 28 px/с.
 @export_range(4.0, 60.0, 0.5) var max_wheel_speed: float = 24.0
 
 @export_group("Наклон")
 
 ## Момент, которым A/D крутят раму.
-@export_range(50000.0, 3000000.0, 10000.0) var lean_torque: float = 900000.0
+@export_range(50000.0, 4000000.0, 10000.0) var lean_torque: float = 1800000.0
 
 @export_group("Кузов")
 
@@ -71,11 +72,9 @@ extends Node2D
 		bed_wall_height = maxf(8.0, value)
 		_apply_bed_walls()
 
-## Коллизии бортов. Перетащить в инспекторе; порядок неважен.
-@export var bed_wall_shapes: Array[CollisionShape2D] = []
-## Визуал бортов, по одному на каждую коллизию из bed_wall_shapes.
-## Сопоставляются по X, поэтому борта не должны стоять в одной колонке.
-@export var bed_wall_visuals: Array[DebugShape] = []
+## Коллизии бортов. Визуал каждого борта берётся из его же детей,
+## поэтому перетащить надо только сами коллизии. Порядок неважен.
+@export var bed_walls: Array[CollisionShape2D] = []
 
 ## Уровень пола кузова в координатах рамы — верхняя грань рамы.
 const BED_FLOOR_Y: float = -18.0
@@ -96,52 +95,42 @@ func _ready() -> void:
 	_collect_parts()
 	_push_spring_params()
 	_apply_bed_walls()
-	
-	## Перестраивает борта под текущую высоту: обе стенки растут от пола кузова
-## вверх, поэтому правило одинаковое для задней и передней.
-## Передняя стенка стоит внутри габарита кабины — так кузов не теряет длину,
-## а при высоте больше кабины над крышей появляется «шапка», как у настоящих
-## грузовиков с высоким передком.
-func _apply_bed_walls() -> void:
-	if bed_wall_shapes.is_empty():
+
+
+func _physics_process(_delta: float) -> void:
+	if chassis == null:
 		return
+	# get_axis(отрицательное_действие, положительное_действие) → -1..1.
+	# W даёт +1, S даёт -1; A даёт -1, D даёт +1.
+	var throttle := Input.get_axis(&"brake", &"accelerate")
+	var lean := Input.get_axis(&"lean_left", &"lean_right")
 
-	# Форма создаётся заново, а не правится на месте: если борта копировали
-	# в редакторе через дублирование узла, RectangleShape2D у них общий,
-	# и правка одного молча меняла бы оба.
-	for shape_node: CollisionShape2D in bed_wall_shapes:
-		if shape_node == null:
+	_drive(throttle)
+	if not is_zero_approx(lean):
+		chassis.apply_torque(lean * lean_torque)
+
+
+func _drive(throttle: float) -> void:
+	if is_zero_approx(throttle):
+		return
+	for wheel: RigidBody2D in _wheels:
+		var spin := wheel.angular_velocity
+		# За потолком скорости момент не подаём: иначе колесо просто буксует.
+		if absf(spin) >= max_wheel_speed and spin * throttle > 0.0:
 			continue
-		var rect := RectangleShape2D.new()
-		rect.size = Vector2(BED_WALL_THICKNESS, bed_wall_height)
-		shape_node.shape = rect
-		shape_node.position.y = BED_FLOOR_Y - bed_wall_height * 0.5
-
-	for visual: DebugShape in bed_wall_visuals:
-		if visual == null:
-			continue
-		visual.kind = DebugShape.Kind.RECTANGLE
-		visual.size = Vector2(BED_WALL_THICKNESS, bed_wall_height)
-		visual.position.y = BED_FLOOR_Y - bed_wall_height * 0.5
+		# Газ против текущего вращения — это торможение, оно резче тяги.
+		var is_braking := spin * throttle < 0.0
+		wheel.apply_torque(throttle * (brake_torque if is_braking else motor_torque))
 
 
-## Внутренние границы кузова по X, в координатах рамы: x — задняя стенка,
-## y — передняя. Отсюда стадия погрузки узнает, куда класть товар.
-func get_bed_bounds() -> Vector2:
-	if bed_wall_shapes.size() < 2:
-		return Vector2.ZERO
-	var xs: Array[float] = []
-	for shape_node: CollisionShape2D in bed_wall_shapes:
-		if shape_node != null:
-			xs.append(shape_node.position.x)
-	xs.sort()
-	var half := BED_WALL_THICKNESS * 0.5
-	return Vector2(xs[0] + half, xs[xs.size() - 1] - half)
-	
 ## Ищем части грузовика по типу, а не по именам: узлы в сцене можно
 ## переименовывать и переставлять, скрипт от этого не сломается.
 func _collect_parts() -> void:
 	chassis = null
+	_wheels.clear()
+	_springs.clear()
+	_grooves.clear()
+
 	for child in get_children():
 		var body := child as RigidBody2D
 		if body == null:
@@ -188,41 +177,62 @@ static func _by_x(a: Node2D, b: Node2D) -> bool:
 	return a.position.x < b.position.x
 
 
-func _physics_process(_delta: float) -> void:
-	# get_axis(отрицательное_действие, положительное_действие) → -1..1.
-	# W даёт +1, S даёт -1; A даёт -1, D даёт +1.
-	var throttle := Input.get_axis(&"brake", &"accelerate")
-	var lean := Input.get_axis(&"lean_left", &"lean_right")
-
-	_drive(throttle)
-	if not is_zero_approx(lean):
-		chassis.apply_torque(lean * lean_torque)
-
-
-func _drive(throttle: float) -> void:
-	if is_zero_approx(throttle):
+## Перестраивает борта под текущую высоту: обе стенки растут от пола кузова
+## вверх, поэтому правило одинаковое для задней и передней.
+## Передняя стенка стоит внутри габарита кабины — так кузов не теряет длину,
+## а при высоте больше кабины над крышей появляется «шапка», как у настоящих
+## грузовиков с высоким передком.
+func _apply_bed_walls() -> void:
+	if bed_walls.is_empty():
 		return
-	for wheel: RigidBody2D in _wheels:
-		var spin := wheel.angular_velocity
-		# За потолком скорости момент не подаём: иначе колесо просто буксует.
-		if absf(spin) >= max_wheel_speed and spin * throttle > 0.0:
+
+	for wall: CollisionShape2D in bed_walls:
+		if wall == null:
 			continue
-		# Газ против текущего вращения — это торможение, оно резче тяги.
-		var is_braking := spin * throttle < 0.0
-		wheel.apply_torque(throttle * (brake_torque if is_braking else motor_torque))
+		# Форма создаётся заново, а не правится на месте: если борт копировали
+		# дублированием узла, RectangleShape2D у обоих общий, и правка одного
+		# молча меняла бы второй.
+		var rect := RectangleShape2D.new()
+		rect.size = Vector2(BED_WALL_THICKNESS, bed_wall_height)
+		wall.shape = rect
+		wall.position.y = BED_FLOOR_Y - bed_wall_height * 0.5
+
+		# Визуал — ребёнок самой коллизии, поэтому едет за ней и координаты
+		# задаются в одном месте.
+		for child in wall.get_children():
+			var visual := child as DebugShape
+			if visual == null:
+				continue
+			visual.kind = DebugShape.Kind.RECTANGLE
+			visual.size = rect.size
+			visual.position = Vector2.ZERO
+
+
+## Внутренние границы кузова по X, в координатах рамы: x — задняя стенка,
+## y — передняя. Отсюда стадия погрузки узнает, куда класть товар.
+func get_bed_bounds() -> Vector2:
+	var xs: Array[float] = []
+	for wall: CollisionShape2D in bed_walls:
+		if wall != null:
+			xs.append(wall.position.x)
+	if xs.size() < 2:
+		return Vector2.ZERO
+	xs.sort()
+	var half := BED_WALL_THICKNESS * 0.5
+	return Vector2(xs[0] + half, xs[xs.size() - 1] - half)
 
 
 ## Текущее сжатие пружин в пикселях: x — заднее колесо, y — переднее.
 func get_compression() -> Vector2:
 	var values := Vector2.ZERO
-	for i in _springs.size():
+	for i in mini(_springs.size(), 2):
 		var distance := _springs[i].global_position.distance_to(_wheels[i].global_position)
 		values[i] = suspension_rest_length - distance
 	return values
 
 
 func get_speed() -> float:
-	return chassis.linear_velocity.length()
+	return chassis.linear_velocity.length() if chassis != null else 0.0
 
 
 ## Пересобирает геометрию направляющих под текущие rest_length и travel.
@@ -241,12 +251,15 @@ func rebuild_suspension() -> void:
 
 ## Телепорт без физических артефактов — для кнопки «сброс» на стенде.
 func teleport_to(target: Vector2) -> void:
+	if chassis == null:
+		return
 	var delta := target - chassis.global_position
 	chassis.rotation = 0.0
 	chassis.global_position += delta
 	chassis.linear_velocity = Vector2.ZERO
 	chassis.angular_velocity = 0.0
 	for wheel: RigidBody2D in _wheels:
+		wheel.rotation = 0.0
 		wheel.global_position += delta
 		wheel.linear_velocity = Vector2.ZERO
 		wheel.angular_velocity = 0.0
