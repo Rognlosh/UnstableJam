@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://bfsyjnwa8npsi"]
+
+[ext_resource type="Script" uid="uid://dsylt0dnj1s12" path="res://scripts/items/breakable_item.gd" id="1_ydfca"]
+
+[node name="BreakableItem" type="RigidBody2D" unique_id=581988614]
+continuous_cd = 1
+script = ExtResource("1_ydfca")
+
+[node name="Visual" type="Polygon2D" parent="." unique_id=13087490]
+
+[node name="Shape" type="CollisionPolygon2D" parent="." unique_id=679985319]

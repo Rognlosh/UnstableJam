@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bwq3mdd5bf74p"]
+
+[ext_resource type="Script" uid="uid://preua1wme1i" path="res://scripts/dev/break_test.gd" id="1_fymks"]
+
+[node name="BreakTest" type="Node2D" unique_id=752428952]
+script = ExtResource("1_fymks")
