@@ -7,12 +7,11 @@
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_g4v7s"]
 
-[node name="TruckTest" type="Node2D" unique_id=794685419 node_paths=PackedStringArray("truck", "camera", "cargo_root", "track", "info_label", "stiffness_slider", "damping_slider", "rest_slider", "travel_slider", "motor_slider", "lean_slider", "wall_slider", "spawn_button", "clear_button", "reset_button", "rebuild_button")]
+[node name="TruckTest" type="Node2D" unique_id=794685419 node_paths=PackedStringArray("truck", "camera", "cargo_root", "info_label", "stiffness_slider", "damping_slider", "rest_slider", "travel_slider", "motor_slider", "lean_slider", "wall_slider", "spawn_button", "clear_button", "reset_button")]
 script = ExtResource("1_4oko1")
 truck = NodePath("Truck")
 camera = NodePath("Camera2D")
 cargo_root = NodePath("CargoRoot")
-track = NodePath("Track")
 info_label = NodePath("UILayer/Panel/VBoxContainer/Label")
 stiffness_slider = NodePath("UILayer/Panel/VBoxContainer/StiffnessSlider")
 damping_slider = NodePath("UILayer/Panel/VBoxContainer/DampingSlider")
@@ -24,7 +23,6 @@ wall_slider = NodePath("UILayer/Panel/VBoxContainer/WallSlider")
 spawn_button = NodePath("UILayer/Panel/VBoxContainer/SpawnButton")
 clear_button = NodePath("UILayer/Panel/VBoxContainer/ClearButton")
 reset_button = NodePath("UILayer/Panel/VBoxContainer/ResetButton")
-rebuild_button = NodePath("UILayer/Panel/VBoxContainer/RebuildButton")
 
 [node name="Track" type="Node2D" parent="." unique_id=145088704]
 position = Vector2(0, 320)
@@ -116,6 +114,6 @@ text = "Убрать груз"
 layout_mode = 2
 text = "Сброс"
 
-[node name="RebuildButton" type="Button" parent="UILayer/Panel/VBoxContainer" unique_id=478316539]
+[node name="TrackButton" type="Button" parent="UILayer/Panel/VBoxContainer" unique_id=478316539]
 layout_mode = 2
 text = "Пересобрать трассу"

@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://bf5sghqrm5j25"]
+
+[ext_resource type="Script" uid="uid://bobo37apgnokr" path="res://scripts/track/track_chunk.gd" id="1_rcj5n"]
+
+[node name="ChunkFlat" type="Node2D" unique_id=1529918792]
+script = ExtResource("1_rcj5n")
+
+[node name="Ground" type="StaticBody2D" parent="." unique_id=635120433]
+
+[node name="Outline" type="CollisionPolygon2D" parent="Ground" unique_id=1047644814]
+build_mode = 1
+polygon = PackedVector2Array(0, 0, 800, 0, 800, 1200, 0, 1200)
+
+[node name="Fill" type="Polygon2D" parent="Ground" unique_id=1138951425]
+color = Color(0.5563933, 0.5271128, 0.49560964, 1)

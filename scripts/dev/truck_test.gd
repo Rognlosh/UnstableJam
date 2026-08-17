@@ -1,20 +1,16 @@
 extends Node2D
 
 ## Стенд настройки грузовика. В сборку не идёт.
-## Дорога строится кодом (сотни точек профиля руками не расставить),
+## Дорога собирается узлом TrackBuilder из кусков-сцен,
 ## всё остальное — узлы, размещённые в редакторе.
 
-const ROAD_BASE_Y: float = 320.0
-const ROAD_LENGTH: float = 5200.0
-const ROAD_STEP: float = 20.0
-const ROAD_DEPTH: float = 400.0
-const START_POSITION: Vector2 = Vector2(260.0, 200.0)
 const CARGO_COUNT: int = 5
 
 @export_group("Сцена")
 @export var truck: Truck
 @export var camera: Camera2D
 @export var cargo_root: Node2D
+@export var track: TrackBuilder
 
 @export_group("Интерфейс")
 @export var info_label: Label
@@ -28,35 +24,46 @@ const CARGO_COUNT: int = 5
 @export var spawn_button: Button
 @export var clear_button: Button
 @export var reset_button: Button
+@export var rebuild_button: Button
+
+var _start_position: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
-	_build_road()
+	_build_track(false)
 	_init_sliders()
 	spawn_button.pressed.connect(_on_spawn_cargo)
 	clear_button.pressed.connect(_on_clear_cargo)
 	reset_button.pressed.connect(_on_reset)
+	rebuild_button.pressed.connect(_on_rebuild)
 	truck.rebuild_suspension()
 
 
 func _process(_delta: float) -> void:
 	camera.global_position = truck.chassis.global_position
 	var compression := truck.get_compression()
+	# Пройденный путь считаем от точки старта, а не от нуля сцены:
+	# так число на экране совпадает с прогрессом по трассе.
+	var travelled := truck.chassis.global_position.x - _start_position.x
 	info_label.text = (
 		"Скорость: %d px/s\n"
+		+ "Путь: %d / %d px\n"
 		+ "Сжатие: зад %d px · перед %d px\n"
 		+ "Жёсткость %d · демпфер %.1f\n"
 		+ "Длина %d · ход %d\n"
 		+ "Момент %d · наклон %d\n"
 		+ "Борта %d\n"
+		+ "Кусков: %d · зерно %d\n"
 		+ "Тел: %d · FPS %d"
 	) % [
 		int(truck.get_speed()),
+		int(travelled), int(track.get_total_length()),
 		int(compression.x), int(compression.y),
 		int(truck.suspension_stiffness), truck.suspension_damping,
 		int(truck.suspension_rest_length), int(truck.suspension_travel),
 		int(truck.motor_torque), int(truck.lean_torque),
 		int(truck.bed_wall_height),
+		track.get_chunk_count(), track.track_seed,
 		get_tree().get_nodes_in_group(&"cargo").size(),
 		Engine.get_frames_per_second(),
 	]
@@ -96,6 +103,20 @@ func _setup_slider(
 	slider.value_changed.connect(handler)
 
 
+## new_seed = false пересобирает ту же самую трассу: настройки подвески
+## сравнимы между запусками только на одинаковой геометрии.
+func _build_track(new_seed: bool) -> void:
+	track.randomize_seed_on_build = new_seed
+	track.build()
+	_start_position = track.get_start_position()
+	_on_clear_cargo()
+	truck.teleport_to(_start_position)
+
+
+func _on_rebuild() -> void:
+	_build_track(true)
+
+
 func _on_spawn_cargo() -> void:
 	var bounds := truck.get_bed_bounds()
 	var span := bounds.y - bounds.x
@@ -114,65 +135,4 @@ func _on_clear_cargo() -> void:
 
 func _on_reset() -> void:
 	_on_clear_cargo()
-	truck.teleport_to(START_POSITION)
-
-
-## Профиль дороги: 0 — уровень ROAD_BASE_Y, отрицательные значения — вверх.
-func _road_height(x: float) -> float:
-	if x < 620.0:
-		return 0.0
-	if x < 1500.0:
-		# Кочки: только верхние полуволны, между ними ровно.
-		return -30.0 * maxf(0.0, sin((x - 620.0) / 260.0 * TAU))
-	if x < 1800.0:
-		return 0.0
-	if x < 2500.0:
-		return -9.0 * sin((x - 1800.0) / 58.0 * TAU)  # гребёнка
-	if x < 2800.0:
-		return 0.0
-	if x < 3400.0:
-		# «Галька»: сумма несоизмеримых синусов — выглядит случайно,
-		# но повторяется от запуска к запуску, значит настройку можно сравнивать.
-		return -5.0 * (sin(x * 0.21) + sin(x * 0.37) + sin(x * 0.53))
-	if x < 3700.0:
-		return 0.0
-	if x < 4100.0:
-		return -(x - 3700.0) * 0.3  # рампа вверх
-	if x < 4200.0:
-		return -120.0               # площадка, дальше обрыв
-	return 0.0
-
-
-func _build_road() -> void:
-	var profile := PackedVector2Array()
-	var x := 0.0
-	while x <= ROAD_LENGTH:
-		profile.append(Vector2(x, ROAD_BASE_Y + _road_height(x)))
-		x += ROAD_STEP
-
-	# Замыкаем контур вниз, чтобы получился цельный полигон.
-	var outline := profile.duplicate()
-	outline.append(Vector2(ROAD_LENGTH, ROAD_BASE_Y + ROAD_DEPTH))
-	outline.append(Vector2(0.0, ROAD_BASE_Y + ROAD_DEPTH))
-
-	var ground := StaticBody2D.new()
-	ground.name = "Ground"
-	var material := PhysicsMaterial.new()
-	material.friction = 1.0
-	material.bounce = 0.0
-	ground.physics_material_override = material
-
-	# BUILD_SEGMENTS собирает из контура одну вогнутую форму-цепочку.
-	# Один узел вместо двухсот отдельных прямоугольников.
-	var shape := CollisionPolygon2D.new()
-	shape.build_mode = CollisionPolygon2D.BUILD_SEGMENTS
-	shape.polygon = outline
-	ground.add_child(shape)
-
-	var visual := Polygon2D.new()
-	visual.polygon = outline
-	visual.color = Color(0.27, 0.24, 0.21)
-	ground.add_child(visual)
-
-	add_child(ground)
-	move_child(ground, 0)
+	truck.teleport_to(_start_position)
