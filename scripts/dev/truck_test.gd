@@ -5,6 +5,8 @@ extends Node2D
 ## всё остальное — узлы, размещённые в редакторе.
 
 const CARGO_COUNT: int = 5
+## Порог скорости, с которого считаем, что заезд начался.
+const RUN_START_SPEED: float = 20.0
 
 @export_group("Сцена")
 @export var truck: Truck
@@ -14,6 +16,7 @@ const CARGO_COUNT: int = 5
 
 @export_group("Интерфейс")
 @export var info_label: Label
+@export var timer_label: Label
 @export var stiffness_slider: HSlider
 @export var damping_slider: HSlider
 @export var rest_slider: HSlider
@@ -27,6 +30,9 @@ const CARGO_COUNT: int = 5
 @export var rebuild_button: Button
 
 var _start_position: Vector2 = Vector2.ZERO
+var _run_time: float = 0.0
+var _run_started: bool = false
+var _run_finished: bool = false
 
 
 func _ready() -> void:
@@ -39,12 +45,10 @@ func _ready() -> void:
 	truck.rebuild_suspension()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	camera.global_position = truck.chassis.global_position
+	_update_timer(delta)
 	var compression := truck.get_compression()
-	# Пройденный путь считаем от точки старта, а не от нуля сцены:
-	# так число на экране совпадает с прогрессом по трассе.
-	var travelled := truck.chassis.global_position.x - _start_position.x
 	info_label.text = (
 		"Скорость: %d px/s\n"
 		+ "Путь: %d / %d px\n"
@@ -57,7 +61,7 @@ func _process(_delta: float) -> void:
 		+ "Тел: %d · FPS %d"
 	) % [
 		int(truck.get_speed()),
-		int(travelled), int(track.get_total_length()),
+		int(_get_travelled()), int(track.get_total_length()),
 		int(compression.x), int(compression.y),
 		int(truck.suspension_stiffness), truck.suspension_damping,
 		int(truck.suspension_rest_length), int(truck.suspension_travel),
@@ -67,6 +71,34 @@ func _process(_delta: float) -> void:
 		get_tree().get_nodes_in_group(&"cargo").size(),
 		Engine.get_frames_per_second(),
 	]
+
+
+## Пройденный путь считаем от точки старта, а не от нуля сцены:
+## так число совпадает с прогрессом по трассе.
+func _get_travelled() -> float:
+	return truck.chassis.global_position.x - _start_position.x
+
+
+## Секундомер заезда: висит в правом верхнем углу, пока не появился
+## настоящий финиш. Отсчёт начинается с первого движения, а не со старта
+## сцены — иначе он тикал бы, пока крутишь слайдеры.
+func _update_timer(delta: float) -> void:
+	if not _run_started and absf(truck.get_speed()) > RUN_START_SPEED:
+		_run_started = true
+	if _run_started and not _run_finished:
+		if _get_travelled() >= track.get_total_length():
+			_run_finished = true
+		else:
+			_run_time += delta
+
+	var minutes := int(_run_time) / 60
+	var seconds := _run_time - float(minutes * 60)
+	var text := "%d:%04.1f" % [minutes, seconds]
+	if _run_finished:
+		text += "  ФИНИШ"
+	elif not _run_started:
+		text += "  готов"
+	timer_label.text = text
 
 
 func _init_sliders() -> void:
@@ -111,6 +143,13 @@ func _build_track(new_seed: bool) -> void:
 	_start_position = track.get_start_position()
 	_on_clear_cargo()
 	truck.teleport_to(_start_position)
+	_reset_run()
+
+
+func _reset_run() -> void:
+	_run_time = 0.0
+	_run_started = false
+	_run_finished = false
 
 
 func _on_rebuild() -> void:
@@ -136,3 +175,4 @@ func _on_clear_cargo() -> void:
 func _on_reset() -> void:
 	_on_clear_cargo()
 	truck.teleport_to(_start_position)
+	_reset_run()
