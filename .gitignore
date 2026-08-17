@@ -1,3 +1,6 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# Временные файлы, которые Godot оставляет при сохранении сцен
+*.tmp
