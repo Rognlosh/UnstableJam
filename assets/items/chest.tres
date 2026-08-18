@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=8 format=3]
+
+[ext_resource type="Script" uid="uid://dlhunjdv6d2mp" path="res://scripts/items/item_data.gd" id="1_item"]
+[ext_resource type="Script" uid="uid://b2i0e702clsfw" path="res://scripts/items/item_piece_data.gd" id="2_piece"]
+
+[sub_resource type="Resource" id="Piece_chest_lid_left"]
+script = ExtResource("2_piece")
+piece_id = &"lid_left"
+polygon = PackedVector2Array(-35, -6, -28, -18, 0, -18, 0, -6)
+value_share = 0.15
+
+[sub_resource type="Resource" id="Piece_chest_lid_right"]
+script = ExtResource("2_piece")
+piece_id = &"lid_right"
+polygon = PackedVector2Array(0, -18, 28, -18, 35, -6, 0, -6)
+value_share = 0.15
+
+[sub_resource type="Resource" id="Piece_chest_box_left"]
+script = ExtResource("2_piece")
+piece_id = &"box_left"
+polygon = PackedVector2Array(-35, -6, 0, -6, 0, 20, -35, 20)
+value_share = 0.35
+
+[sub_resource type="Resource" id="Piece_chest_box_right"]
+script = ExtResource("2_piece")
+piece_id = &"box_right"
+polygon = PackedVector2Array(0, -6, 35, -6, 35, 20, 0, 20)
+value_share = 0.35
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_chest"]
+friction = 0.9
+bounce = 0.02
+
+[resource]
+script = ExtResource("1_item")
+id = &"chest"
+display_name = "Ларец"
+base_price = 45
+buy_price = 25
+mass = 4.0
+break_speed = 850.0
+piece_toughness = 1.4
+piece_value_factor = 0.6
+whole_polygon = PackedVector2Array(-35, 20, -35, -6, -28, -18, 28, -18, 35, -6, 35, 20)
+pieces = Array[ExtResource("2_piece")]([SubResource("Piece_chest_lid_left"), SubResource("Piece_chest_lid_right"), SubResource("Piece_chest_box_left"), SubResource("Piece_chest_box_right")])
+color = Color(0.55, 0.4, 0.25, 1)
+physics_material = SubResource("PhysicsMaterial_chest")

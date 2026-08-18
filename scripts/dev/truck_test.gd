@@ -167,7 +167,7 @@ func _on_spawn_cargo() -> void:
 	for i in CARGO_COUNT:
 		var local_x := bounds.x + step * (i + 1)
 		var at := truck.chassis.to_global(Vector2(local_x, -54.0))
-		Destruction.spawn_item(ItemCatalog.vase(), cargo_root, at)
+		Destruction.spawn_item(ItemCatalog.get_by_id(&"vase"), cargo_root, at)
 
 
 func _on_clear_cargo() -> void:

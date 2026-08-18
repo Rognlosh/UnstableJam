@@ -125,7 +125,11 @@ func _on_clear() -> void:
 
 func _drop(offset_x: float) -> void:
 	var spawn_y := FLOOR_Y - 20.0 - _height_slider.value
-	Destruction.spawn_item(ItemCatalog.vase(), _items, Vector2(offset_x, spawn_y))
+	# Стенд роняет случайный предмет каталога, а не только вазу: кривой
+	# полигон нового товара дешевле поймать здесь, чем на трассе.
+	var ids := ItemCatalog.all_ids()
+	var data := ItemCatalog.get_by_id(ids[randi() % ids.size()])
+	Destruction.spawn_item(data, _items, Vector2(offset_x, spawn_y))
 
 
 func _make_box_shape(size: Vector2) -> CollisionShape2D:

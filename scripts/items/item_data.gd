@@ -6,6 +6,10 @@ extends Resource
 @export var id: StringName = &""
 @export var display_name: String = ""
 @export var base_price: int = 10
+## Цена закупа. Отдельным полем, а не наценкой от base_price: у крепкого
+## дешёвого товара и у хрупкого дорогого разрыв между покупкой и продажей
+## разный, общим коэффициентом это не выражается.
+@export var buy_price: int = 10
 @export var mass: float = 1.0
 
 ## Порог разрушения: насколько сильно должна измениться скорость тела
