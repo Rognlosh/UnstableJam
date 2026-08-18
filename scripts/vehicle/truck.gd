@@ -85,6 +85,10 @@ const BED_WALL_THICKNESS: float = 8.0
 ## когда машина в воздухе и пружина полностью разжата.
 const REBOUND_SLACK: float = 4.0
 
+## Пока выключено, грузовик не реагирует на клавиши. Нужно фазе погрузки:
+## машина обязана стоять, пока игрок укладывает груз.
+var controls_enabled: bool = true
+
 var chassis: RigidBody2D
 var _wheels: Array[RigidBody2D] = []
 var _springs: Array[DampedSpringJoint2D] = []
@@ -98,7 +102,7 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	if chassis == null:
+	if chassis == null or not controls_enabled:
 		return
 	# get_axis(отрицательное_действие, положительное_действие) → -1..1.
 	# W даёт +1, S даёт -1; A даёт -1, D даёт +1.

@@ -7,6 +7,14 @@
 ## параметры сборщика, а не трогать эту стадию.
 extends Node2D
 
+## Заезд идёт по фазам: сперва игрок грузит машину руками, потом едет,
+## потом смотрит итог. Управление, камера и интерфейс смотрят на фазу.
+enum Phase {
+	LOADING,   ## товар лежит на земле, машина стоит
+	DRIVING,   ## заезд
+	FINISHED,  ## финиш пройден
+}
+
 ## Множитель зерна. Простое число, чтобы соседние дни давали
 ## непохожие трассы, а не сдвинутые версии одной.
 const SEED_STEP: int = 7919
@@ -20,10 +28,18 @@ const CAMERA_LIFT: float = -80.0
 ## Скорость, с которой вынос камеры догоняет своё расчётное значение.
 const CAMERA_LOOK_SMOOTH: float = 3.0
 
-## Зазор между предметами и до бортов при укладке.
-const CARGO_GAP: float = 6.0
-## Подъём над полом кузова: предмет не должен родиться внутри рамы.
+## Зазор между предметами при выкладке товара на землю.
+const CARGO_GAP: float = 10.0
+## Подъём над опорой при спавне: тело не должно родиться внутри геометрии.
 const CARGO_LIFT: float = 2.0
+## Откуда начинается выкладка товара — впереди машины, чтобы не упираться
+## в левый край стартовой площадки.
+const GROUND_OFFSET_X: float = 240.0
+## Куда смотрит камера при погрузке: середина между кузовом и товаром.
+const LOADING_CAMERA_OFFSET: Vector2 = Vector2(320.0, -100.0)
+## Насколько высоко над полом кузова вещь ещё считается погруженной.
+## Щедро: стопка выше бортов — это перегруз, а не «мимо кузова».
+const BED_CAPACITY_HEIGHT: float = 400.0
 
 @onready var _track: TrackBuilder = $Track
 @onready var _truck: Truck = $Truck
@@ -33,8 +49,10 @@ const CARGO_LIFT: float = 2.0
 @onready var _finish_panel: PanelContainer = $HUD/FinishPanel
 @onready var _result_label: Label = $HUD/FinishPanel/VBoxContainer/ResultLabel
 @onready var _to_shop_button: Button = $HUD/FinishPanel/VBoxContainer/ToShopButton
+@onready var _start_panel: PanelContainer = $HUD/StartPanel
+@onready var _start_button: Button = $HUD/StartPanel/VBoxContainer/StartButton
 
-var _is_finished: bool = false
+var _phase: Phase = Phase.LOADING
 ## Текущий вынос камеры вперёд. Держим отдельно, чтобы сглаживать его
 ## самим, а не гонять камеру за шумом мгновенной скорости.
 var _look_ahead: float = 0.0
@@ -48,10 +66,12 @@ var _loaded: Dictionary = {}
 func _ready() -> void:
 	_finish_panel.hide()
 	_to_shop_button.pressed.connect(_on_to_shop_pressed)
+	_start_button.pressed.connect(_start_run)
 	_track.finish_reached.connect(_on_finish_reached)
 	_build_track()
 	_place_truck()
-	_load_cargo()
+	_unload_to_ground()
+	_enter_loading()
 
 
 ## Камера обновляется в физическом такте, а не в кадровом. Тела двигаются
@@ -80,42 +100,71 @@ func _place_truck() -> void:
 	_update_camera(1.0)
 
 
-## Погрузка: предметы кладутся рядами вдоль кузова, ряд заполняется слева
-## направо, следующий ложится поверх предыдущего.
-##
-## Шаг укладки считается от габаритов каждого предмета, а не берётся
-## постоянным: груз бывает разного размера, и постоянный шаг либо оставит
-## дыры, либо посадит крупные вещи друг в друга.
-func _load_cargo() -> void:
-	_loaded.clear()
+## Выкладка товара со склада на землю перед машиной. Класть позади нельзя:
+## задний борт стоит почти вплотную к левому краю стартовой площадки.
+## Ряд уезжает вправо — туда, куда грузовик поедет уже без этих вещей.
+func _unload_to_ground() -> void:
 	var items := _resolve_cargo()
 	if items.is_empty():
 		return
-	# Крупное вниз: мелочь под крупной вещью работает как каток.
-	items.sort_custom(_by_height_desc)
-
-	var bed := _truck.get_bed_bounds()
-	var row_end := bed.y - CARGO_GAP
-	var cursor_x := bed.x + CARGO_GAP
-	var row_top := Truck.BED_FLOOR_Y - CARGO_LIFT
-	var row_height := 0.0
-
+	var start := _track.get_start_position()
+	# Земля стартовой площадки — уровень входа трассы, а машина стоит
+	# приподнятой над ним на высоту подвески.
+	var ground_y := _track.global_position.y
+	var cursor_x := start.x + GROUND_OFFSET_X
 	for data: ItemData in items:
 		var rect := data.get_bounds()
-		# Ряд кончился — начинаем следующий поверх уложенного. Проверка на
-		# непустой ряд спасает от вечного переноса вещи шире самого кузова.
-		if cursor_x + rect.size.x > row_end and row_height > 0.0:
-			cursor_x = bed.x + CARGO_GAP
-			row_top -= row_height + CARGO_GAP
-			row_height = 0.0
 		# Полигон задан относительно начала координат узла, и оно не обязано
 		# лежать в центре силуэта. Поэтому ставим не узел, а грани: левую —
-		# на курсор, нижнюю — на уровень ряда.
-		var local := Vector2(cursor_x - rect.position.x, row_top - rect.end.y)
-		var item := Destruction.spawn_item(data, _cargo_root, _truck.chassis.to_global(local))
-		_loaded[item.instance_id] = data.id
+		# на курсор, нижнюю — на землю.
+		var at := Vector2(
+			cursor_x - rect.position.x,
+			ground_y - CARGO_LIFT - rect.end.y)
+		Destruction.spawn_item(data, _cargo_root, at)
 		cursor_x += rect.size.x + CARGO_GAP
-		row_height = maxf(row_height, rect.size.y)
+
+
+func _enter_loading() -> void:
+	_phase = Phase.LOADING
+	_truck.controls_enabled = false
+	_finish_panel.hide()
+	_start_panel.show()
+
+
+## Старт заезда: то, что лежит в кузове, едет; остальное возвращается
+## на склад и ждёт следующего дня.
+func _start_run() -> void:
+	if _phase != Phase.LOADING:
+		return
+	_loaded.clear()
+	var left_behind: Array[StringName] = []
+	for node in _cargo_root.get_children():
+		var item := node as BreakableItem
+		if item == null:
+			continue
+		if _is_in_bed(item):
+			_loaded[item.instance_id] = item.data.id
+		else:
+			left_behind.append(item.data.id)
+			item.queue_free()
+	GameState.cargo_actual = left_behind
+
+	_phase = Phase.DRIVING
+	_truck.controls_enabled = true
+	_start_panel.hide()
+
+
+## Вещь считается погруженной, если её центр внутри кузова по длине
+## и выше пола. Проверяем в координатах рамы, поэтому наклон машины
+## на подвеске ответа не меняет.
+func _is_in_bed(item: Node2D) -> bool:
+	if _truck.chassis == null:
+		return false
+	var local := _truck.chassis.to_local(item.global_position)
+	var bed := _truck.get_bed_bounds()
+	if local.x < bed.x or local.x > bed.y:
+		return false
+	return local.y <= Truck.BED_FLOOR_Y and local.y >= Truck.BED_FLOOR_Y - BED_CAPACITY_HEIGHT
 
 
 ## Идентификаторы груза превращаем в описания предметов один раз на заезд.
@@ -128,12 +177,12 @@ func _resolve_cargo() -> Array[ItemData]:
 	return items
 
 
-static func _by_height_desc(a: ItemData, b: ItemData) -> bool:
-	return a.get_bounds().size.y > b.get_bounds().size.y
-
-
 func _update_camera(delta: float) -> void:
 	if _truck.chassis == null:
+		return
+	if _phase == Phase.LOADING:
+		# При погрузке камера стоит: в кадре и кузов, и разложенный товар.
+		_camera.global_position = _truck.chassis.global_position + LOADING_CAMERA_OFFSET
 		return
 	var wanted := clampf(
 		_truck.chassis.linear_velocity.x * CAMERA_LOOK_FACTOR,
@@ -148,6 +197,21 @@ func _update_camera(delta: float) -> void:
 
 
 func _update_status() -> void:
+	if _phase == Phase.LOADING:
+		var in_bed := 0
+		var on_ground := 0
+		for node in _cargo_root.get_children():
+			var item := node as BreakableItem
+			if item == null:
+				continue
+			if _is_in_bed(item):
+				in_bed += 1
+			else:
+				on_ground += 1
+		_status_label.text = "День %d · Погрузка\nВ кузове: %d · На земле: %d" % [
+			GameState.get_day(), in_bed, on_ground,
+		]
+		return
 	# В кузове считаем целые предметы: осколки лежат в той же группе,
 	# но местом груза уже не являются.
 	var whole := 0
@@ -176,9 +240,9 @@ func get_progress() -> float:
 
 
 func _on_finish_reached() -> void:
-	if _is_finished:
+	if _phase != Phase.DRIVING:
 		return
-	_is_finished = true
+	_phase = Phase.FINISHED
 	_result_label.text = "ФИНИШ\nПодсчёт груза появится следующим шагом."
 	_finish_panel.show()
 
