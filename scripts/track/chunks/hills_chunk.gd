@@ -36,6 +36,9 @@ const SHAPES: Array = [
 ## Перекос жребия к пологим. 1.0 — все крутизны равновероятны,
 ## 2.0 — крутые заметно реже, 4.0 — почти никогда.
 @export_range(1.0, 4.0, 0.1) var gentle_bias: float = 2.0
+## Вероятность, что холм построится вниз и станет котловиной. Тот же силуэт
+## с обратным знаком: машина в него проваливается и выкарабкивается.
+@export_range(0.0, 1.0, 0.05) var dip_chance: float = 0.35
 ## Запас на растяжку сборщиком: к финишу профиль умножается, и холм,
 ## впритык проезжаемый в середине трассы, иначе встал бы стеной.
 @export var height_scale_headroom: float = 1.5
@@ -92,7 +95,12 @@ func _generate(rng: RandomNumberGenerator) -> void:
 	for i in count:
 		var unit_slope := _max_unit_slope(shapes[i])
 		var allowed := slopes[i] / maxf(height_scale_headroom, 1.0)
-		amplitudes.append(widths[i] * allowed / unit_slope)
+		var amplitude := widths[i] * allowed / unit_slope
+		# Отрицательная амплитуда разворачивает силуэт вниз — получается
+		# котловина. Уклон при этом тот же, так что проезжаемость сохраняется.
+		if rng.randf() < dip_chance:
+			amplitude = -amplitude
+		amplitudes.append(amplitude)
 
 	# 3. Собираем точки.
 	var points := PackedVector2Array()
@@ -118,8 +126,15 @@ func _generate(rng: RandomNumberGenerator) -> void:
 
 	points.append(Vector2(length - flat_margin, exit_offset_y))
 	points.append(Vector2(length, exit_offset_y))
-	points.append(Vector2(length, exit_offset_y + skirt_depth))
-	points.append(Vector2(0.0, skirt_depth))
+
+	# Дно куска обязано быть ниже дна самой глубокой котловины,
+	# иначе полигон вывернется наизнанку.
+	var deepest := 0.0
+	for point in points:
+		deepest = maxf(deepest, point.y)
+	var bottom := maxf(skirt_depth, deepest + 400.0)
+	points.append(Vector2(length, bottom))
+	points.append(Vector2(0.0, bottom))
 
 	_outline.polygon = points
 	_sync_fill()

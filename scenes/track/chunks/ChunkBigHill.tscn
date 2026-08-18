@@ -7,11 +7,13 @@ script = ExtResource("1_hills")
 difficulty = 2
 weight = 1.0
 hill_count_range = Vector2i(1, 1)
-hill_width_range = Vector2(2400, 4200)
-slope_range = Vector2(0.45, 0.7)
+hill_width_range = Vector2(3800, 6000)
+slope_range = Vector2(0.5, 0.82)
 gentle_bias = 1.4
-samples_per_hill = 72
-skirt_depth = 1600.0
+height_scale_headroom = 1.0
+allow_height_scale = false
+samples_per_hill = 96
+skirt_depth = 2400.0
 
 [node name="Ground" type="StaticBody2D" parent="."]
 

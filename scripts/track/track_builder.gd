@@ -169,7 +169,7 @@ func _load_pool() -> Array[ChunkInfo]:
 func _level_skirts() -> void:
 	var lowest := 0.0
 	for chunk in _chunks:
-		lowest = maxf(lowest, chunk.position.y)
+		lowest = maxf(lowest, chunk.position.y + chunk.get_lowest_surface_y())
 	for chunk in _chunks:
 		chunk.set_skirt_bottom(lowest + skirt_below - chunk.position.y)
 

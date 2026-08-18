@@ -4,9 +4,15 @@
 
 [node name="ChunkHills" type="Node2D"]
 script = ExtResource("1_hills")
-exit_offset_y = 0
 difficulty = 1
 weight = 2.5
+hill_count_range = Vector2i(1, 2)
+hill_width_range = Vector2(900, 2600)
+slope_range = Vector2(0.34, 0.78)
+height_scale_headroom = 1.0
+allow_height_scale = false
+samples_per_hill = 56
+skirt_depth = 1600.0
 
 [node name="Ground" type="StaticBody2D" parent="."]
 
