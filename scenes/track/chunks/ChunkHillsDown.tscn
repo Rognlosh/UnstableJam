@@ -4,7 +4,7 @@
 
 [node name="ChunkHillsDown" type="Node2D"]
 script = ExtResource("1_hills")
-exit_offset_y = 200
+exit_offset_y = 400
 difficulty = 2
 weight = 1.2
 hill_count_range = Vector2i(1, 2)

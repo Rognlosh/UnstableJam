@@ -4,7 +4,7 @@
 
 [node name="ChunkStepDown" type="Node2D"]
 script = ExtResource("1_chunk")
-exit_offset_y = 60
+exit_offset_y = 140
 difficulty = 1
 weight = 1.5
 
@@ -12,7 +12,7 @@ weight = 1.5
 
 [node name="Outline" type="CollisionPolygon2D" parent="Ground"]
 build_mode = 1
-polygon = PackedVector2Array(0, 0, 300, 0, 330, 14, 360, 40, 380, 60, 800, 60, 800, 1200, 0, 1200)
+polygon = PackedVector2Array(0, 0, 240, 0, 320, 17, 440, 70, 560, 123, 640, 140, 1000, 140, 1000, 1200, 0, 1200)
 
 [node name="Fill" type="Polygon2D" parent="Ground"]
 color = Color(0.5563933, 0.5271128, 0.49560964, 1)

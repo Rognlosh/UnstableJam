@@ -42,6 +42,10 @@ const SHAPES: Array = [
 ## Запас на растяжку сборщиком: к финишу профиль умножается, и холм,
 ## впритык проезжаемый в середине трассы, иначе встал бы стеной.
 @export var height_scale_headroom: float = 1.5
+## Сколько уклона отдаётся подъёму всего куска к точке выхода. Наклон
+## базовой линии складывается с наклоном холма, поэтому при большом
+## exit_offset_y кусок растягивается по длине, лишь бы уложиться в этот предел.
+@export var base_slope_limit: float = 0.22
 ## Точек на холм. Меньше двадцати — гладкая волна становится гранёной.
 @export_range(12, 80) var samples_per_hill: int = 40
 ## Глубина юбки вниз, чтобы низ куска не попадал в кадр.
@@ -83,6 +87,19 @@ func _generate(rng: RandomNumberGenerator) -> void:
 	var zone_length := 0.0
 	for w in widths:
 		zone_length += w
+
+	# Подъём всего куска к точке выхода идёт по базовой линии, и её наклон
+	# складывается с наклоном холма. Если перепад велик, а кусок короткий,
+	# сумма выходит непроезжаемой — поэтому растягиваем кусок по длине,
+	# пока базовая линия не уложится в отведённый ей предел.
+	# Множитель 1.5 — максимальный наклон smoothstep на середине.
+	var needed := absf(exit_offset_y) * 1.5 / maxf(base_slope_limit, 0.01)
+	if zone_length < needed and zone_length > 0.0:
+		var stretch := needed / zone_length
+		for i in widths.size():
+			widths[i] *= stretch
+		zone_length = needed
+
 	# Длина куска — производная от состава, а не наоборот. Сборщик
 	# двигает курсор по фактической точке выхода, поэтому переменная
 	# длина ему безразлична.
@@ -91,10 +108,13 @@ func _generate(rng: RandomNumberGenerator) -> void:
 	# 2. Считаем амплитуду каждого холма из его предельного уклона.
 	# Разные силуэты при равной амплитуде круты по-разному (двугорбый
 	# почти вдвое круче простого), поэтому меряем численно.
+	# Наклон базовой линии — доля общего бюджета уклона, холмам достаётся
+	# остаток. Нижняя граница не даёт им выродиться в плоскость.
+	var base_slope := absf(exit_offset_y) * 1.5 / maxf(zone_length, 1.0)
 	var amplitudes: Array[float] = []
 	for i in count:
 		var unit_slope := _max_unit_slope(shapes[i])
-		var allowed := slopes[i] / maxf(height_scale_headroom, 1.0)
+		var allowed := maxf(slopes[i] - base_slope, 0.10) / maxf(height_scale_headroom, 1.0)
 		var amplitude := widths[i] * allowed / unit_slope
 		# Отрицательная амплитуда разворачивает силуэт вниз — получается
 		# котловина. Уклон при этом тот же, так что проезжаемость сохраняется.
