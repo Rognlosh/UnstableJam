@@ -76,6 +76,8 @@ const GHOST_Z: int = -10
 ## товар всё ещё считается доехавшим: докатившееся до финиша вместе с машиной
 ## разумно считать привезённым, а не потерянным.
 const RECOVERY_MARGIN: float = 1.0
+## Запас вокруг стеллажа, в пределах которого вещь считается прибранной.
+const SHELF_ZONE_MARGIN: float = 60.0
 ## Насколько высоко над полом кузова вещь ещё считается погруженной.
 ## Щедро: стопка выше бортов — это перегруз, а не «мимо кузова».
 const BED_CAPACITY_HEIGHT: float = 400.0
@@ -91,6 +93,7 @@ const BED_CAPACITY_HEIGHT: float = 400.0
 @onready var _start_panel: PanelContainer = $HUD/StartPanel
 @onready var _start_button: Button = $HUD/StartPanel/VBoxContainer/StartButton
 @onready var _restart_button: HoldButton = $HUD/RestartButton
+@onready var _hint_label: Label = $HUD/StartPanel/VBoxContainer/HintLabel
 
 var _phase: Phase = Phase.LOADING
 ## Текущий вынос камеры вперёд. Держим отдельно, чтобы сглаживать его
@@ -364,6 +367,8 @@ func _enter_loading() -> void:
 func _start_run() -> void:
 	if _phase != Phase.LOADING:
 		return
+	if _count_stray() > 0:
+		return
 	_release()
 	_loaded.clear()
 	var left_behind: Array[StringName] = []
@@ -375,10 +380,19 @@ func _start_run() -> void:
 			# С этого момента поблажка кончается — заезд начался.
 			item.toughness_bonus = 1.0
 			_loaded[item.instance_id] = item.data.id
-		else:
+		elif item.level == 0:
+			# На склад возвращается только целая вещь. У осколка тот же
+			# идентификатор, что у целой вазы, и запись его в склад
+			# размножала бы товар: разбил на четыре куска — получил
+			# четыре вазы.
 			left_behind.append(item.data.id)
 			# Из группы убираем сразу: иначе оставленный товар продолжал бы
 			# считаться грузом в счётчике заезда.
+			item.remove_from_group(&"cargo")
+			_make_ghost(item)
+		else:
+			# Осколкам места на складе нет: хранить их негде, представления
+			# для битого товара в состоянии игры пока не существует.
 			item.remove_from_group(&"cargo")
 			_make_ghost(item)
 	GameState.cargo_actual = left_behind
@@ -478,6 +492,32 @@ func _disable_collisions(node: Node) -> void:
 		_disable_collisions(child)
 
 
+## Зона стеллажа: сами полки и пол под ними. Вещь, оставленная здесь,
+## считается прибранной — в отличие от той, что валяется посреди площадки.
+func _is_on_shelf(item: Node2D) -> bool:
+	if _shelf == null:
+		return false
+	var pos := item.global_position
+	if pos.x < _shelf_left - SHELF_ZONE_MARGIN:
+		return false
+	if pos.x > _shelf_left + SHELF_WIDTH + SHELF_ZONE_MARGIN:
+		return false
+	var top := _level_y(_shelf_ground, _shelf_level, _shelf_level_height) - _shelf_level_height
+	return pos.y >= top and pos.y <= _shelf_ground + SHELF_ZONE_MARGIN
+
+
+## Сколько вещей брошено мимо кузова и мимо стеллажа.
+func _count_stray() -> int:
+	var stray := 0
+	for node in _cargo_root.get_children():
+		var item := node as BreakableItem
+		if item == null:
+			continue
+		if not _is_in_bed(item) and not _is_on_shelf(item):
+			stray += 1
+	return stray
+
+
 ## Вещь считается погруженной, если её центр внутри кузова по длине
 ## и выше пола. Проверяем в координатах рамы, поэтому наклон машины
 ## на подвеске ответа не меняет.
@@ -524,17 +564,25 @@ func _update_camera(delta: float) -> void:
 func _update_status() -> void:
 	if _phase == Phase.LOADING:
 		var in_bed := 0
-		var on_ground := 0
+		var on_shelf := 0
+		var stray := 0
 		for node in _cargo_root.get_children():
 			var item := node as BreakableItem
 			if item == null:
 				continue
 			if _is_in_bed(item):
 				in_bed += 1
+			elif _is_on_shelf(item):
+				on_shelf += 1
 			else:
-				on_ground += 1
+				stray += 1
+		# Выехать с товаром, брошенным посреди площадки, нельзя: непонятно,
+		# везём мы его или оставляем, и любой ответ игрока удивит.
+		_start_button.disabled = stray > 0
+		_hint_label.text = ("Убери разбросанное: %d" % stray) if stray > 0 \
+			else "Тащи мышью · Q/E или стрелки — поворот"
 		_status_label.text = "День %d · Погрузка\nВ кузове: %d · На стеллаже: %d" % [
-			GameState.get_day(), in_bed, on_ground,
+			GameState.get_day(), in_bed, on_shelf,
 		]
 		return
 	# В кузове считаем целые предметы: осколки лежат в той же группе,
