@@ -143,10 +143,8 @@ func value_ratio() -> float:
 		return 1.0
 	if data == null:
 		return 0.0
-	for piece: ItemPieceData in data.pieces:
-		if piece.piece_id == piece_id:
-			return piece.value_share * data.piece_value_factor
-	return 0.0
+	var piece := data.get_piece(piece_id)
+	return piece.value_share * data.piece_value_factor if piece != null else 0.0
 
 
 ## Доля площади куска от площади целого предмета — из неё считается масса.

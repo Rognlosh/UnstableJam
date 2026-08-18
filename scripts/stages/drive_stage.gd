@@ -180,15 +180,21 @@ func _place_truck() -> void:
 ## что вернулось из кузова при сбросе. На полу ряд быстро упёрся бы в длину
 ## площадки, поэтому стеллаж растёт ярусами вверх.
 func _unload_to_shelf(returned: Array[BreakableItem] = []) -> void:
-	var items := _resolve_cargo()
+	# Складские вещи сперва рождаются, и лишь потом раскладываются вместе
+	# с вернувшимися: у осколка габариты свои, и узнать их можно только
+	# у готового тела.
+	var pending: Array[BreakableItem] = []
+	for entry: Dictionary in GameState.cargo_actual:
+		var item := _spawn_from_entry(entry)
+		if item != null:
+			pending.append(item)
+	pending.append_array(returned)
 
 	# Шаг яруса считаем по самой высокой вещи партии: единый шаг читается
 	# лучше, чем полки на разной высоте, и мелочь не теряется под нависшей
 	# доской.
 	var level_height := 0.0
-	for data: ItemData in items:
-		level_height = maxf(level_height, data.get_bounds().size.y)
-	for item: BreakableItem in returned:
+	for item: BreakableItem in pending:
 		level_height = maxf(level_height, item.get_local_bounds().size.y)
 	# Пустой стеллаж всё равно строим: на него нужно класть осколки,
 	# иначе с разбитой вазой на руках заезд будет не начать.
@@ -197,27 +203,34 @@ func _unload_to_shelf(returned: Array[BreakableItem] = []) -> void:
 
 	_shelf_begin(level_height + SHELF_CLEARANCE)
 
-	for data: ItemData in items:
-		var rect := data.get_bounds()
-		var slot := _shelf_reserve(rect.size)
-		# Полигон задан относительно начала координат узла, и оно не обязано
-		# лежать в центре силуэта. Поэтому ставим не узел, а грани: левую —
-		# на курсор, нижнюю — на полку.
-		var at := Vector2(slot.x - rect.position.x, slot.y - CARGO_LIFT - rect.end.y)
-		var item := Destruction.spawn_item(data, _cargo_root, at)
-		item.toughness_bonus = LOADING_TOUGHNESS
-
-	for item: BreakableItem in returned:
+	for item: BreakableItem in pending:
 		# Ставим ровно: вещь на полке лежит как товар, а не как её бросили.
 		item.rotation = 0.0
 		var rect := item.get_local_bounds()
 		var slot := _shelf_reserve(rect.size)
+		# Полигон задан относительно начала координат тела, и оно не обязано
+		# лежать в центре силуэта. Поэтому ставим не узел, а грани: левую —
+		# на курсор, нижнюю — на полку.
 		item.place_at(Transform2D(0.0, Vector2(
 			slot.x - rect.position.x,
 			slot.y - CARGO_LIFT - rect.end.y)))
 		item.toughness_bonus = LOADING_TOUGHNESS
 
 	_add_posts(_shelf_left, _shelf_ground, _shelf_level, _shelf_level_height)
+
+
+## Создаёт тело по записи склада: целую вещь или один осколок.
+func _spawn_from_entry(entry: Dictionary) -> BreakableItem:
+	var data := ItemCatalog.get_by_id(entry.get("id", &""))
+	if data == null:
+		return null
+	var piece_id: StringName = entry.get("piece", &"")
+	if piece_id == &"":
+		return Destruction.spawn_item(data, _cargo_root, Vector2.ZERO)
+	var piece := data.get_piece(piece_id)
+	if piece == null:
+		return null
+	return Destruction.spawn_piece(data, piece, _cargo_root, Vector2.ZERO)
 
 
 func _shelf_begin(level_height: float) -> void:
@@ -375,7 +388,7 @@ func _start_run() -> void:
 		return
 	_release()
 	_loaded.clear()
-	var left_behind: Array[StringName] = []
+	var left_behind: Array[Dictionary] = []
 	for node in _cargo_root.get_children():
 		var item := node as BreakableItem
 		if item == null:
@@ -384,19 +397,13 @@ func _start_run() -> void:
 			# С этого момента поблажка кончается — заезд начался.
 			item.toughness_bonus = 1.0
 			_loaded[item.instance_id] = item.data.id
-		elif item.level == 0:
-			# На склад возвращается только целая вещь. У осколка тот же
-			# идентификатор, что у целой вазы, и запись его в склад
-			# размножала бы товар: разбил на четыре куска — получил
-			# четыре вазы.
-			left_behind.append(item.data.id)
+		else:
+			# На склад вещь уходит вместе с идентификатором своего куска:
+			# у целой он пустой, у осколка — свой. Без этого черепки либо
+			# пропадали бы, либо возвращались полноценными вазами.
+			left_behind.append(GameState.cargo_entry(item.data.id, item.piece_id))
 			# Из группы убираем сразу: иначе оставленный товар продолжал бы
 			# считаться грузом в счётчике заезда.
-			item.remove_from_group(&"cargo")
-			_make_ghost(item)
-		else:
-			# Осколкам места на складе нет: хранить их негде, представления
-			# для битого товара в состоянии игры пока не существует.
 			item.remove_from_group(&"cargo")
 			_make_ghost(item)
 	GameState.cargo_actual = left_behind
@@ -533,16 +540,6 @@ func _is_in_bed(item: Node2D) -> bool:
 	if local.x < bed.x or local.x > bed.y:
 		return false
 	return local.y <= Truck.BED_FLOOR_Y and local.y >= Truck.BED_FLOOR_Y - BED_CAPACITY_HEIGHT
-
-
-## Идентификаторы груза превращаем в описания предметов один раз на заезд.
-func _resolve_cargo() -> Array[ItemData]:
-	var items: Array[ItemData] = []
-	for id: StringName in GameState.cargo_actual:
-		var data := ItemCatalog.get_by_id(id)
-		if data != null:
-			items.append(data)
-	return items
 
 
 func _update_camera(delta: float) -> void:

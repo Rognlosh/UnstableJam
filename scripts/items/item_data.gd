@@ -27,6 +27,14 @@ extends Resource
 @export var physics_material: PhysicsMaterial
 
 
+## Кусок по идентификатору. null, если такого куска нет.
+func get_piece(id: StringName) -> ItemPieceData:
+	for piece: ItemPieceData in pieces:
+		if piece.piece_id == id:
+			return piece
+	return null
+
+
 ## Габариты целого предмета в его собственных координатах.
 ## Нужны укладке груза: предметы разного размера нельзя раскладывать
 ## постоянным шагом, отступ считается от фактической ширины и высоты.

@@ -27,6 +27,18 @@ func spawn_item(item_data: ItemData, parent: Node2D, at: Vector2) -> BreakableIt
 	return item
 
 
+## Рождение одинокого осколка — того, что пережил прошлый заезд и лежал
+## на складе. Разбиение тут ни при чём: кусок появляется сам по себе.
+func spawn_piece(
+	item_data: ItemData, piece: ItemPieceData, parent: Node2D, at: Vector2
+) -> BreakableItem:
+	var item := ITEM_SCENE.instantiate() as BreakableItem
+	item.setup_piece(item_data, _take_instance_id(), piece)
+	item.transform = _local_transform(parent, Transform2D(0.0, at))
+	parent.add_child(item)
+	return item
+
+
 func break_item(item: BreakableItem, impact: float) -> void:
 	if not is_instance_valid(item) or not item.is_inside_tree():
 		return
