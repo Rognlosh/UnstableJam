@@ -45,6 +45,10 @@ const SHELF_BASE_HEIGHT: float = 100.0
 ## Зазор между вещью и полкой над ней.
 const SHELF_CLEARANCE: float = 48.0
 const SHELF_COLOR: Color = Color(0.42, 0.33, 0.24)
+## Высота яруса у пустого стеллажа — когда мерить не по чему.
+const SHELF_EMPTY_LEVEL: float = 70.0
+## Запас вокруг стеллажа, в пределах которого вещь считается лежащей на нём.
+const SHELF_MARGIN: float = 32.0
 
 ## Насколько резво вещь догоняет курсор. Больше — цепче хват и сильнее
 ## удары о борта; меньше — вещь вязнет и отстаёт от мыши.
@@ -92,6 +96,7 @@ const BED_CAPACITY_HEIGHT: float = 400.0
 @onready var _to_shop_button: Button = $HUD/FinishPanel/VBoxContainer/ToShopButton
 @onready var _start_panel: PanelContainer = $HUD/StartPanel
 @onready var _start_button: Button = $HUD/StartPanel/VBoxContainer/StartButton
+@onready var _hint_label: Label = $HUD/StartPanel/VBoxContainer/HintLabel
 @onready var _restart_button: HoldButton = $HUD/RestartButton
 @onready var _hint_label: Label = $HUD/StartPanel/VBoxContainer/HintLabel
 
@@ -179,8 +184,6 @@ func _place_truck() -> void:
 ## площадки, поэтому стеллаж растёт ярусами вверх.
 func _unload_to_shelf(returned: Array[BreakableItem] = []) -> void:
 	var items := _resolve_cargo()
-	if items.is_empty() and returned.is_empty():
-		return
 
 	# Шаг яруса считаем по самой высокой вещи партии: единый шаг читается
 	# лучше, чем полки на разной высоте, и мелочь не теряется под нависшей
@@ -190,6 +193,10 @@ func _unload_to_shelf(returned: Array[BreakableItem] = []) -> void:
 		level_height = maxf(level_height, data.get_bounds().size.y)
 	for item: BreakableItem in returned:
 		level_height = maxf(level_height, item.get_local_bounds().size.y)
+	# Пустой стеллаж всё равно строим: на него нужно класть осколки,
+	# иначе с разбитой вазой на руках заезд будет не начать.
+	if level_height <= 0.0:
+		level_height = SHELF_EMPTY_LEVEL
 
 	_shelf_begin(level_height + SHELF_CLEARANCE)
 
@@ -518,6 +525,21 @@ func _count_stray() -> int:
 	return stray
 
 
+## Лежит ли вещь на стеллаже. Считаем по габаритам конструкции с запасом:
+## точное «на какой полке» здесь не нужно, важно лишь, что вещь пристроена,
+## а не брошена посреди площадки.
+func _is_on_shelf(item: Node2D) -> bool:
+	if _shelf == null:
+		return false
+	var top := _level_y(_shelf_ground, _shelf_level, _shelf_level_height)
+	var area := Rect2(
+		_shelf_left - SHELF_MARGIN,
+		top - _shelf_level_height,
+		SHELF_WIDTH + SHELF_MARGIN * 2.0,
+		_shelf_ground - top + _shelf_level_height + SHELF_MARGIN)
+	return area.has_point(item.global_position)
+
+
 ## Вещь считается погруженной, если её центр внутри кузова по длине
 ## и выше пола. Проверяем в координатах рамы, поэтому наклон машины
 ## на подвеске ответа не меняет.
@@ -576,11 +598,13 @@ func _update_status() -> void:
 				on_shelf += 1
 			else:
 				stray += 1
-		# Выехать с товаром, брошенным посреди площадки, нельзя: непонятно,
-		# везём мы его или оставляем, и любой ответ игрока удивит.
+		# Пока что-то валяется мимо кузова и мимо стеллажа, выехать нельзя:
+		# брошенная вещь всё равно никуда не денется, а решать её судьбу
+		# молча за игрока — хуже, чем попросить прибраться.
 		_start_button.disabled = stray > 0
-		_hint_label.text = ("Убери разбросанное: %d" % stray) if stray > 0 \
-			else "Тащи мышью · Q/E или стрелки — поворот"
+		_hint_label.text = (
+			"Убери с земли: %d" % stray if stray > 0
+			else "Тащи мышью · Q/E или стрелки — поворот")
 		_status_label.text = "День %d · Погрузка\nВ кузове: %d · На стеллаже: %d" % [
 			GameState.get_day(), in_bed, on_shelf,
 		]
