@@ -47,8 +47,6 @@ const SHELF_CLEARANCE: float = 48.0
 const SHELF_COLOR: Color = Color(0.42, 0.33, 0.24)
 ## Высота яруса у пустого стеллажа — когда мерить не по чему.
 const SHELF_EMPTY_LEVEL: float = 70.0
-## Запас вокруг стеллажа, в пределах которого вещь считается лежащей на нём.
-const SHELF_MARGIN: float = 32.0
 
 ## Насколько резво вещь догоняет курсор. Больше — цепче хват и сильнее
 ## удары о борта; меньше — вещь вязнет и отстаёт от мыши.
@@ -523,21 +521,6 @@ func _count_stray() -> int:
 		if not _is_in_bed(item) and not _is_on_shelf(item):
 			stray += 1
 	return stray
-
-
-## Лежит ли вещь на стеллаже. Считаем по габаритам конструкции с запасом:
-## точное «на какой полке» здесь не нужно, важно лишь, что вещь пристроена,
-## а не брошена посреди площадки.
-func _is_on_shelf(item: Node2D) -> bool:
-	if _shelf == null:
-		return false
-	var top := _level_y(_shelf_ground, _shelf_level, _shelf_level_height)
-	var area := Rect2(
-		_shelf_left - SHELF_MARGIN,
-		top - _shelf_level_height,
-		SHELF_WIDTH + SHELF_MARGIN * 2.0,
-		_shelf_ground - top + _shelf_level_height + SHELF_MARGIN)
-	return area.has_point(item.global_position)
 
 
 ## Вещь считается погруженной, если её центр внутри кузова по длине
