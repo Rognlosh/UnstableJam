@@ -73,7 +73,7 @@ theme_override_constants/separation = 8
 [node name="HintLabel" type="Label" parent="HUD/StartPanel/VBoxContainer"]
 layout_mode = 2
 horizontal_alignment = 1
-text = "Погрузи товар в кузов"
+text = "Тащи мышью · Q/E или стрелки — поворот"
 
 [node name="StartButton" type="Button" parent="HUD/StartPanel/VBoxContainer"]
 layout_mode = 2

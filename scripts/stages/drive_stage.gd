@@ -44,6 +44,18 @@ const SHELF_BASE_HEIGHT: float = 100.0
 ## Зазор между вещью и полкой над ней.
 const SHELF_CLEARANCE: float = 20.0
 const SHELF_COLOR: Color = Color(0.42, 0.33, 0.24)
+
+## Насколько резво вещь догоняет курсор. Больше — цепче хват и сильнее
+## удары о борта; меньше — вещь вязнет и отстаёт от мыши.
+const DRAG_GAIN: float = 14.0
+## Потолок скорости переноски. Без него рывок мышью через полэкрана
+## запустил бы вазу сквозь борт быстрее, чем физика успеет заметить.
+const DRAG_MAX_SPEED: float = 1400.0
+## Скорость поворота на Q/E и стрелках, рад/с.
+const ROTATE_SPEED: float = 3.0
+## С какой скоростью вещь выпускается из руки: остаток разгона гасим,
+## иначе отпущенная на замахе ваза улетает через весь кузов.
+const RELEASE_MAX_SPEED: float = 260.0
 ## Куда смотрит камера при погрузке: середина между кузовом и товаром.
 const LOADING_CAMERA_OFFSET: Vector2 = Vector2(320.0, -100.0)
 ## Насколько высоко над полом кузова вещь ещё считается погруженной.
@@ -75,6 +87,12 @@ var _loaded: Dictionary = {}
 ## где он стоит, поэтому на старте он уезжает вместе с непогруженным товаром.
 var _shelf: Node2D = null
 
+## Вещь в руке и точка, за которую её держат, в её собственных координатах.
+## Держим именно за точку захвата, а не за центр: иначе вещь прыгает
+## центром под курсор в момент клика.
+var _dragged: BreakableItem = null
+var _grab_offset: Vector2 = Vector2.ZERO
+
 
 func _ready() -> void:
 	_finish_panel.hide()
@@ -92,6 +110,8 @@ func _ready() -> void:
 ## оказывается в чуть другом месте относительно неё — картинка расслаивается,
 ## особенно на контрастных деталях вроде кабины.
 func _physics_process(delta: float) -> void:
+	if _phase == Phase.LOADING:
+		_update_drag()
 	_update_camera(delta)
 
 
@@ -151,7 +171,10 @@ func _unload_to_shelf() -> void:
 		var at := Vector2(
 			cursor_x - rect.position.x,
 			top_y - CARGO_LIFT - rect.end.y)
-		Destruction.spawn_item(data, _cargo_root, at)
+		var item := Destruction.spawn_item(data, _cargo_root, at)
+		# Пока идёт погрузка, товар не бьётся: мышь неточна, а вещь в руке
+		# движется рывками — бить за это игрока нечестно.
+		item.impacts_enabled = false
 		cursor_x += rect.size.x + CARGO_GAP
 
 	_add_posts(left_x, ground_y, level, level_height)
@@ -206,6 +229,66 @@ static func _rect_polygon(size: Vector2) -> PackedVector2Array:
 	])
 
 
+## Клик мышью в фазе погрузки — взять или отпустить вещь.
+func _unhandled_input(event: InputEvent) -> void:
+	if _phase != Phase.LOADING:
+		return
+	var button := event as InputEventMouseButton
+	if button == null or button.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if button.pressed:
+		_grab_at(get_global_mouse_position())
+	else:
+		_release()
+
+
+## Ищем тело точно под курсором. Запрос к физике, а не перебор детей:
+## попадание считается по настоящей форме, поэтому щель между вазами
+## не считается попаданием ни в одну из них.
+func _grab_at(at: Vector2) -> void:
+	var params := PhysicsPointQueryParameters2D.new()
+	params.position = at
+	params.collide_with_bodies = true
+	for hit in get_world_2d().direct_space_state.intersect_point(params, 8):
+		var item := hit.get("collider") as BreakableItem
+		if item == null:
+			continue
+		_dragged = item
+		_grab_offset = item.to_local(at)
+		# В руке вещь не падает: гравитация тянула бы её вниз, и курсор
+		# всё время держал бы её с перекосом.
+		item.gravity_scale = 0.0
+		# Непрерывная проверка столкновений — страховка от проскакивания
+		# сквозь борт на быстром движении мыши.
+		item.continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE
+		return
+
+
+func _release() -> void:
+	if _dragged == null:
+		return
+	if is_instance_valid(_dragged):
+		_dragged.gravity_scale = 1.0
+		_dragged.continuous_cd = RigidBody2D.CCD_MODE_DISABLED
+		_dragged.linear_velocity = _dragged.linear_velocity.limit_length(RELEASE_MAX_SPEED)
+		_dragged.angular_velocity = 0.0
+	_dragged = null
+
+
+## Вещь тянется к курсору скоростью, а не телепортом: так она честно
+## упирается в борта и в соседний груз, вместо того чтобы проходить сквозь.
+func _update_drag() -> void:
+	if _dragged == null:
+		return
+	if not is_instance_valid(_dragged) or not _dragged.is_inside_tree():
+		_dragged = null
+		return
+	var held := _dragged.to_global(_grab_offset)
+	var pull := (get_global_mouse_position() - held) * DRAG_GAIN
+	_dragged.linear_velocity = pull.limit_length(DRAG_MAX_SPEED)
+	_dragged.angular_velocity = Input.get_axis(&"rotate_ccw", &"rotate_cw") * ROTATE_SPEED
+
+
 func _enter_loading() -> void:
 	_phase = Phase.LOADING
 	_truck.controls_enabled = false
@@ -218,6 +301,7 @@ func _enter_loading() -> void:
 func _start_run() -> void:
 	if _phase != Phase.LOADING:
 		return
+	_release()
 	_loaded.clear()
 	var left_behind: Array[StringName] = []
 	for node in _cargo_root.get_children():
@@ -225,6 +309,8 @@ func _start_run() -> void:
 		if item == null:
 			continue
 		if _is_in_bed(item):
+			# С этого момента груз снова бьётся — заезд начался.
+			item.impacts_enabled = true
 			_loaded[item.instance_id] = item.data.id
 		else:
 			left_behind.append(item.data.id)

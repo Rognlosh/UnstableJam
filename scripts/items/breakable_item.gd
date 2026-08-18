@@ -13,6 +13,11 @@ signal broke(item: BreakableItem, impact: float)
 ## друг друга и иначе разлетелись бы в крошку в момент появления.
 const GRACE_FRAMES: int = 5
 
+## Пока выключено, удары игнорируются. Нужно фазе погрузки: вещь, которую
+## тащат мышью, меняет скорость рывками, и детектор принял бы любой такой
+## рывок за столкновение.
+var impacts_enabled: bool = true
+
 var data: ItemData
 var level: int = 0                       # 0 — целое, 1 — осколок
 var piece_id: StringName = &""
@@ -73,7 +78,7 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 	_prev_velocity = state.linear_velocity
 	_frames_alive += 1
 
-	if _is_broken or _frames_alive <= GRACE_FRAMES:
+	if _is_broken or not impacts_enabled or _frames_alive <= GRACE_FRAMES:
 		return
 	if impact < break_threshold():
 		return
