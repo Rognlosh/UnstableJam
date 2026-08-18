@@ -253,6 +253,26 @@ func rebuild_suspension() -> void:
 		_grooves[i].initial_offset = suspension_travel
 
 
+## Замораживает машину целиком. Нужно фазе погрузки: незамороженную раму
+## груз растолкает, и она уедет со стартовой площадки сама.
+## Замороженное тело ведёт себя как статическое, поэтому груз на нём лежит.
+func set_frozen(value: bool) -> void:
+	if chassis == null:
+		return
+	chassis.freeze = value
+	for wheel: RigidBody2D in _wheels:
+		wheel.freeze = value
+	if value:
+		return
+	# После разморозки гасим скорости: за время погрузки в них могло
+	# накопиться то, чего игрок не делал.
+	chassis.linear_velocity = Vector2.ZERO
+	chassis.angular_velocity = 0.0
+	for wheel: RigidBody2D in _wheels:
+		wheel.linear_velocity = Vector2.ZERO
+		wheel.angular_velocity = 0.0
+
+
 ## Телепорт без физических артефактов — для кнопки «сброс» на стенде.
 func teleport_to(target: Vector2) -> void:
 	if chassis == null:

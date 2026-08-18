@@ -53,6 +53,9 @@ const DRAG_GAIN: float = 14.0
 const DRAG_MAX_SPEED: float = 1400.0
 ## Скорость поворота на Q/E и стрелках, рад/с.
 const ROTATE_SPEED: float = 3.0
+## Во сколько раз товар прочнее на погрузке. Швырнуть вазу об борт всё ещё
+## можно, а вот уронить её с полки — уже не смертельно.
+const LOADING_TOUGHNESS: float = 2.0
 ## С какой скоростью вещь выпускается из руки: остаток разгона гасим,
 ## иначе отпущенная на замахе ваза улетает через весь кузов.
 const RELEASE_MAX_SPEED: float = 260.0
@@ -172,9 +175,7 @@ func _unload_to_shelf() -> void:
 			cursor_x - rect.position.x,
 			top_y - CARGO_LIFT - rect.end.y)
 		var item := Destruction.spawn_item(data, _cargo_root, at)
-		# Пока идёт погрузка, товар не бьётся: мышь неточна, а вещь в руке
-		# движется рывками — бить за это игрока нечестно.
-		item.impacts_enabled = false
+		item.toughness_bonus = LOADING_TOUGHNESS
 		cursor_x += rect.size.x + CARGO_GAP
 
 	_add_posts(left_x, ground_y, level, level_height)
@@ -285,13 +286,16 @@ func _update_drag() -> void:
 		return
 	var held := _dragged.to_global(_grab_offset)
 	var pull := (get_global_mouse_position() - held) * DRAG_GAIN
-	_dragged.linear_velocity = pull.limit_length(DRAG_MAX_SPEED)
+	# Через drive_velocity, а не напрямую: наш собственный разгон не должен
+	# засчитываться вещи как удар, а гашение о борт — должно.
+	_dragged.drive_velocity(pull.limit_length(DRAG_MAX_SPEED))
 	_dragged.angular_velocity = Input.get_axis(&"rotate_ccw", &"rotate_cw") * ROTATE_SPEED
 
 
 func _enter_loading() -> void:
 	_phase = Phase.LOADING
 	_truck.controls_enabled = false
+	_truck.set_frozen(true)
 	_finish_panel.hide()
 	_start_panel.show()
 
@@ -309,8 +313,8 @@ func _start_run() -> void:
 		if item == null:
 			continue
 		if _is_in_bed(item):
-			# С этого момента груз снова бьётся — заезд начался.
-			item.impacts_enabled = true
+			# С этого момента поблажка кончается — заезд начался.
+			item.toughness_bonus = 1.0
 			_loaded[item.instance_id] = item.data.id
 		else:
 			left_behind.append(item.data.id)
@@ -322,6 +326,7 @@ func _start_run() -> void:
 		_shelf = null
 
 	_phase = Phase.DRIVING
+	_truck.set_frozen(false)
 	_truck.controls_enabled = true
 	_start_panel.hide()
 

@@ -13,10 +13,10 @@ signal broke(item: BreakableItem, impact: float)
 ## друг друга и иначе разлетелись бы в крошку в момент появления.
 const GRACE_FRAMES: int = 5
 
-## Пока выключено, удары игнорируются. Нужно фазе погрузки: вещь, которую
-## тащат мышью, меняет скорость рывками, и детектор принял бы любой такой
-## рывок за столкновение.
-var impacts_enabled: bool = true
+## Множитель порога разрушения. Больше единицы — вещь терпит сильнее.
+## Нужно фазе погрузки: мышь неточна, и бить игрока по тем же правилам,
+## что и на дороге, несправедливо.
+var toughness_bonus: float = 1.0
 
 var data: ItemData
 var level: int = 0                       # 0 — целое, 1 — осколок
@@ -78,7 +78,7 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 	_prev_velocity = state.linear_velocity
 	_frames_alive += 1
 
-	if _is_broken or not impacts_enabled or _frames_alive <= GRACE_FRAMES:
+	if _is_broken or _frames_alive <= GRACE_FRAMES:
 		return
 	if impact < break_threshold():
 		return
@@ -92,7 +92,20 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 func break_threshold() -> float:
 	if data == null:
 		return INF
-	return data.break_speed * (data.piece_toughness if level > 0 else 1.0)
+	var base := data.break_speed * (data.piece_toughness if level > 0 else 1.0)
+	return base * toughness_bonus
+
+
+## Задаёт скорость и одновременно объявляет её ожидаемой.
+##
+## Детектор ловит удар по изменению скорости за физкадр, поэтому вещь,
+## которую тащат мышью, разбивалась бы от собственного разгона. Здесь мы
+## говорим детектору: это изменение сделали мы, ударом не считать. А вот
+## если физика погасит скорость о борт или о соседний груз — расхождение
+## останется, и удар засчитается честно.
+func drive_velocity(velocity: Vector2) -> void:
+	linear_velocity = velocity
+	_prev_velocity = velocity
 
 
 ## Доля площади куска от площади целого предмета — из неё считается масса.
