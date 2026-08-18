@@ -121,6 +121,14 @@ var _camera_blend: float = 0.0
 ## при сбросе: машина возвращается ровно туда, где они лежат.
 var _ghosts: Array[Node2D] = []
 
+## Курсор укладки на стеллаж. Живёт в полях, потому что на стеллаж кладут
+## дважды: сперва товар со склада, потом то, что вернулось из кузова.
+var _shelf_left: float = 0.0
+var _shelf_ground: float = 0.0
+var _shelf_cursor: float = 0.0
+var _shelf_level: int = 0
+var _shelf_level_height: float = 0.0
+
 
 func _ready() -> void:
 	_finish_panel.hide()
@@ -163,49 +171,73 @@ func _place_truck() -> void:
 	_update_camera(1.0)
 
 
-## Выкладка товара со склада на стеллаж перед машиной. На полу ряд быстро
-## упёрся бы в длину площадки, поэтому товар растёт ярусами вверх: доска
-## на каждом ярусе, начиная с нижнего.
-func _unload_to_shelf() -> void:
+## Выкладка на стеллаж перед машиной: сперва товар со склада, следом то,
+## что вернулось из кузова при сбросе. На полу ряд быстро упёрся бы в длину
+## площадки, поэтому стеллаж растёт ярусами вверх.
+func _unload_to_shelf(returned: Array[BreakableItem] = []) -> void:
 	var items := _resolve_cargo()
-	if items.is_empty():
+	if items.is_empty() and returned.is_empty():
 		return
-	_shelf = Node2D.new()
-	add_child(_shelf)
 
-	var ground_y := _track.global_position.y
-	var left_x := _track.get_start_position().x + SHELF_OFFSET_X
 	# Шаг яруса считаем по самой высокой вещи партии: единый шаг читается
 	# лучше, чем полки на разной высоте, и мелочь не теряется под нависшей
 	# доской.
 	var level_height := 0.0
 	for data: ItemData in items:
 		level_height = maxf(level_height, data.get_bounds().size.y)
-	level_height += SHELF_CLEARANCE
+	for item: BreakableItem in returned:
+		level_height = maxf(level_height, item.get_local_bounds().size.y)
 
-	var level := 0
-	var cursor_x := left_x
-	_add_board(left_x, _level_y(ground_y, 0, level_height))
+	_shelf_begin(level_height + SHELF_CLEARANCE)
+
 	for data: ItemData in items:
 		var rect := data.get_bounds()
-		# Условие cursor_x > left_x спасает от вечного переноса вещи,
-		# которая шире всей полки.
-		if cursor_x + rect.size.x > left_x + SHELF_WIDTH and cursor_x > left_x:
-			level += 1
-			cursor_x = left_x
-			_add_board(left_x, _level_y(ground_y, level, level_height))
-		var top_y := _level_y(ground_y, level, level_height)
+		var slot := _shelf_reserve(rect.size)
 		# Полигон задан относительно начала координат узла, и оно не обязано
 		# лежать в центре силуэта. Поэтому ставим не узел, а грани: левую —
 		# на курсор, нижнюю — на полку.
-		var at := Vector2(
-			cursor_x - rect.position.x,
-			top_y - CARGO_LIFT - rect.end.y)
+		var at := Vector2(slot.x - rect.position.x, slot.y - CARGO_LIFT - rect.end.y)
 		var item := Destruction.spawn_item(data, _cargo_root, at)
 		item.toughness_bonus = LOADING_TOUGHNESS
-		cursor_x += rect.size.x + CARGO_GAP
 
-	_add_posts(left_x, ground_y, level, level_height)
+	for item: BreakableItem in returned:
+		# Ставим ровно: вещь на полке лежит как товар, а не как её бросили.
+		item.rotation = 0.0
+		var rect := item.get_local_bounds()
+		var slot := _shelf_reserve(rect.size)
+		item.global_position = Vector2(
+			slot.x - rect.position.x,
+			slot.y - CARGO_LIFT - rect.end.y)
+		item.linear_velocity = Vector2.ZERO
+		item.angular_velocity = 0.0
+		item.toughness_bonus = LOADING_TOUGHNESS
+
+	_add_posts(_shelf_left, _shelf_ground, _shelf_level, _shelf_level_height)
+
+
+func _shelf_begin(level_height: float) -> void:
+	_shelf = Node2D.new()
+	add_child(_shelf)
+	_shelf_ground = _track.global_position.y
+	_shelf_left = _track.get_start_position().x + SHELF_OFFSET_X
+	_shelf_cursor = _shelf_left
+	_shelf_level = 0
+	_shelf_level_height = level_height
+	_add_board(_shelf_left, _level_y(_shelf_ground, 0, _shelf_level_height))
+
+
+## Отводит место под вещь указанного размера и возвращает левый нижний угол
+## этого места. Когда ряд кончился, поднимается ярусом выше и кладёт доску.
+func _shelf_reserve(item_size: Vector2) -> Vector2:
+	# Условие про непустой ряд спасает от вечного переноса вещи,
+	# которая шире всей полки.
+	if _shelf_cursor + item_size.x > _shelf_left + SHELF_WIDTH and _shelf_cursor > _shelf_left:
+		_shelf_level += 1
+		_shelf_cursor = _shelf_left
+		_add_board(_shelf_left, _level_y(_shelf_ground, _shelf_level, _shelf_level_height))
+	var slot := Vector2(_shelf_cursor, _level_y(_shelf_ground, _shelf_level, _shelf_level_height))
+	_shelf_cursor += item_size.x + CARGO_GAP
+	return slot
 
 
 ## Высота верхней грани полки указанного яруса.
@@ -382,13 +414,18 @@ func _restart_run() -> void:
 	_release()
 
 	var shift := _track.get_start_position() - _truck.chassis.global_position
-	var survivors: Array[BreakableItem] = []
+	# Уложенное едет с машиной как есть, выпавшее возвращается на стеллаж —
+	# осколки в том числе, иначе они остались бы валяться у старта.
+	var in_bed: Array[BreakableItem] = []
+	var returned: Array[BreakableItem] = []
 	for node in _cargo_root.get_children():
 		var item := node as BreakableItem
 		if item == null:
 			continue
-		if _is_recovered(item):
-			survivors.append(item)
+		if _is_in_bed(item):
+			in_bed.append(item)
+		elif _is_recovered(item):
+			returned.append(item)
 		else:
 			item.queue_free()
 
@@ -403,14 +440,14 @@ func _restart_run() -> void:
 	_track.build()
 	_truck.teleport_to(_track.get_start_position())
 
-	for item: BreakableItem in survivors:
+	for item: BreakableItem in in_bed:
 		item.global_position += shift
 		item.linear_velocity = Vector2.ZERO
 		item.angular_velocity = 0.0
 		item.toughness_bonus = LOADING_TOUGHNESS
 
 	# Склад снова под рукой: непогруженное можно доложить.
-	_unload_to_shelf()
+	_unload_to_shelf(returned)
 	_enter_loading()
 
 

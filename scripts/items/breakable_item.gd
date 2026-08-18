@@ -108,6 +108,17 @@ func drive_velocity(velocity: Vector2) -> void:
 	_prev_velocity = velocity
 
 
+## Габариты именно этого тела: у осколка полигон свой, и брать размеры
+## целого предмета для него нельзя.
+func get_local_bounds() -> Rect2:
+	if _polygon.is_empty():
+		return Rect2()
+	var rect := Rect2(_polygon[0], Vector2.ZERO)
+	for i in range(1, _polygon.size()):
+		rect = rect.expand(_polygon[i])
+	return rect
+
+
 ## Какую долю цены предмета несёт это тело: целое — всю, осколок — свою.
 ##
 ## Именно по этим долям считается выручка за заезд: ваза, потерявшая одно

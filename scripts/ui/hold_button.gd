@@ -17,9 +17,15 @@ signal hold_completed
 @export var ring_color: Color = Color(1.0, 1.0, 1.0, 0.9)
 ## Как быстро кольцо откатывается назад, если кнопку отпустили раньше.
 @export var release_speed: float = 3.0
+## Действие ввода, которое работает наравне с мышью. Кольцо показывает
+## прогресс одинаково, чем бы ни держали.
+@export var hold_action: StringName = &""
 
 var _holding: bool = false
 var _progress: float = 0.0
+## После срабатывания ждём, пока отпустят: иначе зажатая клавиша
+## запускала бы сброс раз за разом.
+var _needs_release: bool = false
 
 
 func _ready() -> void:
@@ -31,11 +37,20 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	var held := _holding
+	if hold_action != &"" and Input.is_action_pressed(hold_action):
+		held = true
+	if _needs_release:
+		if held:
+			return
+		_needs_release = false
+
 	var previous := _progress
-	if _holding:
+	if held:
 		_progress = minf(_progress + delta / maxf(hold_time, 0.01), 1.0)
 		if _progress >= 1.0:
 			_holding = false
+			_needs_release = true
 			_progress = 0.0
 			hold_completed.emit()
 	else:
