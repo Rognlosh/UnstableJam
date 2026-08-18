@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://bobo37apgnokr" path="res://scripts/track/track_chunk.gd" id="1_chunk"]
+
+[node name="ChunkBumpsRound" type="Node2D"]
+script = ExtResource("1_chunk")
+difficulty = 1
+weight = 3.0
+
+[node name="Ground" type="StaticBody2D" parent="."]
+
+[node name="Outline" type="CollisionPolygon2D" parent="Ground"]
+build_mode = 1
+polygon = PackedVector2Array(0, 0, 40, 0, 60, -11, 80, -21, 100, -28, 120, -30, 140, -28, 160, -21, 180, -11, 200, 0, 320, 0, 340, -11, 360, -21, 380, -28, 400, -30, 420, -28, 440, -21, 460, -11, 480, 0, 600, 0, 620, -11, 640, -21, 660, -28, 680, -30, 700, -28, 720, -21, 740, -11, 760, 0, 800, 0, 800, 1200, 0, 1200)
+
+[node name="Fill" type="Polygon2D" parent="Ground"]
+color = Color(0.5563933, 0.5271128, 0.49560964, 1)
