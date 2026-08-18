@@ -1,28 +1,82 @@
-[gd_scene format=3 uid="uid://inxn12u2rauc"]
+[gd_scene load_steps=22 format=3 uid="uid://inxn12u2rauc"]
 
-[ext_resource type="Script" uid="uid://csgvmryxm7t2q" path="res://scripts/stages/drive_stage.gd" id="1_s5v58"]
+[ext_resource type="Script" uid="uid://csgvmryxm7t2q" path="res://scripts/stages/drive_stage.gd" id="1_stage"]
+[ext_resource type="Script" uid="uid://bo1cb4oy5yl4o" path="res://scripts/track/track_builder.gd" id="2_track"]
+[ext_resource type="PackedScene" uid="uid://xqnjgajvj31k" path="res://scenes/vehicle/Truck.tscn" id="3_truck"]
+[ext_resource type="PackedScene" uid="uid://bf5sghqrm5j25" path="res://scenes/track/chunks/ChunkFlat.tscn" id="4_flat"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkBumpsRamp.tscn" id="5_bramp"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkBumpsRound.tscn" id="6_bround"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkBumpsSharp.tscn" id="7_bsharp"]
+[ext_resource type="PackedScene" uid="uid://ccoum1a8mk4oq" path="res://scenes/track/chunks/ChunkWashboard.tscn" id="8_wash"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkStepUp.tscn" id="9_stepup"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkStepDown.tscn" id="10_stepdown"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkHills.tscn" id="11_hills"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkHillsDown.tscn" id="12_hillsdown"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkHillsUp.tscn" id="13_hillsup"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkBigHill.tscn" id="14_bighill"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkBridge.tscn" id="15_bridge"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkRamp.tscn" id="16_ramp"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkGravel.tscn" id="17_gravel"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkStart.tscn" id="18_start"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkFinish.tscn" id="19_finish"]
 
-[node name="DriveStage" type="Control" unique_id=820032217]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_surface"]
+
+[node name="DriveStage" type="Node2D"]
+script = ExtResource("1_stage")
+
+[node name="Track" type="Node2D" parent="."]
+position = Vector2(0, 320)
+script = ExtResource("2_track")
+chunk_scenes = Array[PackedScene]([ExtResource("4_flat"), ExtResource("5_bramp"), ExtResource("6_bround"), ExtResource("7_bsharp"), ExtResource("8_wash"), ExtResource("9_stepup"), ExtResource("10_stepdown"), ExtResource("11_hills"), ExtResource("12_hillsdown"), ExtResource("13_hillsup"), ExtResource("14_bighill"), ExtResource("15_bridge"), ExtResource("16_ramp"), ExtResource("17_gravel")])
+target_length = 30000.0
+start_scene = ExtResource("18_start")
+finish_scene = ExtResource("19_finish")
+surface_material = SubResource("PhysicsMaterial_surface")
+
+[node name="CargoRoot" type="Node2D" parent="."]
+
+[node name="Truck" parent="." instance=ExtResource("3_truck")]
+position = Vector2(260, 200)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.7, 0.7)
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="StatusPanel" type="PanelContainer" parent="HUD"]
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 260.0
+offset_bottom = 48.0
+
+[node name="StatusLabel" type="Label" parent="HUD/StatusPanel"]
+layout_mode = 2
+
+[node name="FinishPanel" type="PanelContainer" parent="HUD"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -90.0
+offset_right = 180.0
+offset_bottom = 90.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_s5v58")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1451251076]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/FinishPanel"]
+layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="InfoLabel" type="Label" parent="VBoxContainer" unique_id=1206268085]
+[node name="ResultLabel" type="Label" parent="HUD/FinishPanel/VBoxContainer"]
 layout_mode = 2
+horizontal_alignment = 1
 
-[node name="FinishButton" type="Button" parent="VBoxContainer" unique_id=1551000548]
+[node name="ToShopButton" type="Button" parent="HUD/FinishPanel/VBoxContainer"]
 layout_mode = 2
-text = "Доехать"
+text = "В лавку"
