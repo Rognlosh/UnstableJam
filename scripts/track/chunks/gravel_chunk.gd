@@ -15,17 +15,23 @@ extends TrackChunk
 ## Ровные площадки по краям — стыковочные хвосты.
 @export var flat_margin: float = 40.0
 ## Длина дна промоины.
-@export var pit_length_range: Vector2 = Vector2(340.0, 560.0)
+@export var pit_length_range: Vector2 = Vector2(850.0, 1400.0)
 ## Глубина промоины. Мелкая не удержит камни, глубокая станет ловушкой.
-@export var pit_depth_range: Vector2 = Vector2(34.0, 56.0)
-## Длина въездного и выездного скоса.
-@export var slope_length: float = 80.0
-## Сколько камней насыпается: (минимум, максимум).
-@export var gravel_count_range: Vector2i = Vector2i(55, 90)
+@export var pit_depth_range: Vector2 = Vector2(48.0, 74.0)
+## Длина въездного и выездного скоса. При глубине под семь десятков
+## короткий скос читается как обрыв, поэтому он втрое длиннее самой ямы
+## по вертикали — выходит около 15 градусов.
+@export var slope_length: float = 240.0
+## Сколько пикселей длины корыта приходится на один камень. Количество
+## считается отсюда, а не бросается отдельно: иначе длинной промоине может
+## достаться горстка камней и сквозь насыпь проглядывает дно.
+@export var gravel_spacing: float = 11.0
+## Потолок числа камней — страховка бюджета тел в вебе.
+@export var gravel_count_limit: int = 130
 ## Радиус камня: (минимум, максимум).
-@export var gravel_radius_range: Vector2 = Vector2(5.0, 9.0)
+@export var gravel_radius_range: Vector2 = Vector2(10.0, 18.0)
 ## Масса камня. Тяжёлые не разгребаются, лёгкие разлетаются от колеса.
-@export var gravel_mass: float = 0.5
+@export var gravel_mass: float = 1.4
 @export var gravel_color: Color = Color(0.46, 0.44, 0.41)
 @export var skirt_depth: float = 1400.0
 
@@ -94,8 +100,8 @@ func _setup_notifier() -> void:
 	# Рамку берём с запасом по высоте: камни должны насыпаться до того,
 	# как промоина въедет в кадр, иначе игрок увидит их падение.
 	notifier.rect = Rect2(
-		_pit_start - 200.0, _pit_depth - 400.0,
-		(_pit_end - _pit_start) + 400.0, 800.0)
+		_pit_start - 260.0, _pit_depth - 600.0,
+		(_pit_end - _pit_start) + 520.0, 1000.0)
 	add_child(notifier)
 	notifier.screen_entered.connect(_on_screen_entered)
 	notifier.screen_exited.connect(_on_screen_exited)
@@ -120,17 +126,26 @@ func _on_screen_exited() -> void:
 
 
 func _spawn_gravel(rng: RandomNumberGenerator) -> void:
-	var count := rng.randi_range(
-		gravel_count_range.x, maxi(gravel_count_range.x, gravel_count_range.y))
 	var span := _pit_end - _pit_start
+	var count := mini(
+		int(span / maxf(gravel_spacing, 1.0) * rng.randf_range(0.9, 1.1)),
+		gravel_count_limit)
+	# Раскладываем по сетке с разбросом, а не наугад: при сотне крупных камней
+	# случайные позиции неизбежно рождают их друг в друге, и физика расталкивает
+	# такую кучу взрывом. Сетка гарантирует зазор, а джиттер убирает регулярность —
+	# осядут камни всё равно вразнобой.
+	var cell := gravel_radius_range.y * 2.3
+	var columns := maxi(int(span / cell), 1)
+	var rows := int(ceil(float(count) / float(columns)))
 	for i in count:
 		var radius := rng.randf_range(gravel_radius_range.x, gravel_radius_range.y)
+		var column := i % columns
+		var row := i / columns
+		var jitter := cell * 0.25
 		var stone := RigidBody2D.new()
-		# Сыплем над дном вразнобой: камни укладываются сами за пару кадров,
-		# и раскладка выходит естественнее любой сетки.
 		stone.position = Vector2(
-			_pit_start + rng.randf_range(radius, span - radius),
-			_pit_depth - rng.randf_range(radius, _pit_depth * 0.9))
+			_pit_start + cell * (float(column) + 0.5) + rng.randf_range(-jitter, jitter),
+			_pit_depth - cell * (float(row) + 0.6) + rng.randf_range(-jitter, jitter))
 		stone.rotation = rng.randf_range(0.0, TAU)
 		stone.mass = gravel_mass
 		stone.angular_damp = 1.5
