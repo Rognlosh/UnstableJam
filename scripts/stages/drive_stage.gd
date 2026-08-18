@@ -20,6 +20,11 @@ const CAMERA_LIFT: float = -80.0
 ## Скорость, с которой вынос камеры догоняет своё расчётное значение.
 const CAMERA_LOOK_SMOOTH: float = 3.0
 
+## Зазор между предметами и до бортов при укладке.
+const CARGO_GAP: float = 6.0
+## Подъём над полом кузова: предмет не должен родиться внутри рамы.
+const CARGO_LIFT: float = 2.0
+
 @onready var _track: TrackBuilder = $Track
 @onready var _truck: Truck = $Truck
 @onready var _camera: Camera2D = $Camera2D
@@ -34,6 +39,11 @@ var _is_finished: bool = false
 ## самим, а не гонять камеру за шумом мгновенной скорости.
 var _look_ahead: float = 0.0
 
+## Что было погружено: instance_id → идентификатор предмета. По этому
+## списку финиш поймёт, чего недосчитался: живые тела на финише знают
+## свой instance_id, а исходный состав груза известен только отсюда.
+var _loaded: Dictionary = {}
+
 
 func _ready() -> void:
 	_finish_panel.hide()
@@ -41,6 +51,7 @@ func _ready() -> void:
 	_track.finish_reached.connect(_on_finish_reached)
 	_build_track()
 	_place_truck()
+	_load_cargo()
 
 
 ## Камера обновляется в физическом такте, а не в кадровом. Тела двигаются
@@ -69,6 +80,58 @@ func _place_truck() -> void:
 	_update_camera(1.0)
 
 
+## Погрузка: предметы кладутся рядами вдоль кузова, ряд заполняется слева
+## направо, следующий ложится поверх предыдущего.
+##
+## Шаг укладки считается от габаритов каждого предмета, а не берётся
+## постоянным: груз бывает разного размера, и постоянный шаг либо оставит
+## дыры, либо посадит крупные вещи друг в друга.
+func _load_cargo() -> void:
+	_loaded.clear()
+	var items := _resolve_cargo()
+	if items.is_empty():
+		return
+	# Крупное вниз: мелочь под крупной вещью работает как каток.
+	items.sort_custom(_by_height_desc)
+
+	var bed := _truck.get_bed_bounds()
+	var row_end := bed.y - CARGO_GAP
+	var cursor_x := bed.x + CARGO_GAP
+	var row_top := Truck.BED_FLOOR_Y - CARGO_LIFT
+	var row_height := 0.0
+
+	for data: ItemData in items:
+		var rect := data.get_bounds()
+		# Ряд кончился — начинаем следующий поверх уложенного. Проверка на
+		# непустой ряд спасает от вечного переноса вещи шире самого кузова.
+		if cursor_x + rect.size.x > row_end and row_height > 0.0:
+			cursor_x = bed.x + CARGO_GAP
+			row_top -= row_height + CARGO_GAP
+			row_height = 0.0
+		# Полигон задан относительно начала координат узла, и оно не обязано
+		# лежать в центре силуэта. Поэтому ставим не узел, а грани: левую —
+		# на курсор, нижнюю — на уровень ряда.
+		var local := Vector2(cursor_x - rect.position.x, row_top - rect.end.y)
+		var item := Destruction.spawn_item(data, _cargo_root, _truck.chassis.to_global(local))
+		_loaded[item.instance_id] = data.id
+		cursor_x += rect.size.x + CARGO_GAP
+		row_height = maxf(row_height, rect.size.y)
+
+
+## Идентификаторы груза превращаем в описания предметов один раз на заезд.
+func _resolve_cargo() -> Array[ItemData]:
+	var items: Array[ItemData] = []
+	for id: StringName in GameState.cargo_actual:
+		var data := ItemCatalog.get_by_id(id)
+		if data != null:
+			items.append(data)
+	return items
+
+
+static func _by_height_desc(a: ItemData, b: ItemData) -> bool:
+	return a.get_bounds().size.y > b.get_bounds().size.y
+
+
 func _update_camera(delta: float) -> void:
 	if _truck.chassis == null:
 		return
@@ -85,9 +148,17 @@ func _update_camera(delta: float) -> void:
 
 
 func _update_status() -> void:
-	_status_label.text = "День %d · Груз: %d · Пройдено: %d%%" % [
+	# В кузове считаем целые предметы: осколки лежат в той же группе,
+	# но местом груза уже не являются.
+	var whole := 0
+	for node in get_tree().get_nodes_in_group(&"cargo"):
+		var item := node as BreakableItem
+		if item != null and item.level == 0:
+			whole += 1
+	_status_label.text = "День %d · Цело: %d из %d · Пройдено: %d%%" % [
 		GameState.get_day(),
-		GameState.cargo_actual.size(),
+		whole,
+		_loaded.size(),
 		int(round(get_progress() * 100.0)),
 	]
 
