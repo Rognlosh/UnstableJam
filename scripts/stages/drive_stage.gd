@@ -34,15 +34,15 @@ const CARGO_GAP: float = 10.0
 const CARGO_LIFT: float = 2.0
 ## Где стоит стеллаж — впереди машины: позади неё стартовая площадка
 ## кончается почти сразу за задним бортом.
-const SHELF_OFFSET_X: float = 240.0
+const SHELF_OFFSET_X: float = 420.0
 ## Полезная длина полки. Товар, не влезший в ряд, уходит ярусом выше.
 const SHELF_WIDTH: float = 640.0
-const SHELF_BOARD_THICKNESS: float = 8.0
+const SHELF_BOARD_THICKNESS: float = 16.0
 ## Высота нижней полки над землёй. Подобрана под пол кузова: товар лежит
 ## на одном уровне с ним, и тащить его надо вбок, а не задирать вверх.
 const SHELF_BASE_HEIGHT: float = 100.0
 ## Зазор между вещью и полкой над ней.
-const SHELF_CLEARANCE: float = 20.0
+const SHELF_CLEARANCE: float = 48.0
 const SHELF_COLOR: Color = Color(0.42, 0.33, 0.24)
 
 ## Насколько резво вещь догоняет курсор. Больше — цепче хват и сильнее
@@ -55,12 +55,15 @@ const DRAG_MAX_SPEED: float = 1400.0
 const ROTATE_SPEED: float = 3.0
 ## Во сколько раз товар прочнее на погрузке. Швырнуть вазу об борт всё ещё
 ## можно, а вот уронить её с полки — уже не смертельно.
-const LOADING_TOUGHNESS: float = 2.0
+const LOADING_TOUGHNESS: float = 1.25
 ## С какой скоростью вещь выпускается из руки: остаток разгона гасим,
 ## иначе отпущенная на замахе ваза улетает через весь кузов.
 const RELEASE_MAX_SPEED: float = 260.0
-## Куда смотрит камера при погрузке: середина между кузовом и товаром.
-const LOADING_CAMERA_OFFSET: Vector2 = Vector2(320.0, -100.0)
+## Куда смотрит камера при погрузке: середина между кузовом и стеллажом.
+const LOADING_CAMERA_OFFSET: Vector2 = Vector2(360.0, -60.0)
+## Приближение камеры на погрузке и в заезде. Больше — ближе.
+const LOADING_ZOOM: float = 0.85
+const DRIVE_ZOOM: float = 0.7
 ## Насколько высоко над полом кузова вещь ещё считается погруженной.
 ## Щедро: стопка выше бортов — это перегруз, а не «мимо кузова».
 const BED_CAPACITY_HEIGHT: float = 400.0
@@ -358,9 +361,11 @@ func _update_camera(delta: float) -> void:
 	if _truck.chassis == null:
 		return
 	if _phase == Phase.LOADING:
-		# При погрузке камера стоит: в кадре и кузов, и разложенный товар.
+		# При погрузке камера стоит: в кадре и кузов, и стеллаж.
+		_camera.zoom = Vector2(LOADING_ZOOM, LOADING_ZOOM)
 		_camera.global_position = _truck.chassis.global_position + LOADING_CAMERA_OFFSET
 		return
+	_camera.zoom = Vector2(DRIVE_ZOOM, DRIVE_ZOOM)
 	var wanted := clampf(
 		_truck.chassis.linear_velocity.x * CAMERA_LOOK_FACTOR,
 		-CAMERA_LOOK_AHEAD, CAMERA_LOOK_AHEAD)
