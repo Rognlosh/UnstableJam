@@ -94,7 +94,9 @@ func build() -> void:
 		return
 
 	var cursor := Vector2.ZERO
-	if start_scene != null:
+	if start_scene == null:
+		push_warning("TrackBuilder: Start Scene не назначена — трасса начнётся сразу с препятствий.")
+	else:
 		var start_chunk := _place_chunk(start_scene, cursor, 0.0)
 		if start_chunk != null:
 			cursor += start_chunk.get_exit_position()
@@ -113,11 +115,15 @@ func build() -> void:
 		cursor += chunk.get_exit_position()
 		previous = info
 
-	if finish_scene != null:
+	if finish_scene == null:
+		push_warning("TrackBuilder: Finish Scene не назначена — финиш засечь будет некому.")
+	else:
 		var finish_chunk := _place_chunk(finish_scene, cursor, 1.0)
 		if finish_chunk != null:
 			if finish_chunk is FinishChunk:
 				(finish_chunk as FinishChunk).crossed.connect(_on_finish_crossed)
+			else:
+				push_warning("TrackBuilder: Finish Scene не является FinishChunk, сигнала о финише не будет.")
 			cursor += finish_chunk.get_exit_position()
 
 	_level_skirts()
