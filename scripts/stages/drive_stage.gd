@@ -176,10 +176,10 @@ func _add_board(left_x: float, top_y: float) -> void:
 
 ## Боковые стойки — только вид. Коллизии у них нет намеренно: они бы
 ## мешали вытаскивать вещи с крайних мест.
-func _add_posts(left_x: float, ground_y: float, top_level: int, level_height: float) -> void:
-	if top_level <= 0:
+func _add_posts(left_x: float, ground_y: float, levels: int, level_height: float) -> void:
+	if levels <= 0:
 		return
-	var height := float(top_level) * level_height + SHELF_BOARD_THICKNESS
+	var height := float(levels) * level_height + SHELF_BOARD_THICKNESS
 	for x: float in [left_x - 8.0, left_x + SHELF_WIDTH + 8.0]:
 		var post := Polygon2D.new()
 		post.polygon = _rect_polygon(Vector2(12.0, height))
