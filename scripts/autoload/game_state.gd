@@ -14,7 +14,7 @@ signal day_changed(new_day: int)
 
 ## Стартовые значения новой игры. Вынесены в константы,
 ## чтобы балансить в одном месте, а не искать по коду.
-const STARTING_MONEY: int = 100
+const STARTING_MONEY: int = 500
 const STARTING_DAY: int = 1
 
 ## Деньги игрока. Приватное поле + сеттер: любое изменение
