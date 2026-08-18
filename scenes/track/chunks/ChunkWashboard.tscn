@@ -1,9 +1,11 @@
-[gd_scene format=3 uid="uid://bf5sghqrm5j25"]
+[gd_scene format=3 uid="uid://ccoum1a8mk4oq"]
 
-[ext_resource type="Script" uid="uid://bobo37apgnokr" path="res://scripts/track/track_chunk.gd" id="1_rcj5n"]
+[ext_resource type="Script" uid="uid://172eoq4hja31" path="res://scripts/track/chunks/washboard_chunk.gd" id="1_lpy0l"]
 
-[node name="ChunkFlat" type="Node2D" unique_id=1529918792]
-script = ExtResource("1_rcj5n")
+[node name="ChunkWashboard" type="Node2D" unique_id=1529918792]
+script = ExtResource("1_lpy0l")
+difficulty = 1
+weight = 2.0
 
 [node name="Ground" type="StaticBody2D" parent="." unique_id=635120433]
 

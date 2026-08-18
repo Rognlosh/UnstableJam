@@ -86,6 +86,7 @@ func build() -> void:
 		chunk.position = cursor
 		add_child(chunk)
 		if surface_material != null:
+			chunk.apply_seed(_rng.randi())
 			var low := lerpf(height_scale_start.x, height_scale_end.x, progress)
 			var high := lerpf(height_scale_start.y, height_scale_end.y, progress)
 			chunk.apply_height_scale(_rng.randf_range(low, high))

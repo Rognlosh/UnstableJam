@@ -11,7 +11,7 @@ weight = 1.0
 
 [node name="Outline" type="CollisionPolygon2D" parent="Ground"]
 build_mode = 1
-polygon = PackedVector2Array(0, 0, 60, 0, 68, -30, 108, -17, 148, -8, 188, -2, 228, 0, 440, 0, 448, -30, 488, -17, 528, -8, 568, -2, 608, 0, 800, 0, 800, 1200, 0, 1200)
+polygon = PackedVector2Array(0, 0, 60, 0, 78, -11, 96, -22, 136, -12, 176, -6, 216, -1, 256, 0, 440, 0, 458, -11, 476, -22, 516, -12, 556, -6, 596, -1, 636, 0, 800, 0, 800, 1200, 0, 1200)
 
 [node name="Fill" type="Polygon2D" parent="Ground"]
 color = Color(0.5563933, 0.5271128, 0.49560964, 1)
