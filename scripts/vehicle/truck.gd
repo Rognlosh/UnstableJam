@@ -299,20 +299,34 @@ func set_frozen(value: bool) -> void:
 		wheel.angular_velocity = 0.0
 
 
-## Телепорт без физических артефактов — для кнопки «сброс» на стенде.
+## Телепорт без физических артефактов: рама встаёт ровно в указанную точку,
+## колёса — в своё проектное положение под пружинами.
+##
+## Двигать колёса тем же сдвигом, что и раму, нельзя. Если машина была
+## наклонена, их «прежнее место» относительно выпрямленной рамы оказывается
+## сбоку от неё: подвеска растягивается на пол-экрана, и машина разваливается.
+## Поэтому колесо ставится не «как было», а туда, где ему положено быть —
+## на длину свободной пружины ниже своего сустава.
 func teleport_to(target: Vector2) -> void:
 	if chassis == null:
 		return
-	var delta := target - chassis.global_position
 	chassis.rotation = 0.0
-	chassis.global_position += delta
+	chassis.global_position = target
 	chassis.linear_velocity = Vector2.ZERO
 	chassis.angular_velocity = 0.0
-	for wheel: RigidBody2D in _wheels:
+
+	for i in _wheels.size():
+		var wheel := _wheels[i]
 		wheel.rotation = 0.0
-		wheel.global_position += delta
+		if i < _springs.size():
+			wheel.global_position = chassis.to_global(
+				_springs[i].position + Vector2(0.0, suspension_rest_length))
 		wheel.linear_velocity = Vector2.ZERO
 		wheel.angular_velocity = 0.0
+
+	# Машина стоит и части на своих местах — единственный момент, когда
+	# пазы можно пересобрать безопасно.
+	rebuild_suspension()
 
 
 func _push_spring_params() -> void:

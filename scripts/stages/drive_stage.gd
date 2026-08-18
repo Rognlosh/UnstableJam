@@ -413,7 +413,9 @@ func _restart_run() -> void:
 		return
 	_release()
 
-	var shift := _track.get_start_position() - _truck.chassis.global_position
+	# Запоминаем положение рамы ДО телепорта: груз поедет тем же
+	# преобразованием, что и она.
+	var was := _truck.chassis.global_transform
 	# Уложенное едет с машиной как есть, выпавшее возвращается на стеллаж —
 	# осколки в том числе, иначе они остались бы валяться у старта.
 	var in_bed: Array[BreakableItem] = []
@@ -440,8 +442,12 @@ func _restart_run() -> void:
 	_track.build()
 	_truck.teleport_to(_track.get_start_position())
 
+	# Не сдвиг, а полное преобразование: если машина лежала на боку, груз
+	# обязан выпрямиться вместе с ней, иначе он окажется поперёк кузова
+	# и распихает борта изнутри.
+	var relocate := _truck.chassis.global_transform * was.affine_inverse()
 	for item: BreakableItem in in_bed:
-		item.global_position += shift
+		item.global_transform = relocate * item.global_transform
 		item.linear_velocity = Vector2.ZERO
 		item.angular_velocity = 0.0
 		item.toughness_bonus = LOADING_TOUGHNESS
