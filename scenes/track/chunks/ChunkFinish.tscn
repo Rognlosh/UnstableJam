@@ -1,0 +1,28 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://ckt5n8pwjr3qv" path="res://scripts/track/chunks/finish_chunk.gd" id="1_finish"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_zone"]
+size = Vector2(40, 700)
+
+[node name="ChunkFinish" type="Node2D"]
+script = ExtResource("1_finish")
+length = 1400.0
+difficulty = 0
+weight = 1.0
+allow_height_scale = false
+
+[node name="Ground" type="StaticBody2D" parent="."]
+
+[node name="Outline" type="CollisionPolygon2D" parent="Ground"]
+build_mode = 1
+polygon = PackedVector2Array(0, 0, 1400, 0, 1400, 1200, 0, 1200)
+
+[node name="Fill" type="Polygon2D" parent="Ground"]
+color = Color(0.5563933, 0.5271128, 0.49560964, 1)
+
+[node name="FinishZone" type="Area2D" parent="."]
+position = Vector2(300, -300)
+
+[node name="Shape" type="CollisionShape2D" parent="FinishZone"]
+shape = SubResource("RectangleShape2D_zone")

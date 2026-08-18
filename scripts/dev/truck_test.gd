@@ -42,6 +42,8 @@ func _ready() -> void:
 	clear_button.pressed.connect(_on_clear_cargo)
 	reset_button.pressed.connect(_on_reset)
 	rebuild_button.pressed.connect(_on_rebuild)
+	# Финиш теперь засекает зона на последнем куске, а не пройденный путь.
+	track.finish_reached.connect(_on_finish_reached)
 	truck.rebuild_suspension()
 
 
@@ -86,10 +88,7 @@ func _update_timer(delta: float) -> void:
 	if not _run_started and absf(truck.get_speed()) > RUN_START_SPEED:
 		_run_started = true
 	if _run_started and not _run_finished:
-		if _get_travelled() >= track.get_total_length():
-			_run_finished = true
-		else:
-			_run_time += delta
+		_run_time += delta
 
 	var minutes := floori(_run_time / 60.0)
 	var seconds := _run_time - float(minutes * 60)
@@ -150,6 +149,10 @@ func _reset_run() -> void:
 	_run_time = 0.0
 	_run_started = false
 	_run_finished = false
+
+
+func _on_finish_reached() -> void:
+	_run_finished = true
 
 
 func _on_rebuild() -> void:

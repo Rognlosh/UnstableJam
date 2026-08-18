@@ -11,6 +11,8 @@ extends Node2D
 ## будет просто подкручивать эти три числа.
 
 signal track_built(total_length: float)
+## Грузовик пересёк финишную черту.
+signal finish_reached
 
 ## Сцены-куски, из которых собирается трасса. Каждая — с корнем TrackChunk.
 @export var chunk_scenes: Array[PackedScene] = []
@@ -45,6 +47,13 @@ signal track_built(total_length: float)
 @export_range(1.0, 4.0, 0.1) var return_bias: float = 2.0
 ## Насколько глубоко под самой низкой точкой трассы лежит общее дно.
 @export var skirt_below: float = 1200.0
+
+@export_group("Служебные куски")
+## Стартовая площадка. Ставится первой вне случайной выборки: на ней
+## грузовик появляется и разгоняется, туда же вешается оформление старта.
+@export var start_scene: PackedScene
+## Финишная площадка с зоной пересечения. Ставится последней.
+@export var finish_scene: PackedScene
 
 @export_group("Прочее")
 ## Зерно генерации. Одно и то же зерно даёт одну и ту же трассу,
@@ -85,6 +94,11 @@ func build() -> void:
 		return
 
 	var cursor := Vector2.ZERO
+	if start_scene != null:
+		var start_chunk := _place_chunk(start_scene, cursor, 0.0)
+		if start_chunk != null:
+			cursor += start_chunk.get_exit_position()
+
 	var previous: ChunkInfo = null
 	# Потолок числа кусков — страховка от куска с нулевой длиной,
 	# который иначе крутил бы цикл вечно.
@@ -93,28 +107,47 @@ func build() -> void:
 		guard -= 1
 		var progress := clampf(cursor.x / target_length, 0.0, 1.0)
 		var info := _pick(pool, progress, previous, cursor.y)
-		var chunk := info.scene.instantiate() as TrackChunk
+		var chunk := _place_chunk(info.scene, cursor, progress)
 		if chunk == null:
-			push_warning("TrackBuilder: в chunk_scenes есть сцена, корень которой не TrackChunk.")
 			break
-		chunk.position = cursor
-		add_child(chunk)
-		# Порядок важен: сначала кусок строит профиль по зерну, потом профиль
-		# растягивается по высоте, и только после этого курсор снимает точку
-		# выхода — иначе стык уедет на растянутую величину.
-		chunk.apply_seed(_rng.randi())
-		var low := lerpf(height_scale_start.x, height_scale_end.x, progress)
-		var high := lerpf(height_scale_start.y, height_scale_end.y, progress)
-		chunk.apply_height_scale(_rng.randf_range(low, high))
-		if surface_material != null:
-			chunk.apply_physics_material(surface_material)
-		_chunks.append(chunk)
 		cursor += chunk.get_exit_position()
 		previous = info
+
+	if finish_scene != null:
+		var finish_chunk := _place_chunk(finish_scene, cursor, 1.0)
+		if finish_chunk != null:
+			if finish_chunk is FinishChunk:
+				(finish_chunk as FinishChunk).crossed.connect(_on_finish_crossed)
+			cursor += finish_chunk.get_exit_position()
 
 	_level_skirts()
 	_end_point = cursor
 	track_built.emit(cursor.x)
+
+
+## Ставит кусок в указанную точку и приводит его в рабочий вид.
+## Порядок важен: сначала кусок строит профиль по зерну, потом профиль
+## растягивается по высоте, и только после этого вызывающий снимает точку
+## выхода — иначе стык уедет на растянутую величину.
+func _place_chunk(scene: PackedScene, at: Vector2, progress: float) -> TrackChunk:
+	var chunk := scene.instantiate() as TrackChunk
+	if chunk == null:
+		push_warning("TrackBuilder: сцена %s не является TrackChunk." % scene.resource_path)
+		return null
+	chunk.position = at
+	add_child(chunk)
+	chunk.apply_seed(_rng.randi())
+	var low := lerpf(height_scale_start.x, height_scale_end.x, progress)
+	var high := lerpf(height_scale_start.y, height_scale_end.y, progress)
+	chunk.apply_height_scale(_rng.randf_range(low, high))
+	if surface_material != null:
+		chunk.apply_physics_material(surface_material)
+	_chunks.append(chunk)
+	return chunk
+
+
+func _on_finish_crossed() -> void:
+	finish_reached.emit()
 
 
 ## Глобальная точка, куда ставить грузовик перед стартом.
