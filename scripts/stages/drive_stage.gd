@@ -17,6 +17,8 @@ const CAMERA_LOOK_AHEAD: float = 240.0
 const CAMERA_LOOK_FACTOR: float = 0.35
 ## Подъём камеры над рамой: смотреть интереснее на дорогу, а не на кабину.
 const CAMERA_LIFT: float = -80.0
+## Скорость, с которой вынос камеры догоняет своё расчётное значение.
+const CAMERA_LOOK_SMOOTH: float = 3.0
 
 @onready var _track: TrackBuilder = $Track
 @onready var _truck: Truck = $Truck
@@ -28,6 +30,9 @@ const CAMERA_LIFT: float = -80.0
 @onready var _to_shop_button: Button = $HUD/FinishPanel/VBoxContainer/ToShopButton
 
 var _is_finished: bool = false
+## Текущий вынос камеры вперёд. Держим отдельно, чтобы сглаживать его
+## самим, а не гонять камеру за шумом мгновенной скорости.
+var _look_ahead: float = 0.0
 
 
 func _ready() -> void:
@@ -38,8 +43,15 @@ func _ready() -> void:
 	_place_truck()
 
 
+## Камера обновляется в физическом такте, а не в кадровом. Тела двигаются
+## ровно раз в физкадр, и если вести камеру по кадрам, машина каждый кадр
+## оказывается в чуть другом месте относительно неё — картинка расслаивается,
+## особенно на контрастных деталях вроде кабины.
+func _physics_process(delta: float) -> void:
+	_update_camera(delta)
+
+
 func _process(_delta: float) -> void:
-	_update_camera()
 	_update_status()
 
 
@@ -53,18 +65,21 @@ func _build_track() -> void:
 ## поэтому телепорт не даёт рывка.
 func _place_truck() -> void:
 	_truck.teleport_to(_track.get_start_position())
-	_update_camera()
-	# Сглаживание камеры хорошо в движении и мешает на старте: без сброса
-	# первый кадр камера едет из начала координат к грузовику.
-	_camera.reset_smoothing()
+	_look_ahead = 0.0
+	_update_camera(1.0)
 
 
-func _update_camera() -> void:
+func _update_camera(delta: float) -> void:
 	if _truck.chassis == null:
 		return
+	var wanted := clampf(
+		_truck.chassis.linear_velocity.x * CAMERA_LOOK_FACTOR,
+		-CAMERA_LOOK_AHEAD, CAMERA_LOOK_AHEAD)
+	# На кочках мгновенная скорость скачет каждый физкадр. Без сглаживания
+	# вынос дёргался бы вслед за этим шумом сильнее, чем едет сама машина.
+	_look_ahead = lerpf(_look_ahead, wanted, clampf(delta * CAMERA_LOOK_SMOOTH, 0.0, 1.0))
 	var target := _truck.chassis.global_position
-	var look_ahead := _truck.chassis.linear_velocity.x * CAMERA_LOOK_FACTOR
-	target.x += clampf(look_ahead, -CAMERA_LOOK_AHEAD, CAMERA_LOOK_AHEAD)
+	target.x += _look_ahead
 	target.y += CAMERA_LIFT
 	_camera.global_position = target
 

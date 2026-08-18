@@ -17,19 +17,24 @@ extends TrackChunk
 ## Длина дна промоины.
 @export var pit_length_range: Vector2 = Vector2(850.0, 1400.0)
 ## Глубина промоины. Мелкая не удержит камни, глубокая станет ловушкой.
-@export var pit_depth_range: Vector2 = Vector2(48.0, 74.0)
+## Глубина заодно задаёт вместимость: чем глубже корыто, тем больше
+## ярусов гальки в него влезает, не поднимаясь выше краёв.
+@export var pit_depth_range: Vector2 = Vector2(64.0, 96.0)
 ## Длина въездного и выездного скоса. При глубине под семь десятков
 ## короткий скос читается как обрыв, поэтому он втрое длиннее самой ямы
 ## по вертикали — выходит около 15 градусов.
 @export var slope_length: float = 240.0
-## Сколько пикселей длины корыта приходится на один камень. Количество
-## считается отсюда, а не бросается отдельно: иначе длинной промоине может
-## достаться горстка камней и сквозь насыпь проглядывает дно.
-@export var gravel_spacing: float = 11.0
+## Шаг сетки укладки в радиусах самого крупного камня. Меньше — плотнее
+## насыпь и выше риск, что камни родятся друг в друге; больше — сквозь
+## гальку проглядывает дно.
+@export_range(1.6, 3.0, 0.1) var gravel_packing: float = 2.0
+## Потолок числа ярусов. Держит бюджет тел на длинных промоинах.
+@export_range(1, 6) var gravel_max_rows: int = 3
 ## Потолок числа камней — страховка бюджета тел в вебе.
 @export var gravel_count_limit: int = 130
-## Радиус камня: (минимум, максимум).
-@export var gravel_radius_range: Vector2 = Vector2(10.0, 18.0)
+## Радиус камня: (минимум, максимум). Камень должен быть заметно мельче
+## колеса (радиус 28 px), иначе колесо не вкатывается на насыпь, а бодает её.
+@export var gravel_radius_range: Vector2 = Vector2(7.0, 13.0)
 ## Масса камня. Тяжёлые не разгребаются, лёгкие разлетаются от колеса.
 @export var gravel_mass: float = 1.4
 @export var gravel_color: Color = Color(0.46, 0.44, 0.41)
@@ -132,16 +137,17 @@ func _set_gravel_frozen(frozen: bool) -> void:
 
 func _spawn_gravel(rng: RandomNumberGenerator) -> void:
 	var span := _pit_end - _pit_start
-	var count := mini(
-		int(span / maxf(gravel_spacing, 1.0) * rng.randf_range(0.9, 1.1)),
-		gravel_count_limit)
-	# Раскладываем по сетке с разбросом, а не наугад: при сотне крупных камней
+	# Раскладываем по сетке с разбросом, а не наугад: при сотне камней
 	# случайные позиции неизбежно рождают их друг в друге, и физика расталкивает
 	# такую кучу взрывом. Сетка гарантирует зазор, а джиттер убирает регулярность —
 	# осядут камни всё равно вразнобой.
-	var cell := gravel_radius_range.y * 2.3
+	var cell := gravel_radius_range.y * gravel_packing
 	var columns := maxi(int(span / cell), 1)
-	var rows := int(ceil(float(count) / float(columns)))
+	# Число ярусов диктует ГЛУБИНА корыта, а не его длина. Считать камни
+	# от длины нельзя: лишние уходят наверх, насыпь поднимается выше краёв
+	# ямы и превращается из вязкой крошки в стену, в которую машина упирается.
+	var rows := clampi(int(_pit_depth / cell), 1, gravel_max_rows)
+	var count := mini(columns * rows, gravel_count_limit)
 	for i in count:
 		var radius := rng.randf_range(gravel_radius_range.x, gravel_radius_range.y)
 		var column := i % columns
