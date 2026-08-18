@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://c8xmr3qtn5wvd" path="res://scripts/track/chunks/bridge_chunk.gd" id="1_bridge"]
+
+[node name="ChunkBridge" type="Node2D"]
+script = ExtResource("1_bridge")
+difficulty = 2
+weight = 1.2
+allow_height_scale = false
+
+[node name="Ground" type="StaticBody2D" parent="."]
+
+[node name="Outline" type="CollisionPolygon2D" parent="Ground"]
+build_mode = 1
+
+[node name="Fill" type="Polygon2D" parent="Ground"]
+color = Color(0.5563933, 0.5271128, 0.49560964, 1)
