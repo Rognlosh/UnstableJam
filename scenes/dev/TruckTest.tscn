@@ -10,6 +10,9 @@
 [ext_resource type="PackedScene" uid="uid://ccoum1a8mk4oq" path="res://scenes/track/chunks/ChunkWashboard.tscn" id="7_fgc6s"]
 [ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkStepUp.tscn" id="8_cwj0m"]
 [ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkStepDown.tscn" id="9_v63mx"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkHills.tscn" id="10_oanho"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkHillsDown.tscn" id="11_vpfeb"]
+[ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkHillsUp.tscn" id="12_twsdo"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_g4v7s"]
 
@@ -36,7 +39,7 @@ rebuild_button = NodePath("UILayer/Panel/VBoxContainer/RebuildButton")
 [node name="Track" type="Node2D" parent="." unique_id=145088704]
 position = Vector2(0, 320)
 script = ExtResource("2_06aad")
-chunk_scenes = Array[PackedScene]([ExtResource("3_s1ovy"), ExtResource("4_en3go"), ExtResource("5_fgc6s"), ExtResource("6_3b4md"), ExtResource("7_fgc6s"), ExtResource("8_cwj0m"), ExtResource("9_v63mx")])
+chunk_scenes = Array[PackedScene]([ExtResource("3_s1ovy"), ExtResource("4_en3go"), ExtResource("5_fgc6s"), ExtResource("6_3b4md"), ExtResource("7_fgc6s"), ExtResource("8_cwj0m"), ExtResource("9_v63mx"), ExtResource("10_oanho"), ExtResource("11_vpfeb"), ExtResource("12_twsdo")])
 surface_material = SubResource("PhysicsMaterial_g4v7s")
 
 [node name="CargoRoot" type="Node2D" parent="." unique_id=1164026672]
