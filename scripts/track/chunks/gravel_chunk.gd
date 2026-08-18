@@ -6,11 +6,11 @@ extends TrackChunk
 ## их разгребает, машина теряет ход и вязнет. Борта корыта держат крошку
 ## на месте, иначе первый же удар растащил бы её по всей трассе.
 ##
-## Камни живут только пока кусок на экране. Полсотни тел в каждой промоине,
-## помноженные на три-четыре промоины и сложенные с осколками разбитого
-## груза, вышли бы за бюджет веб-сборки; VisibleOnScreenNotifier2D снимает
-## вопрос почти бесплатно. Ехать назад игроку незачем, так что убранные
-## камни возвращать не нужно — при повторном входе насыпаются новые.
+## Камни насыпаются один раз, когда кусок впервые приближается к кадру,
+## и больше не пересоздаются. Пока промоина за экраном, тела заморожены:
+## это снимает дорогую часть — симуляцию физики, — а сами камни остаются
+## лежать где лежали. Удалять и насыпать заново нельзя: стоит игроку
+## отъехать и вернуться, как новая насыпь материализуется прямо в машине.
 
 ## Ровные площадки по краям — стыковочные хвосты.
 @export var flat_margin: float = 40.0
@@ -97,32 +97,37 @@ func _generate(rng: RandomNumberGenerator) -> void:
 
 func _setup_notifier() -> void:
 	var notifier := VisibleOnScreenNotifier2D.new()
-	# Рамку берём с запасом по высоте: камни должны насыпаться до того,
-	# как промоина въедет в кадр, иначе игрок увидит их падение.
+	# Рамка накрывает весь кусок с большим запасом: камни должны насыпаться
+	# и улечься задолго до того, как промоина въедет в кадр, а размораживаться
+	# раньше, чем до них доберётся колесо.
 	notifier.rect = Rect2(
-		_pit_start - 260.0, _pit_depth - 600.0,
-		(_pit_end - _pit_start) + 520.0, 1000.0)
+		-600.0, _pit_depth - 800.0,
+		length + 1200.0, 1400.0)
 	add_child(notifier)
 	notifier.screen_entered.connect(_on_screen_entered)
 	notifier.screen_exited.connect(_on_screen_exited)
 
 
 func _on_screen_entered() -> void:
-	if _gravel_spawned:
+	if not _gravel_spawned:
+		_gravel_spawned = true
+		var rng := RandomNumberGenerator.new()
+		rng.seed = _gravel_seed
+		_spawn_gravel(rng)
 		return
-	_gravel_spawned = true
-	var rng := RandomNumberGenerator.new()
-	rng.seed = _gravel_seed
-	_spawn_gravel(rng)
+	_set_gravel_frozen(false)
 
 
 func _on_screen_exited() -> void:
-	if not _gravel_spawned:
-		return
-	_gravel_spawned = false
+	_set_gravel_frozen(true)
+
+
+## Заморозка вместо удаления. Тело в freeze не считается физикой, но остаётся
+## на месте — вернувшись, игрок увидит ту же насыпь, которую разгрёб.
+func _set_gravel_frozen(frozen: bool) -> void:
 	for child in get_children():
 		if child is RigidBody2D:
-			child.queue_free()
+			child.freeze = frozen
 
 
 func _spawn_gravel(rng: RandomNumberGenerator) -> void:
