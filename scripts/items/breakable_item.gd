@@ -108,6 +108,21 @@ func drive_velocity(velocity: Vector2) -> void:
 	_prev_velocity = velocity
 
 
+## Какую долю цены предмета несёт это тело: целое — всю, осколок — свою.
+##
+## Именно по этим долям считается выручка за заезд: ваза, потерявшая одно
+## донце, доезжает не «разбитой», а на 0.8 своей цены.
+func value_ratio() -> float:
+	if level == 0:
+		return 1.0
+	if data == null:
+		return 0.0
+	for piece: ItemPieceData in data.pieces:
+		if piece.piece_id == piece_id:
+			return piece.value_share * data.piece_value_factor
+	return 0.0
+
+
 ## Доля площади куска от площади целого предмета — из неё считается масса.
 func area_ratio() -> float:
 	if level == 0:

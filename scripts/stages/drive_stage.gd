@@ -71,6 +71,11 @@ const TRANSITION_TIME: float = 0.8
 const GHOST_ALPHA: float = 0.3
 ## Слой, на который они уходят: за всё остальное.
 const GHOST_Z: int = -10
+
+## Запас вокруг видимой области, в пределах которого выпавший на финише
+## товар всё ещё считается доехавшим: докатившееся до финиша вместе с машиной
+## разумно считать привезённым, а не потерянным.
+const RECOVERY_MARGIN: float = 1.0
 ## Насколько высоко над полом кузова вещь ещё считается погруженной.
 ## Щедро: стопка выше бортов — это перегруз, а не «мимо кузова».
 const BED_CAPACITY_HEIGHT: float = 400.0
@@ -469,16 +474,77 @@ func _on_finish_reached() -> void:
 	if _phase != Phase.DRIVING:
 		return
 	_phase = Phase.FINISHED
-	_result_label.text = "ФИНИШ\nПодсчёт груза появится следующим шагом."
+	# Руль отбираем сразу: иначе машина уедет за кадр, пока читают итог.
+	_truck.controls_enabled = false
+	GameState.run_result = _collect_result()
+	_result_label.text = "ФИНИШ\nДоехало целыми: %d\nПовреждено: %d\nПотеряно: %d" % [
+		GameState.run_result["delivered"],
+		GameState.run_result["damaged"],
+		GameState.run_result["lost"],
+	]
 	_finish_panel.show()
 
 
-func _on_to_shop_pressed() -> void:
-	# Формат результата заезда пока прежний — его переберём вместе
-	# с подсчётом довезённой ценности.
-	GameState.run_result = {
-		"delivered": 0,
-		"broken": 0,
-		"lost": 0,
+## Итог заезда: сколько ценности доехало.
+##
+## Считаем по тому, что реально приехало, а не по журналу потерь: обходим
+## живые тела и складываем их доли цены в копилку своего предмета. Целое
+## тело даёт единицу, осколок — свою долю со скидкой. Чего не хватило —
+## то и потеряно, отдельно это отслеживать не нужно.
+func _collect_result() -> Dictionary:
+	var ratios: Dictionary = {}
+	for node in _cargo_root.get_children():
+		var item := node as BreakableItem
+		if item == null or not _loaded.has(item.instance_id):
+			continue
+		if not _is_recovered(item):
+			continue
+		var current: float = ratios.get(item.instance_id, 0.0)
+		ratios[item.instance_id] = current + item.value_ratio()
+
+	var items: Array = []
+	var delivered := 0
+	var damaged := 0
+	var lost := 0
+	var total_ratio := 0.0
+	for instance_id: int in _loaded:
+		var ratio: float = clampf(ratios.get(instance_id, 0.0), 0.0, 1.0)
+		total_ratio += ratio
+		var state := &"lost"
+		if is_equal_approx(ratio, 1.0):
+			state = &"delivered"
+			delivered += 1
+		elif ratio > 0.0:
+			state = &"damaged"
+			damaged += 1
+		else:
+			lost += 1
+		items.append({
+			"id": _loaded[instance_id],
+			"ratio": ratio,
+			"state": state,
+		})
+
+	return {
+		"items": items,
+		"delivered": delivered,
+		"damaged": damaged,
+		"lost": lost,
+		"total": _loaded.size(),
+		"value_ratio": total_ratio,
 	}
+
+
+## Доехавшим считается то, что лежит в кузове или хотя бы осталось в кадре
+## вместе с машиной: вазу, вывалившуюся у самого финиша, честнее подобрать,
+## чем списать.
+func _is_recovered(item: BreakableItem) -> bool:
+	if _is_in_bed(item):
+		return true
+	var half := get_viewport_rect().size * 0.5 / _camera.zoom * RECOVERY_MARGIN
+	var offset := item.global_position - _camera.global_position
+	return absf(offset.x) <= half.x and absf(offset.y) <= half.y
+
+
+func _on_to_shop_pressed() -> void:
 	StageManager.instance.change_stage(StageManager.Stage.SELL)

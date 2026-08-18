@@ -14,6 +14,12 @@ extends Resource
 ## Во сколько раз осколок прочнее целого предмета.
 @export var piece_toughness: float = 1.6
 
+## Во сколько раз осколок дешевле своей доли цены. Доли всех кусков в сумме
+## дают единицу, поэтому 0.8 означает: собрал все черепки — получил 80%
+## цены целой вещи. Разбить товар должно быть больно, даже если ни один
+## кусок не потерялся.
+@export_range(0.0, 1.0, 0.05) var piece_value_factor: float = 0.8
+
 @export var whole_polygon: PackedVector2Array = PackedVector2Array()
 @export var pieces: Array[ItemPieceData] = []
 

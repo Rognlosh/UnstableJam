@@ -1,10 +1,5 @@
-## Стадия продажи — ЗАГЛУШКА этапа 0.
-## Читает GameState.run_result, начисляет выручку, закрывает день.
+## Стадия продажи: превращает итог заезда в деньги и закрывает день.
 extends Control
-
-## Цена продажи одного доехавшего предмета-заглушки.
-## Выше закупочной (20) — иначе игра математически непроходима.
-const DUMMY_ITEM_PRICE: int = 50
 
 @onready var _info_label: Label = $VBoxContainer/InfoLabel
 @onready var _next_day_button: Button = $VBoxContainer/NextDayButton
@@ -15,22 +10,29 @@ func _ready() -> void:
 	_sell_cargo()
 
 
-## Продаём то, что доехало, и показываем итог дня.
+## Выручка считается по долям доехавшей ценности, а не по числу ящиков:
+## ваза без одного донца стоит дешевле целой, но дороже нуля.
 func _sell_cargo() -> void:
 	# get() со значением по умолчанию — на случай, если стадию открыли
 	# в обход перевозки (например, запустив сцену напрямую из редактора).
-	var delivered: int = GameState.run_result.get("delivered", 0)
-	var broken: int = GameState.run_result.get("broken", 0)
-
-	var revenue: int = delivered * DUMMY_ITEM_PRICE
+	var items: Array = GameState.run_result.get("items", [])
+	var revenue := 0
+	for entry: Dictionary in items:
+		var data := ItemCatalog.get_by_id(entry.get("id", &""))
+		if data == null:
+			continue
+		var ratio: float = entry.get("ratio", 0.0)
+		revenue += int(round(float(data.base_price) * ratio))
 	GameState.earn_money(revenue)
 
-	_info_label.text = "ПРОДАЖА — итог дня %d\nДоехало: %d\nРазбито: %d\nВыручка: %d\nВсего денег: %d" % [
+	_info_label.text = "ПРОДАЖА — итог дня %d\nДоехало целыми: %d\nПовреждено: %d\nПотеряно: %d\nВыручка: %d\nВсего денег: %d\nНа складе: %d шт." % [
 		GameState.get_day(),
-		delivered,
-		broken,
+		GameState.run_result.get("delivered", 0),
+		GameState.run_result.get("damaged", 0),
+		GameState.run_result.get("lost", 0),
 		revenue,
 		GameState.get_money(),
+		GameState.cargo_actual.size(),
 	]
 
 

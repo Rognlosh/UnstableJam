@@ -34,7 +34,9 @@ var _day: int = STARTING_DAY
 var cargo_actual: Array[StringName] = []
 
 ## Результат последнего заезда, который заполняет стадия перевозки
-## и читает стадия продажи. Ключи: "delivered", "broken", "lost" (int).
+## и читает стадия продажи. Ключи: "items" (список записей о каждом
+## погруженном предмете с долей доехавшей ценности), "delivered",
+## "damaged", "lost", "total" (int) и "value_ratio" (float).
 ## Dictionary, а не отдельный класс — на каркасе структура ещё поплывёт.
 var run_result: Dictionary = {}
 
