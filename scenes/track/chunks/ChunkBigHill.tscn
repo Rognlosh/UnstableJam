@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://dhk3mqpv8rn2c" path="res://scripts/track/chunks/hills_chunk.gd" id="1_hills"]
+
+[node name="ChunkBigHill" type="Node2D"]
+script = ExtResource("1_hills")
+difficulty = 2
+weight = 1.0
+hill_count_range = Vector2i(1, 1)
+hill_width_range = Vector2(2400, 4200)
+slope_range = Vector2(0.45, 0.7)
+gentle_bias = 1.4
+samples_per_hill = 72
+skirt_depth = 1600.0
+
+[node name="Ground" type="StaticBody2D" parent="."]
+
+[node name="Outline" type="CollisionPolygon2D" parent="Ground"]
+build_mode = 1
+
+[node name="Fill" type="Polygon2D" parent="Ground"]
+color = Color(0.5563933, 0.5271128, 0.49560964, 1)
