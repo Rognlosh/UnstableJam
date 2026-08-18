@@ -40,7 +40,7 @@ func _refresh() -> void:
 
 func _on_buy_pressed() -> void:
 	if GameState.spend_money(DUMMY_ITEM_COST):
-		GameState.cargo_actual.append("Ваза-заглушка")
+		GameState.cargo_actual.append(&"vase")
 		_refresh()
 
 

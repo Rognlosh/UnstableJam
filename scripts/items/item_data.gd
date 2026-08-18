@@ -19,3 +19,22 @@ extends Resource
 
 @export var color: Color = Color(0.72, 0.66, 0.5)
 @export var physics_material: PhysicsMaterial
+
+
+## Габариты целого предмета в его собственных координатах.
+## Нужны укладке груза: предметы разного размера нельзя раскладывать
+## постоянным шагом, отступ считается от фактической ширины и высоты.
+func get_bounds() -> Rect2:
+	if whole_polygon.is_empty():
+		return Rect2()
+	# Rect2 стартует нулевым прямоугольником в первой точке,
+	# expand() растягивает его до каждой следующей.
+	var rect := Rect2(whole_polygon[0], Vector2.ZERO)
+	for i in range(1, whole_polygon.size()):
+		rect = rect.expand(whole_polygon[i])
+	return rect
+
+
+## Ширина и высота силуэта — короткая запись для укладки.
+func get_size() -> Vector2:
+	return get_bounds().size

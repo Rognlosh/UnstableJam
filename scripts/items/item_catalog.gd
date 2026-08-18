@@ -7,6 +7,44 @@ extends RefCounted
 ## на четыре куска. Куски стыкуются без зазоров, поэтому из них можно
 ## собрать исходный силуэт обратно.
 
+## Каталог, собранный один раз за сессию: id → готовый ItemData.
+## Кэш нужен не ради скорости, а ради одинаковости: без него каждая
+## погруженная ваза получала бы собственную копию ItemData вместе
+## с собственным PhysicsMaterial.
+## static var — переменная класса, а не экземпляра (аналог static field в C#).
+static var _cache: Dictionary = {}
+
+
+## Единственная точка, через которую груз резолвится из идентификатора.
+## Всё, что знает про предметы только по id (GameState, стадия перевозки),
+## ходит сюда. Когда каталог переедет в .tres, поменяется только тело _build().
+static func get_by_id(id: StringName) -> ItemData:
+	if _cache.has(id):
+		return _cache[id]
+	var data := _build(id)
+	if data != null:
+		_cache[id] = data
+	return data
+
+
+## Идентификаторы всего, что вообще существует. Пригодится экрану закупа.
+static func all_ids() -> Array[StringName]:
+	# Литерал приводится к типизированному массиву через переменную:
+	# в return нетипизированный [] к Array[StringName] сам не сводится.
+	var ids: Array[StringName] = [&"vase"]
+	return ids
+
+
+## Сборка предмета по идентификатору. match — аналог switch в C#,
+## но без проваливания между ветками.
+static func _build(id: StringName) -> ItemData:
+	match id:
+		&"vase":
+			return vase()
+	push_warning("ItemCatalog: неизвестный предмет %s" % id)
+	return null
+
+
 static func vase() -> ItemData:
 	var data := ItemData.new()
 	data.id = &"vase"
