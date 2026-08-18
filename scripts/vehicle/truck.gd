@@ -319,14 +319,18 @@ func teleport_to(target: Vector2) -> void:
 		var wheel := _wheels[i]
 		wheel.rotation = 0.0
 		if i < _springs.size():
-			wheel.global_position = chassis.to_global(
-				_springs[i].position + Vector2(0.0, suspension_rest_length))
+			# Считаем от целевой точки, а не через chassis.to_global():
+			# позицию рамы мы задали свойством прямо сейчас, а физический
+			# сервер применит её только на следующем шаге, и чтение вернуло бы
+			# место, где машина была до телепорта.
+			wheel.global_position = target + _springs[i].position \
+				+ Vector2(0.0, suspension_rest_length)
 		wheel.linear_velocity = Vector2.ZERO
 		wheel.angular_velocity = 0.0
-
-	# Машина стоит и части на своих местах — единственный момент, когда
-	# пазы можно пересобрать безопасно.
-	rebuild_suspension()
+	# Пазы здесь НЕ пересобираем. rebuild_suspension() заставляет суставы
+	# заново считать якоря по положению тел в физическом сервере, а оно
+	# в этом кадре ещё старое: якоря встанут по воздуху, машина развалится
+	# на месте и выстрелит вверх, когда пружина разожмётся.
 
 
 func _push_spring_params() -> void:
