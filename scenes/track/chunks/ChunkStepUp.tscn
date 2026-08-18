@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" uid="uid://bf5sghqrm5j25" path="res://scripts/track/track_chunk.gd" id="1_chunk"]
+[ext_resource type="Script" uid="uid://bobo37apgnokr" path="res://scripts/track/track_chunk.gd" id="1_chunk"]
 
 [node name="ChunkStepUp" type="Node2D"]
 script = ExtResource("1_chunk")

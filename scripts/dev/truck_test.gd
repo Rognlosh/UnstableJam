@@ -91,7 +91,7 @@ func _update_timer(delta: float) -> void:
 		else:
 			_run_time += delta
 
-	var minutes := int(_run_time) / 60
+	var minutes := floori(_run_time / 60.0)
 	var seconds := _run_time - float(minutes * 60)
 	var text := "%d:%04.1f" % [minutes, seconds]
 	if _run_finished:

@@ -65,11 +65,11 @@ func get_exit_position() -> Vector2:
 
 ## Трение и упругость дороги задаёт сборщик — одним значением на всю трассу,
 ## чтобы «скользкий дождь» позже менялся в одном месте, а не в двадцати сценах.
-func apply_physics_material(material: PhysicsMaterial) -> void:
+func apply_physics_material(surface: PhysicsMaterial) -> void:
 	if _body == null:
 		_collect_nodes()
 	if _body != null:
-		_body.physics_material_override = material
+		_body.physics_material_override = surface
 		
 
 ## Растягивает профиль по вертикали. Зовёт сборщик, уже добавив кусок
