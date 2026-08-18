@@ -90,6 +90,7 @@ const BED_CAPACITY_HEIGHT: float = 400.0
 @onready var _to_shop_button: Button = $HUD/FinishPanel/VBoxContainer/ToShopButton
 @onready var _start_panel: PanelContainer = $HUD/StartPanel
 @onready var _start_button: Button = $HUD/StartPanel/VBoxContainer/StartButton
+@onready var _restart_button: HoldButton = $HUD/RestartButton
 
 var _phase: Phase = Phase.LOADING
 ## Текущий вынос камеры вперёд. Держим отдельно, чтобы сглаживать его
@@ -116,11 +117,17 @@ var _grab_offset: Vector2 = Vector2.ZERO
 ## и приближения идёт одним плавным движением.
 var _camera_blend: float = 0.0
 
+## Погасшие декорации прошлой погрузки. Держим список, чтобы снести их
+## при сбросе: машина возвращается ровно туда, где они лежат.
+var _ghosts: Array[Node2D] = []
+
 
 func _ready() -> void:
 	_finish_panel.hide()
 	_to_shop_button.pressed.connect(_on_to_shop_pressed)
 	_start_button.pressed.connect(_start_run)
+	_restart_button.hold_completed.connect(_restart_run)
+	_restart_button.hide()
 	_track.finish_reached.connect(_on_finish_reached)
 	_build_track()
 	_place_truck()
@@ -315,6 +322,7 @@ func _update_drag() -> void:
 func _enter_loading() -> void:
 	_phase = Phase.LOADING
 	_camera_blend = 0.0
+	_restart_button.hide()
 	_truck.controls_enabled = false
 	_truck.set_frozen(true)
 	_finish_panel.hide()
@@ -357,13 +365,60 @@ func _start_run() -> void:
 	_phase = Phase.DRIVING
 	_truck.set_frozen(false)
 	_truck.controls_enabled = true
+	_truck.auto_brake = false
 	_start_panel.hide()
+	_restart_button.show()
+
+
+## Сброс заезда: машина и всё, что осталось при ней, возвращаются на старт,
+## и снова открывается погрузка.
+##
+## Груз не пересоздаётся, а переносится вместе с машиной тем же сдвигом:
+## уложенное остаётся уложенным, а осколки не приходится собирать заново
+## из каталога. Что не попало в кадр — то отстало и списывается.
+func _restart_run() -> void:
+	if _phase != Phase.DRIVING:
+		return
+	_release()
+
+	var shift := _track.get_start_position() - _truck.chassis.global_position
+	var survivors: Array[BreakableItem] = []
+	for node in _cargo_root.get_children():
+		var item := node as BreakableItem
+		if item == null:
+			continue
+		if _is_recovered(item):
+			survivors.append(item)
+		else:
+			item.queue_free()
+
+	# Декорации прошлой погрузки лежат ровно там, куда мы возвращаемся.
+	for ghost: Node2D in _ghosts:
+		if is_instance_valid(ghost):
+			ghost.queue_free()
+	_ghosts.clear()
+
+	# Зерно то же, поэтому дорога та же — но разгребённая галька
+	# и раскиданные препятствия встают на место.
+	_track.build()
+	_truck.teleport_to(_track.get_start_position())
+
+	for item: BreakableItem in survivors:
+		item.global_position += shift
+		item.linear_velocity = Vector2.ZERO
+		item.angular_velocity = 0.0
+		item.toughness_bonus = LOADING_TOUGHNESS
+
+	# Склад снова под рукой: непогруженное можно доложить.
+	_unload_to_shelf()
+	_enter_loading()
 
 
 ## Стеллаж и брошенный товар не исчезают в момент старта — это читалось бы
 ## как сбой. Вместо этого они гаснут, уходят на дальний слой и остаются
 ## декорацией, сквозь которую машина спокойно проезжает.
 func _make_ghost(node: Node2D) -> void:
+	_ghosts.append(node)
 	node.z_index = GHOST_Z
 	_disable_collisions(node)
 	var tween := create_tween()
@@ -474,8 +529,11 @@ func _on_finish_reached() -> void:
 	if _phase != Phase.DRIVING:
 		return
 	_phase = Phase.FINISHED
-	# Руль отбираем сразу: иначе машина уедет за кадр, пока читают итог.
+	# Руль отбираем сразу, и машина сама гасит ход: накатом она уехала бы
+	# за кадр, пока игрок читает итог.
 	_truck.controls_enabled = false
+	_truck.auto_brake = true
+	_restart_button.hide()
 	GameState.run_result = _collect_result()
 	_result_label.text = "ФИНИШ\nДоехало целыми: %d\nПовреждено: %d\nПотеряно: %d" % [
 		GameState.run_result["delivered"],

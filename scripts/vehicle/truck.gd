@@ -89,6 +89,15 @@ const REBOUND_SLACK: float = 4.0
 ## машина обязана стоять, пока игрок укладывает груз.
 var controls_enabled: bool = true
 
+## Машина сама гасит ход. Нужно финишу: отобрать руль мало, накатом
+## грузовик уедет за кадр, пока игрок читает итог.
+var auto_brake: bool = false
+
+## Шаг гашения скорости за физкадр. Мягкий: резкая остановка швырнула бы
+## груз в передний борт уже после того, как он честно доехал.
+const BRAKE_LINEAR_STEP: float = 14.0
+const BRAKE_SPIN_STEP: float = 0.6
+
 var chassis: RigidBody2D
 var _wheels: Array[RigidBody2D] = []
 var _springs: Array[DampedSpringJoint2D] = []
@@ -102,7 +111,12 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	if chassis == null or not controls_enabled:
+	if chassis == null:
+		return
+	if auto_brake:
+		_brake_to_stop()
+		return
+	if not controls_enabled:
 		return
 	# get_axis(отрицательное_действие, положительное_действие) → -1..1.
 	# W даёт +1, S даёт -1; A даёт -1, D даёт +1.
@@ -125,6 +139,18 @@ func _drive(throttle: float) -> void:
 		# Газ против текущего вращения — это торможение, оно резче тяги.
 		var is_braking := spin * throttle < 0.0
 		wheel.apply_torque(throttle * (brake_torque if is_braking else motor_torque))
+
+
+## Плавная остановка: скорость и вращение сводим к нулю шагами, а не
+## обнулением. Груз в кузове воспринимает это как обычное торможение.
+func _brake_to_stop() -> void:
+	chassis.linear_velocity = chassis.linear_velocity.move_toward(
+		Vector2.ZERO, BRAKE_LINEAR_STEP)
+	chassis.angular_velocity = move_toward(chassis.angular_velocity, 0.0, 0.1)
+	for wheel: RigidBody2D in _wheels:
+		wheel.angular_velocity = move_toward(wheel.angular_velocity, 0.0, BRAKE_SPIN_STEP)
+		wheel.linear_velocity = wheel.linear_velocity.move_toward(
+			Vector2.ZERO, BRAKE_LINEAR_STEP)
 
 
 ## Ищем части грузовика по типу, а не по именам: узлы в сцене можно

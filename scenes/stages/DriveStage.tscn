@@ -1,6 +1,7 @@
-[gd_scene load_steps=22 format=3 uid="uid://inxn12u2rauc"]
+[gd_scene load_steps=23 format=3 uid="uid://inxn12u2rauc"]
 
 [ext_resource type="Script" uid="uid://csgvmryxm7t2q" path="res://scripts/stages/drive_stage.gd" id="1_stage"]
+[ext_resource type="Script" path="res://scripts/ui/hold_button.gd" id="20_hold"]
 [ext_resource type="Script" uid="uid://bo1cb4oy5yl4o" path="res://scripts/track/track_builder.gd" id="2_track"]
 [ext_resource type="PackedScene" uid="uid://xqnjgajvj31k" path="res://scenes/vehicle/Truck.tscn" id="3_truck"]
 [ext_resource type="PackedScene" uid="uid://bf5sghqrm5j25" path="res://scenes/track/chunks/ChunkFlat.tscn" id="4_flat"]
@@ -52,6 +53,18 @@ offset_bottom = 48.0
 
 [node name="StatusLabel" type="Label" parent="HUD/StatusPanel"]
 layout_mode = 2
+
+[node name="RestartButton" type="Button" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -92.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 92.0
+grow_horizontal = 0
+text = "Сброс"
+script = ExtResource("20_hold")
 
 [node name="StartPanel" type="PanelContainer" parent="HUD"]
 anchors_preset = 7
