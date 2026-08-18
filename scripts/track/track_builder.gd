@@ -24,7 +24,14 @@ signal track_built(total_length: float)
 @export_range(0, 3) var end_difficulty: int = 3
 ## Насколько ниже текущего потолка куски ещё допускаются.
 ## 1 значит «у финиша ровное место уже не выпадет».
-@export_range(0, 3) var difficulty_window: int = 1
+@export_range(0, 3) var difficulty_window: int = 2
+
+@export_group("Разброс высоты")
+## Во сколько раз растягивается профиль в начале трассы: (минимум, максимум).
+@export var height_scale_start: Vector2 = Vector2(0.8, 1.0)
+## То же у финиша. Верхняя граница ползёт вверх — кочки к концу выше.
+@export var height_scale_end: Vector2 = Vector2(1.0, 1.5)
+
 
 @export_group("Прочее")
 ## Зерно генерации. Одно и то же зерно даёт одну и ту же трассу,
@@ -79,6 +86,9 @@ func build() -> void:
 		chunk.position = cursor
 		add_child(chunk)
 		if surface_material != null:
+			var low := lerpf(height_scale_start.x, height_scale_end.x, progress)
+			var high := lerpf(height_scale_start.y, height_scale_end.y, progress)
+			chunk.apply_height_scale(_rng.randf_range(low, high))
 			chunk.apply_physics_material(surface_material)
 		_chunks.append(chunk)
 		cursor += chunk.get_exit_position()

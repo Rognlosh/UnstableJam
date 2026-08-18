@@ -35,6 +35,11 @@ extends Node2D
 ## Вес при случайной выборке среди кусков, прошедших отбор по сложности.
 @export_range(0.0, 10.0, 0.1) var weight: float = 1.0
 
+
+## Можно ли растягивать кусок по вертикали. У кочек и ям — да, у моста
+## из досок или у куска с точной геометрией стыка масштаб выключается.
+@export var allow_height_scale: bool = true
+
 var _body: StaticBody2D
 var _outline: CollisionPolygon2D
 var _fill: Polygon2D
@@ -65,6 +70,25 @@ func apply_physics_material(material: PhysicsMaterial) -> void:
 		_collect_nodes()
 	if _body != null:
 		_body.physics_material_override = material
+		
+
+## Растягивает профиль по вертикали. Зовёт сборщик, уже добавив кусок
+## в дерево: правим точки полигона, а не scale узла — масштаб на теле
+## физики Godot переносит плохо, а точки перестраивают форму честно.
+func apply_height_scale(factor: float) -> void:
+	if not allow_height_scale or is_equal_approx(factor, 1.0):
+		return
+	if _outline == null:
+		_collect_nodes()
+	if _outline == null:
+		return
+	var points := _outline.polygon
+	for i in points.size():
+		points[i] = Vector2(points[i].x, points[i].y * factor)
+	_outline.polygon = points
+	# Выход куска тоже уезжает — иначе следующий кусок встанет не туда.
+	exit_offset_y *= factor
+	_sync_fill()
 
 
 ## Узлы ищем по типу, а не по именам: имена в редакторе меняются,

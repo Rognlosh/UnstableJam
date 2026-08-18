@@ -7,13 +7,14 @@
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_g4v7s"]
 
-[node name="TruckTest" type="Node2D" unique_id=794685419 node_paths=PackedStringArray("truck", "camera", "cargo_root", "track", "info_label", "stiffness_slider", "damping_slider", "rest_slider", "travel_slider", "motor_slider", "lean_slider", "wall_slider", "spawn_button", "clear_button", "reset_button", "rebuild_button")]
+[node name="TruckTest" type="Node2D" unique_id=794685419 node_paths=PackedStringArray("truck", "camera", "cargo_root", "track", "info_label", "timer_label", "stiffness_slider", "damping_slider", "rest_slider", "travel_slider", "motor_slider", "lean_slider", "wall_slider", "spawn_button", "clear_button", "reset_button", "rebuild_button")]
 script = ExtResource("1_4oko1")
 truck = NodePath("Truck")
 camera = NodePath("Camera2D")
 cargo_root = NodePath("CargoRoot")
 track = NodePath("Track")
 info_label = NodePath("UILayer/Panel/VBoxContainer/Label")
+timer_label = NodePath("UILayer/TimerLabel")
 stiffness_slider = NodePath("UILayer/Panel/VBoxContainer/StiffnessSlider")
 damping_slider = NodePath("UILayer/Panel/VBoxContainer/DampingSlider")
 rest_slider = NodePath("UILayer/Panel/VBoxContainer/RestSlider")
@@ -119,3 +120,15 @@ text = "Сброс"
 [node name="RebuildButton" type="Button" parent="UILayer/Panel/VBoxContainer" unique_id=478316539]
 layout_mode = 2
 text = "Пересобрать трассу"
+
+[node name="TimerLabel" type="Label" parent="UILayer" unique_id=178530419]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 60.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 2
