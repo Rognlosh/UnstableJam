@@ -20,8 +20,10 @@ signal track_built(total_length: float)
 @export var target_length: float = 30000.0
 
 @export_group("Сложность")
-## Потолок сложности в начале трассы.
-@export_range(0, 3) var start_difficulty: int = 0
+## Потолок сложности в начале трассы. Ноль означает, что первые тысячи
+## пикселей доступен только ровный кусок — это ощущается как пустой пролог.
+## Роль разгонной площадки отдана служебному стартовому куску.
+@export_range(0, 3) var start_difficulty: int = 1
 ## Потолок сложности у финиша.
 @export_range(0, 3) var end_difficulty: int = 3
 ## Насколько ниже текущего потолка куски ещё допускаются.

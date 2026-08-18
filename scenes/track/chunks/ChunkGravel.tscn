@@ -5,7 +5,7 @@
 [node name="ChunkGravel" type="Node2D"]
 script = ExtResource("1_gravel")
 difficulty = 1
-weight = 2.0
+weight = 1.0
 allow_height_scale = false
 
 [node name="Ground" type="StaticBody2D" parent="."]
