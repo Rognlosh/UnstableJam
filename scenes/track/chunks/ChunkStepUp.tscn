@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://bf5sghqrm5j25" path="res://scripts/track/track_chunk.gd" id="1_chunk"]
+
+[node name="ChunkStepUp" type="Node2D"]
+script = ExtResource("1_chunk")
+exit_offset_y = -60
+difficulty = 1
+weight = 1.5
+
+[node name="Ground" type="StaticBody2D" parent="."]
+
+[node name="Outline" type="CollisionPolygon2D" parent="Ground"]
+build_mode = 1
+polygon = PackedVector2Array(0, 0, 300, 0, 340, -8, 380, -26, 420, -46, 460, -60, 800, -60, 800, 1200, 0, 1200)
+
+[node name="Fill" type="Polygon2D" parent="Ground"]
+color = Color(0.5563933, 0.5271128, 0.49560964, 1)

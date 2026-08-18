@@ -96,6 +96,25 @@ func apply_height_scale(factor: float) -> void:
 func apply_seed(_value: int) -> void:
 	pass
 
+
+## Опускает низ куска до общего для всей трассы уровня. Договорённость:
+## две последние точки контура — это юбка, у всех кусков одинаково.
+## Без этого днища кусков с разной высотой расходятся ступеньками
+## и в кадре появляются дырки в толще земли.
+func set_skirt_bottom(local_y: float) -> void:
+	if _outline == null:
+		_collect_nodes()
+	if _outline == null:
+		return
+	var points := _outline.polygon
+	var count := points.size()
+	if count < 4:
+		return
+	points[count - 2] = Vector2(points[count - 2].x, local_y)
+	points[count - 1] = Vector2(points[count - 1].x, local_y)
+	_outline.polygon = points
+	_sync_fill()
+
 ## Узлы ищем по типу, а не по именам: имена в редакторе меняются,
 ## смысл — нет. Это общее правило проекта.
 func _collect_nodes() -> void:
@@ -146,6 +165,18 @@ func _get_configuration_warnings() -> PackedStringArray:
 	var exit_point := get_exit_position()
 	if not _has_point(points, exit_point):
 		issues.append("В контуре нет точки выхода (%d, %d)." % [int(exit_point.x), int(exit_point.y)])
+	# Стык всегда ровный, даже когда кусок кончается на другой высоте:
+	# перепад отрабатывается внутри куска, а к выходу профиль обязан
+	# выйти на горизонтальную площадку уже на новом уровне.
+	if points.size() > 1 and not is_equal_approx(points[1].y, 0.0):
+		issues.append("После входа нет ровной площадки: стык встанет на излом.")
+	var exit_index := _find_point_index(points, exit_point)
+	if exit_index > 0:
+		var before_exit := points[exit_index - 1]
+		if not is_equal_approx(before_exit.y, exit_point.y):
+			issues.append("Перед выходом нет ровной площадки: стык встанет на излом.")
+		elif exit_point.x - before_exit.x < 20.0:
+			issues.append("Ровная площадка перед выходом короче 20 px.")
 	return issues
 
 
@@ -154,3 +185,10 @@ func _has_point(points: PackedVector2Array, target: Vector2) -> bool:
 		if point.distance_squared_to(target) <= 0.25:
 			return true
 	return false
+
+
+func _find_point_index(points: PackedVector2Array, target: Vector2) -> int:
+	for i in points.size():
+		if points[i].distance_squared_to(target) <= 0.25:
+			return i
+	return -1

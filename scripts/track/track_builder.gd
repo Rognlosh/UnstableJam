@@ -32,6 +32,15 @@ signal track_built(total_length: float)
 ## То же у финиша. Верхняя граница ползёт вверх — кочки к концу выше.
 @export var height_scale_end: Vector2 = Vector2(1.0, 1.5)
 
+@export_group("Перепады высоты")
+## Коридор, за который не выходит накопленная высота трассы, отсчёт
+## от уровня старта. Y растёт вниз: x — потолок, y — дно.
+@export var height_band: Vector2 = Vector2(-400.0, 400.0)
+## Насколько сильнее тянет к нулю кусок, возвращающий трассу к уровню
+## старта. 1.0 — без предпочтений, 3.0 — почти всегда возвращаемся.
+@export_range(1.0, 4.0, 0.1) var return_bias: float = 2.0
+## Насколько глубоко под самой низкой точкой трассы лежит общее дно.
+@export var skirt_below: float = 1200.0
 
 @export_group("Прочее")
 ## Зерно генерации. Одно и то же зерно даёт одну и ту же трассу,
@@ -57,6 +66,7 @@ class ChunkInfo:
 	var length: float
 	var difficulty: int
 	var weight: float
+	var exit_offset_y: float
 
 
 func build() -> void:
@@ -78,23 +88,27 @@ func build() -> void:
 	while cursor.x < target_length and guard > 0:
 		guard -= 1
 		var progress := clampf(cursor.x / target_length, 0.0, 1.0)
-		var info := _pick(pool, progress, previous)
+		var info := _pick(pool, progress, previous, cursor.y)
 		var chunk := info.scene.instantiate() as TrackChunk
 		if chunk == null:
 			push_warning("TrackBuilder: в chunk_scenes есть сцена, корень которой не TrackChunk.")
 			break
 		chunk.position = cursor
 		add_child(chunk)
+		# Порядок важен: сначала кусок строит профиль по зерну, потом профиль
+		# растягивается по высоте, и только после этого курсор снимает точку
+		# выхода — иначе стык уедет на растянутую величину.
+		chunk.apply_seed(_rng.randi())
+		var low := lerpf(height_scale_start.x, height_scale_end.x, progress)
+		var high := lerpf(height_scale_start.y, height_scale_end.y, progress)
+		chunk.apply_height_scale(_rng.randf_range(low, high))
 		if surface_material != null:
-			chunk.apply_seed(_rng.randi())
-			var low := lerpf(height_scale_start.x, height_scale_end.x, progress)
-			var high := lerpf(height_scale_start.y, height_scale_end.y, progress)
-			chunk.apply_height_scale(_rng.randf_range(low, high))
 			chunk.apply_physics_material(surface_material)
 		_chunks.append(chunk)
 		cursor += chunk.get_exit_position()
 		previous = info
 
+	_level_skirts()
 	_end_point = cursor
 	track_built.emit(cursor.x)
 
@@ -144,13 +158,26 @@ func _load_pool() -> Array[ChunkInfo]:
 		info.length = probe.length
 		info.difficulty = probe.difficulty
 		info.weight = maxf(probe.weight, 0.0)
+		info.exit_offset_y = probe.exit_offset_y
 		pool.append(info)
 		# Пробник в дерево не попадал, поэтому free() безопасен и мгновенен.
 		probe.free()
 	return pool
 
 
-func _pick(pool: Array[ChunkInfo], progress: float, previous: ChunkInfo) -> ChunkInfo:
+## Второй проход по собранной трассе: выравнивает низ всех кусков.
+func _level_skirts() -> void:
+	var lowest := 0.0
+	for chunk in _chunks:
+		lowest = maxf(lowest, chunk.position.y)
+	for chunk in _chunks:
+		chunk.set_skirt_bottom(lowest + skirt_below - chunk.position.y)
+
+
+func _pick(
+	pool: Array[ChunkInfo], progress: float,
+	previous: ChunkInfo, current_y: float
+) -> ChunkInfo:
 	var ceiling := int(round(lerpf(float(start_difficulty), float(end_difficulty), progress)))
 	var floor_level := maxi(0, ceiling - difficulty_window)
 
@@ -158,12 +185,19 @@ func _pick(pool: Array[ChunkInfo], progress: float, previous: ChunkInfo) -> Chun
 	for info in pool:
 		if info.difficulty > ceiling or info.difficulty < floor_level:
 			continue
+		if not _fits_band(info, current_y):
+			continue
 		candidates.append(info)
 	# Если окно оказалось пустым, отступаем к «всё, что не тяжелее потолка»,
-	# и лишь потом — ко всему пулу. Трасса важнее правила.
+	# потом к плоским кускам, и лишь в самом конце — ко всему пулу.
+	# Трасса важнее правила, но коридор высот сдаём последним.
 	if candidates.is_empty():
 		for info in pool:
-			if info.difficulty <= ceiling:
+			if info.difficulty <= ceiling and _fits_band(info, current_y):
+				candidates.append(info)
+	if candidates.is_empty():
+		for info in pool:
+			if is_zero_approx(info.exit_offset_y):
 				candidates.append(info)
 	if candidates.is_empty():
 		candidates = pool.duplicate()
@@ -172,15 +206,41 @@ func _pick(pool: Array[ChunkInfo], progress: float, previous: ChunkInfo) -> Chun
 	if previous != null and candidates.size() > 1:
 		candidates.erase(previous)
 
+	var weights: Array[float] = []
 	var total := 0.0
 	for info in candidates:
-		total += info.weight
+		var w := info.weight * _return_factor(info, current_y)
+		weights.append(w)
+		total += w
 	if total <= 0.0:
 		return candidates[_rng.randi_range(0, candidates.size() - 1)]
 
 	var roll := _rng.randf() * total
-	for info in candidates:
-		roll -= info.weight
+	for i in candidates.size():
+		roll -= weights[i]
 		if roll <= 0.0:
-			return info
+			return candidates[i]
 	return candidates[candidates.size() - 1]
+
+
+## Не выведет ли кусок трассу за коридор высот. Считаем по худшему случаю:
+## растяжка ещё умножит перепад, и проверять надо по её верхней границе.
+func _fits_band(info: ChunkInfo, current_y: float) -> bool:
+	if is_zero_approx(info.exit_offset_y):
+		return true
+	var worst := current_y + info.exit_offset_y * maxf(height_scale_end.y, 1.0)
+	return worst >= height_band.x and worst <= height_band.y
+
+
+## Чем дальше трасса ушла от уровня старта, тем охотнее берём кусок,
+## возвращающий её обратно. Без этого случайное блуждание упирается
+## в стенку коридора и там залипает.
+func _return_factor(info: ChunkInfo, current_y: float) -> float:
+	if is_zero_approx(info.exit_offset_y) or is_zero_approx(current_y):
+		return 1.0
+	var limit := height_band.y if current_y > 0.0 else height_band.x
+	var drift := clampf(absf(current_y / limit), 0.0, 1.0)
+	# signf даёт -1, 0 или 1 — знаки совпали, значит кусок уводит дальше.
+	if signf(info.exit_offset_y) == signf(current_y):
+		return lerpf(1.0, 1.0 / return_bias, drift)
+	return lerpf(1.0, return_bias, drift)
