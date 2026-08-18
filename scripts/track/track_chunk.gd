@@ -97,6 +97,21 @@ func apply_seed(_value: int) -> void:
 	pass
 
 
+## Самая низкая точка поверхности куска. Две последние точки контура —
+## это юбка, они в счёт не идут: нас интересует дно котловин, а не дно
+## полигона.
+func get_lowest_surface_y() -> float:
+	if _outline == null:
+		_collect_nodes()
+	if _outline == null:
+		return 0.0
+	var points := _outline.polygon
+	var lowest := 0.0
+	for i in maxi(points.size() - 2, 0):
+		lowest = maxf(lowest, points[i].y)
+	return lowest
+
+
 ## Опускает низ куска до общего для всей трассы уровня. Договорённость:
 ## две последние точки контура — это юбка, у всех кусков одинаково.
 ## Без этого днища кусков с разной высотой расходятся ступеньками
