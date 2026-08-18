@@ -19,6 +19,7 @@
 [ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkStart.tscn" id="18_start"]
 [ext_resource type="PackedScene" path="res://scenes/track/chunks/ChunkFinish.tscn" id="19_finish"]
 [ext_resource type="Script" uid="uid://dbdlh3ub77f64" path="res://scripts/ui/hold_button.gd" id="20_hold"]
+[ext_resource type="Script" path="res://scripts/ui/timer_bar.gd" id="21_timer"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_surface"]
 
@@ -51,6 +52,32 @@ offset_bottom = 48.0
 
 [node name="StatusLabel" type="Label" parent="HUD/StatusPanel" unique_id=1931678776]
 layout_mode = 2
+
+[node name="TimerBar" type="ProgressBar" parent="HUD"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -280.0
+offset_top = 16.0
+offset_right = 280.0
+offset_bottom = 34.0
+grow_horizontal = 2
+value = 0.0
+script = ExtResource("21_timer")
+
+[node name="TimeLabel" type="Label" parent="HUD/TimerBar"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -140.0
+offset_top = 2.0
+offset_right = 140.0
+offset_bottom = 26.0
+grow_horizontal = 2
+grow_vertical = 0
+horizontal_alignment = 1
 
 [node name="RestartButton" type="Button" parent="HUD" unique_id=131393874]
 anchors_preset = 1

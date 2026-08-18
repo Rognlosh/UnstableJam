@@ -15,6 +15,19 @@ enum Phase {
 	FINISHED,  ## финиш пройден
 }
 
+@export_group("Время заезда")
+
+## Полное время заезда в секундах. За ним доход больше не падает —
+## нижний предел уже достигнут.
+@export var run_time: float = 80.0
+## Какая доля времени проходит без штрафа. До этой отметки коэффициент
+## дохода равен единице.
+@export_range(0.0, 1.0, 0.05) var free_time_share: float = 0.75
+## До какого коэффициента опускается доход к концу полосы.
+@export_range(0.0, 1.0, 0.05) var late_payout: float = 0.6
+
+@export_group("")
+
 ## Множитель зерна. Простое число, чтобы соседние дни давали
 ## непохожие трассы, а не сдвинутые версии одной.
 const SEED_STEP: int = 7919
@@ -96,8 +109,15 @@ const BED_CAPACITY_HEIGHT: float = 400.0
 @onready var _start_button: Button = $HUD/StartPanel/VBoxContainer/StartButton
 @onready var _hint_label: Label = $HUD/StartPanel/VBoxContainer/HintLabel
 @onready var _restart_button: HoldButton = $HUD/RestartButton
+@onready var _timer_bar: TimerBar = $HUD/TimerBar
+@onready var _timer_label: Label = $HUD/TimerBar/TimeLabel
 
 var _phase: Phase = Phase.LOADING
+
+## Время, потраченное на заезд. Сброс его НЕ обнуляет: вернуться на старт
+## и переложить груз — это выбор, за который платят временем, иначе выгодно
+## было бы перезапускаться после каждой трещины.
+var _elapsed: float = 0.0
 ## Текущий вынос камеры вперёд. Держим отдельно, чтобы сглаживать его
 ## самим, а не гонять камеру за шумом мгновенной скорости.
 var _look_ahead: float = 0.0
@@ -141,6 +161,7 @@ func _ready() -> void:
 	_start_button.pressed.connect(_start_run)
 	_restart_button.hold_completed.connect(_restart_run)
 	_restart_button.hide()
+	_timer_bar.hide()
 	_track.finish_reached.connect(_on_finish_reached)
 	_build_track()
 	_place_truck()
@@ -158,8 +179,11 @@ func _physics_process(delta: float) -> void:
 	_update_camera(delta)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if _phase == Phase.DRIVING:
+		_elapsed += delta
 	_update_status()
+	_update_timer_bar()
 
 
 func _build_track() -> void:
@@ -423,6 +447,7 @@ func _start_run() -> void:
 	_truck.auto_brake = false
 	_start_panel.hide()
 	_restart_button.show()
+	_timer_bar.show()
 
 
 ## Сброс заезда: машина и всё, что осталось при ней, возвращаются на старт,
@@ -603,6 +628,28 @@ func _update_status() -> void:
 	]
 
 
+## Коэффициент дохода за скорость доставки: единица, пока идёт бесплатная
+## часть времени, дальше линейно вниз до late_payout и там остаётся.
+func get_payout_factor() -> float:
+	var free_time := run_time * free_time_share
+	if _elapsed <= free_time:
+		return 1.0
+	var late_span := maxf(run_time - free_time, 0.001)
+	var overrun := clampf((_elapsed - free_time) / late_span, 0.0, 1.0)
+	return lerpf(1.0, late_payout, overrun)
+
+
+## Полоса времени вверху экрана: заполненная часть — потраченное время,
+## отметка — граница бесплатного проезда.
+func _update_timer_bar() -> void:
+	_timer_bar.value = clampf(_elapsed / maxf(run_time, 0.001), 0.0, 1.0) * 100.0
+	_timer_bar.free_share = free_time_share
+	var factor := get_payout_factor()
+	_timer_label.text = (
+		"Время: %d с" % int(_elapsed) if is_equal_approx(factor, 1.0)
+		else "Время: %d с · оплата %d%%" % [int(_elapsed), int(round(factor * 100.0))])
+
+
 ## Доля пройденной трассы, 0..1. Считается по X рамы между стартовой
 ## точкой и выходом последнего куска.
 func get_progress() -> float:
@@ -674,6 +721,8 @@ func _collect_result() -> Dictionary:
 		})
 
 	return {
+		"payout_factor": get_payout_factor(),
+		"run_time": _elapsed,
 		"items": items,
 		"delivered": delivered,
 		"damaged": damaged,

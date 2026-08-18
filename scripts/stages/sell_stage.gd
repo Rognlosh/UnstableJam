@@ -11,7 +11,8 @@ func _ready() -> void:
 
 
 ## Выручка считается по долям доехавшей ценности, а не по числу ящиков:
-## ваза без одного донца стоит дешевле целой, но дороже нуля.
+## ваза без одного донца стоит дешевле целой, но дороже нуля. Поверх этого
+## ложится коэффициент за скорость: за долгую доставку платят меньше.
 func _sell_cargo() -> void:
 	# get() со значением по умолчанию — на случай, если стадию открыли
 	# в обход перевозки (например, запустив сцену напрямую из редактора).
@@ -23,13 +24,27 @@ func _sell_cargo() -> void:
 			continue
 		var ratio: float = entry.get("ratio", 0.0)
 		revenue += int(round(float(data.base_price) * ratio))
+
+	var payout: float = GameState.run_result.get("payout_factor", 1.0)
+	var full_revenue := revenue
+	revenue = int(round(float(revenue) * payout))
 	GameState.earn_money(revenue)
 
-	_info_label.text = "ПРОДАЖА — итог дня %d\nДоехало целыми: %d\nПовреждено: %d\nПотеряно: %d\nВыручка: %d\nВсего денег: %d\nНа складе: %d шт." % [
+	# Про потерю на опоздании говорим прямо: без этой строки игрок увидит
+	# только меньшее число и не поймёт, за что.
+	var late_note := ""
+	if payout < 1.0:
+		late_note = "\nЗа опоздание: %d%% (было бы %d)" % [
+			int(round(payout * 100.0)), full_revenue,
+		]
+
+	_info_label.text = "ПРОДАЖА — итог дня %d\nДоехало целыми: %d\nПовреждено: %d\nПотеряно: %d\nВ пути: %d с%s\nВыручка: %d\nВсего денег: %d\nНа складе: %d шт." % [
 		GameState.get_day(),
 		GameState.run_result.get("delivered", 0),
 		GameState.run_result.get("damaged", 0),
 		GameState.run_result.get("lost", 0),
+		int(GameState.run_result.get("run_time", 0.0)),
+		late_note,
 		revenue,
 		GameState.get_money(),
 		GameState.cargo_actual.size(),
