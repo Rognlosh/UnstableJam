@@ -93,10 +93,20 @@ func _build_planks(span: float, count: int, slack: float) -> void:
 	var pitch := span / float(count)
 	var plank_length := pitch * slack
 
+	# Провис равновесной цепи: L = S * (1 + 8f^2 / (3S^2)), отсюда f.
+	# Раскладываем доски сразу по этой дуге — иначе в первый же кадр
+	# шарниры стягивают горизонтальную цепь в провис рывком.
+	var sag := span * sqrt(3.0 * maxf(slack - 1.0, 0.0) / 8.0)
+
 	var planks: Array[RigidBody2D] = []
 	for i in count:
+		var t := (float(i) + 0.5) / float(count)
 		var plank := RigidBody2D.new()
-		plank.position = Vector2(left_edge + pitch * (float(i) + 0.5), 0.0)
+		plank.position = Vector2(
+			left_edge + pitch * (float(i) + 0.5),
+			_sag_at(t, sag))
+		# Наклон доски — касательная к дуге в её середине.
+		plank.rotation = atan(4.0 * sag * (1.0 - 2.0 * t) / span)
 		plank.mass = plank_mass
 		# Затухание гасит раскачку после проезда: без него мост качается
 		# до самого финиша.
@@ -125,16 +135,23 @@ func _build_planks(span: float, count: int, slack: float) -> void:
 	# Шарниры: между соседними досками и по концам — к берегам.
 	# Берег это тот же StaticBody2D, что держит профиль куска.
 	for i in count + 1:
-		var at := Vector2(left_edge + pitch * float(i), 0.0)
+		var t := float(i) / float(count)
 		var left_body: Node2D = _body if i == 0 else planks[i - 1]
 		var right_body: Node2D = _body if i == count else planks[i]
 		var joint := PinJoint2D.new()
-		joint.position = at
+		joint.position = Vector2(left_edge + pitch * float(i), _sag_at(t, sag))
+		joint.disable_collision = true
+		# Шарнир сперва попадает в дерево и только потом получает пути к телам:
+		# get_path_to() у узла вне дерева возвращает бессмыслицу, и соединение
+		# молча не создаётся — мост осыпается в пропасть.
+		add_child(joint)
 		joint.node_a = joint.get_path_to(left_body)
 		joint.node_b = joint.get_path_to(right_body)
-		# Соседние доски перекрываются, и без этого они бы отталкивались.
-		joint.disable_collision = true
-		add_child(joint)
+
+
+## Глубина провиса дуги в доле t от начала пролёта.
+func _sag_at(t: float, sag: float) -> float:
+	return 4.0 * sag * t * (1.0 - t)
 
 
 func _get_configuration_warnings() -> PackedStringArray:
