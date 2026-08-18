@@ -38,6 +38,9 @@ const SHELF_OFFSET_X: float = 240.0
 ## Полезная длина полки. Товар, не влезший в ряд, уходит ярусом выше.
 const SHELF_WIDTH: float = 640.0
 const SHELF_BOARD_THICKNESS: float = 8.0
+## Высота нижней полки над землёй. Подобрана под пол кузова: товар лежит
+## на одном уровне с ним, и тащить его надо вбок, а не задирать вверх.
+const SHELF_BASE_HEIGHT: float = 100.0
 ## Зазор между вещью и полкой над ней.
 const SHELF_CLEARANCE: float = 20.0
 const SHELF_COLOR: Color = Color(0.42, 0.33, 0.24)
@@ -111,8 +114,8 @@ func _place_truck() -> void:
 
 
 ## Выкладка товара со склада на стеллаж перед машиной. На полу ряд быстро
-## упёрся бы в длину площадки, поэтому товар растёт ярусами вверх: нижний
-## ярус — сама земля, каждый следующий — доска над ним.
+## упёрся бы в длину площадки, поэтому товар растёт ярусами вверх: доска
+## на каждом ярусе, начиная с нижнего.
 func _unload_to_shelf() -> void:
 	var items := _resolve_cargo()
 	if items.is_empty():
@@ -132,6 +135,7 @@ func _unload_to_shelf() -> void:
 
 	var level := 0
 	var cursor_x := left_x
+	_add_board(left_x, _level_y(ground_y, 0, level_height))
 	for data: ItemData in items:
 		var rect := data.get_bounds()
 		# Условие cursor_x > left_x спасает от вечного переноса вещи,
@@ -139,8 +143,8 @@ func _unload_to_shelf() -> void:
 		if cursor_x + rect.size.x > left_x + SHELF_WIDTH and cursor_x > left_x:
 			level += 1
 			cursor_x = left_x
-			_add_board(left_x, ground_y - float(level) * level_height)
-		var top_y := ground_y - float(level) * level_height
+			_add_board(left_x, _level_y(ground_y, level, level_height))
+		var top_y := _level_y(ground_y, level, level_height)
 		# Полигон задан относительно начала координат узла, и оно не обязано
 		# лежать в центре силуэта. Поэтому ставим не узел, а грани: левую —
 		# на курсор, нижнюю — на полку.
@@ -151,6 +155,11 @@ func _unload_to_shelf() -> void:
 		cursor_x += rect.size.x + CARGO_GAP
 
 	_add_posts(left_x, ground_y, level, level_height)
+
+
+## Высота верхней грани полки указанного яруса.
+static func _level_y(ground_y: float, level: int, level_height: float) -> float:
+	return ground_y - SHELF_BASE_HEIGHT - float(level) * level_height
 
 
 ## Доска яруса: настоящее статическое тело, товар на ней именно лежит.
@@ -177,9 +186,7 @@ func _add_board(left_x: float, top_y: float) -> void:
 ## Боковые стойки — только вид. Коллизии у них нет намеренно: они бы
 ## мешали вытаскивать вещи с крайних мест.
 func _add_posts(left_x: float, ground_y: float, levels: int, level_height: float) -> void:
-	if levels <= 0:
-		return
-	var height := float(levels) * level_height + SHELF_BOARD_THICKNESS
+	var height := SHELF_BASE_HEIGHT + float(levels) * level_height + SHELF_BOARD_THICKNESS
 	for x: float in [left_x - 8.0, left_x + SHELF_WIDTH + 8.0]:
 		var post := Polygon2D.new()
 		post.polygon = _rect_polygon(Vector2(12.0, height))
