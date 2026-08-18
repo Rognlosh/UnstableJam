@@ -96,7 +96,6 @@ const BED_CAPACITY_HEIGHT: float = 400.0
 @onready var _start_button: Button = $HUD/StartPanel/VBoxContainer/StartButton
 @onready var _hint_label: Label = $HUD/StartPanel/VBoxContainer/HintLabel
 @onready var _restart_button: HoldButton = $HUD/RestartButton
-@onready var _hint_label: Label = $HUD/StartPanel/VBoxContainer/HintLabel
 
 var _phase: Phase = Phase.LOADING
 ## Текущий вынос камеры вперёд. Держим отдельно, чтобы сглаживать его
