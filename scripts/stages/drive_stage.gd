@@ -35,8 +35,9 @@ const CARGO_LIFT: float = 2.0
 ## Где стоит стеллаж — впереди машины: позади неё стартовая площадка
 ## кончается почти сразу за задним бортом.
 const SHELF_OFFSET_X: float = 420.0
-## Полезная длина полки. Товар, не влезший в ряд, уходит ярусом выше.
-const SHELF_WIDTH: float = 640.0
+## Полезная длина полки. Узкий стеллаж растёт вверх, а не вширь: так он
+## занимает меньше места рядом с машиной и целиком влезает в кадр.
+const SHELF_WIDTH: float = 380.0
 const SHELF_BOARD_THICKNESS: float = 16.0
 ## Высота нижней полки над землёй. Подобрана под пол кузова: товар лежит
 ## на одном уровне с ним, и тащить его надо вбок, а не задирать вверх.
@@ -64,6 +65,12 @@ const LOADING_CAMERA_OFFSET: Vector2 = Vector2(360.0, -60.0)
 ## Приближение камеры на погрузке и в заезде. Больше — ближе.
 const LOADING_ZOOM: float = 0.85
 const DRIVE_ZOOM: float = 0.7
+## Сколько длится переход от погрузки к заезду.
+const TRANSITION_TIME: float = 0.8
+## До какой прозрачности гаснут стеллаж и оставленный товар.
+const GHOST_ALPHA: float = 0.3
+## Слой, на который они уходят: за всё остальное.
+const GHOST_Z: int = -10
 ## Насколько высоко над полом кузова вещь ещё считается погруженной.
 ## Щедро: стопка выше бортов — это перегруз, а не «мимо кузова».
 const BED_CAPACITY_HEIGHT: float = 400.0
@@ -98,6 +105,11 @@ var _shelf: Node2D = null
 ## центром под курсор в момент клика.
 var _dragged: BreakableItem = null
 var _grab_offset: Vector2 = Vector2.ZERO
+
+## Переход камеры от погрузки к заезду: 0 — стоит и смотрит на стеллаж,
+## 1 — едет за машиной. Твинится при старте, поэтому смена ракурса
+## и приближения идёт одним плавным движением.
+var _camera_blend: float = 0.0
 
 
 func _ready() -> void:
@@ -297,6 +309,7 @@ func _update_drag() -> void:
 
 func _enter_loading() -> void:
 	_phase = Phase.LOADING
+	_camera_blend = 0.0
 	_truck.controls_enabled = false
 	_truck.set_frozen(true)
 	_finish_panel.hide()
@@ -321,17 +334,49 @@ func _start_run() -> void:
 			_loaded[item.instance_id] = item.data.id
 		else:
 			left_behind.append(item.data.id)
-			item.queue_free()
+			# Из группы убираем сразу: иначе оставленный товар продолжал бы
+			# считаться грузом в счётчике заезда.
+			item.remove_from_group(&"cargo")
+			_make_ghost(item)
 	GameState.cargo_actual = left_behind
 
 	if _shelf != null:
-		_shelf.queue_free()
+		_make_ghost(_shelf)
 		_shelf = null
+
+	_camera_blend = 0.0
+	var tween := create_tween()
+	tween.tween_property(self, "_camera_blend", 1.0, TRANSITION_TIME) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 	_phase = Phase.DRIVING
 	_truck.set_frozen(false)
 	_truck.controls_enabled = true
 	_start_panel.hide()
+
+
+## Стеллаж и брошенный товар не исчезают в момент старта — это читалось бы
+## как сбой. Вместо этого они гаснут, уходят на дальний слой и остаются
+## декорацией, сквозь которую машина спокойно проезжает.
+func _make_ghost(node: Node2D) -> void:
+	node.z_index = GHOST_Z
+	_disable_collisions(node)
+	var tween := create_tween()
+	tween.tween_property(node, "modulate:a", GHOST_ALPHA, TRANSITION_TIME)
+
+
+## Снимает тело с учёта физики целиком, вместе с детьми: обнулённые слои
+## гарантируют, что машина не заденет призрак, даже задев его геометрию.
+func _disable_collisions(node: Node) -> void:
+	var body := node as CollisionObject2D
+	if body != null:
+		body.collision_layer = 0
+		body.collision_mask = 0
+		var rigid := node as RigidBody2D
+		if rigid != null:
+			rigid.freeze = true
+	for child in node.get_children():
+		_disable_collisions(child)
 
 
 ## Вещь считается погруженной, если её центр внутри кузова по длине
@@ -360,22 +405,21 @@ func _resolve_cargo() -> Array[ItemData]:
 func _update_camera(delta: float) -> void:
 	if _truck.chassis == null:
 		return
-	if _phase == Phase.LOADING:
-		# При погрузке камера стоит: в кадре и кузов, и стеллаж.
-		_camera.zoom = Vector2(LOADING_ZOOM, LOADING_ZOOM)
-		_camera.global_position = _truck.chassis.global_position + LOADING_CAMERA_OFFSET
-		return
-	_camera.zoom = Vector2(DRIVE_ZOOM, DRIVE_ZOOM)
 	var wanted := clampf(
 		_truck.chassis.linear_velocity.x * CAMERA_LOOK_FACTOR,
 		-CAMERA_LOOK_AHEAD, CAMERA_LOOK_AHEAD)
 	# На кочках мгновенная скорость скачет каждый физкадр. Без сглаживания
 	# вынос дёргался бы вслед за этим шумом сильнее, чем едет сама машина.
 	_look_ahead = lerpf(_look_ahead, wanted, clampf(delta * CAMERA_LOOK_SMOOTH, 0.0, 1.0))
-	var target := _truck.chassis.global_position
-	target.x += _look_ahead
-	target.y += CAMERA_LIFT
-	_camera.global_position = target
+
+	# Обе точки считаем всегда и смешиваем: на старте заезда это даёт
+	# плавный отъезд вместо мгновенной смены ракурса.
+	var chassis_at := _truck.chassis.global_position
+	var loading_at := chassis_at + LOADING_CAMERA_OFFSET
+	var driving_at := chassis_at + Vector2(_look_ahead, CAMERA_LIFT)
+	_camera.global_position = loading_at.lerp(driving_at, _camera_blend)
+	var zoom := lerpf(LOADING_ZOOM, DRIVE_ZOOM, _camera_blend)
+	_camera.zoom = Vector2(zoom, zoom)
 
 
 func _update_status() -> void:
