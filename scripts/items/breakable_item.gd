@@ -108,6 +108,21 @@ func drive_velocity(velocity: Vector2) -> void:
 	_prev_velocity = velocity
 
 
+## Переставляет тело вместе с его состоянием в физическом сервере.
+##
+## Одного присваивания global_transform мало: у RigidBody2D состояние живёт
+## в сервере, и он вернёт тело обратно на ближайшем шаге. Заодно гасим
+## память о прошлой скорости — иначе обнуление хода при переносе детектор
+## примет за удар и разобьёт вещь ровно в момент спасения.
+func place_at(xform: Transform2D) -> void:
+	global_transform = xform
+	var rid := get_rid()
+	PhysicsServer2D.body_set_state(rid, PhysicsServer2D.BODY_STATE_TRANSFORM, xform)
+	PhysicsServer2D.body_set_state(rid, PhysicsServer2D.BODY_STATE_LINEAR_VELOCITY, Vector2.ZERO)
+	PhysicsServer2D.body_set_state(rid, PhysicsServer2D.BODY_STATE_ANGULAR_VELOCITY, 0.0)
+	_prev_velocity = Vector2.ZERO
+
+
 ## Габариты именно этого тела: у осколка полигон свой, и брать размеры
 ## целого предмета для него нельзя.
 func get_local_bounds() -> Rect2:

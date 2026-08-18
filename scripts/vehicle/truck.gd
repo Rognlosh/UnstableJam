@@ -310,27 +310,38 @@ func set_frozen(value: bool) -> void:
 func teleport_to(target: Vector2) -> void:
 	if chassis == null:
 		return
-	chassis.rotation = 0.0
-	chassis.global_position = target
-	chassis.linear_velocity = Vector2.ZERO
-	chassis.angular_velocity = 0.0
+	_place_body(chassis, target)
 
 	for i in _wheels.size():
 		var wheel := _wheels[i]
-		wheel.rotation = 0.0
+		# Считаем от целевой точки, а не через chassis.to_global(): позицию
+		# рамы мы задали прямо сейчас, и читать её обратно в этом же кадре
+		# нельзя — вернулось бы место, где машина была до телепорта.
+		var at := target + Vector2(0.0, suspension_rest_length)
 		if i < _springs.size():
-			# Считаем от целевой точки, а не через chassis.to_global():
-			# позицию рамы мы задали свойством прямо сейчас, а физический
-			# сервер применит её только на следующем шаге, и чтение вернуло бы
-			# место, где машина была до телепорта.
-			wheel.global_position = target + _springs[i].position \
-				+ Vector2(0.0, suspension_rest_length)
-		wheel.linear_velocity = Vector2.ZERO
-		wheel.angular_velocity = 0.0
+			at = target + _springs[i].position + Vector2(0.0, suspension_rest_length)
+		elif i < _grooves.size():
+			at = target + _grooves[i].position + Vector2(0.0, suspension_rest_length)
+		_place_body(wheel, at)
 	# Пазы здесь НЕ пересобираем. rebuild_suspension() заставляет суставы
 	# заново считать якоря по положению тел в физическом сервере, а оно
 	# в этом кадре ещё старое: якоря встанут по воздуху, машина развалится
 	# на месте и выстрелит вверх, когда пружина разожмётся.
+
+
+## Переставляет тело и в дереве, и в физическом сервере.
+##
+## Одного присваивания global_position мало: у RigidBody2D состояние живёт
+## в сервере, и он вернёт тело обратно на ближайшем шаге. Рама этого не
+## показывала только потому, что её сразу замораживали, а колёса оставались
+## там, откуда уехали.
+static func _place_body(body: RigidBody2D, at: Vector2) -> void:
+	var xform := Transform2D(0.0, at)
+	body.global_transform = xform
+	var rid := body.get_rid()
+	PhysicsServer2D.body_set_state(rid, PhysicsServer2D.BODY_STATE_TRANSFORM, xform)
+	PhysicsServer2D.body_set_state(rid, PhysicsServer2D.BODY_STATE_LINEAR_VELOCITY, Vector2.ZERO)
+	PhysicsServer2D.body_set_state(rid, PhysicsServer2D.BODY_STATE_ANGULAR_VELOCITY, 0.0)
 
 
 func _push_spring_params() -> void:

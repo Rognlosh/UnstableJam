@@ -205,11 +205,9 @@ func _unload_to_shelf(returned: Array[BreakableItem] = []) -> void:
 		item.rotation = 0.0
 		var rect := item.get_local_bounds()
 		var slot := _shelf_reserve(rect.size)
-		item.global_position = Vector2(
+		item.place_at(Transform2D(0.0, Vector2(
 			slot.x - rect.position.x,
-			slot.y - CARGO_LIFT - rect.end.y)
-		item.linear_velocity = Vector2.ZERO
-		item.angular_velocity = 0.0
+			slot.y - CARGO_LIFT - rect.end.y)))
 		item.toughness_bonus = LOADING_TOUGHNESS
 
 	_add_posts(_shelf_left, _shelf_ground, _shelf_level, _shelf_level_height)
@@ -447,9 +445,7 @@ func _restart_run() -> void:
 	# и распихает борта изнутри.
 	var relocate := _truck.chassis.global_transform * was.affine_inverse()
 	for item: BreakableItem in in_bed:
-		item.global_transform = relocate * item.global_transform
-		item.linear_velocity = Vector2.ZERO
-		item.angular_velocity = 0.0
+		item.place_at(relocate * item.global_transform)
 		item.toughness_bonus = LOADING_TOUGHNESS
 
 	# Склад снова под рукой: непогруженное можно доложить.
