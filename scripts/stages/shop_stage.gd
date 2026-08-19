@@ -48,6 +48,10 @@ func _on_money_changed(_new_amount: int) -> void:
 
 
 func _on_buy_pressed(item: ItemData) -> void:
+	# Витрина гасит кнопку сама, но полагаться на состояние UI нельзя:
+	# решение о месте принимает раскладка.
+	if not ShelfLayout.fits(GameState.cargo_actual, item):
+		return
 	# Проверка и списание — одной операцией: spend_money() возвращает false,
 	# если не хватило, и тогда состояние не меняется вовсе.
 	if not GameState.spend_money(item.buy_price):
@@ -78,7 +82,8 @@ func _refresh() -> void:
 
 	for lot: ShopLot in _lots:
 		var item: ItemData = _lots[lot]
-		lot.refresh(int(whole.get(item.id, 0)), money)
+		lot.refresh(int(whole.get(item.id, 0)), money,
+			ShelfLayout.fits(GameState.cargo_actual, item))
 
 	stock_label.text = _stock_text(whole, fragments)
 	# Ехать пустым бессмысленно: заезд закончится итогом из одних нулей.
@@ -88,6 +93,9 @@ func _refresh() -> void:
 ## Строка склада. Числа пишем как «Ваза × 2», а не «2 вазы»: склонения
 ## пришлось бы хранить у каждого предмета, а выигрыш нулевой.
 func _stock_text(whole: Dictionary, fragments: int) -> String:
+	var shelves := "Полки: %d / %d" % [
+		ShelfLayout.levels_used(GameState.cargo_actual), ShelfLayout.MAX_LEVELS,
+	]
 	var parts: PackedStringArray = PackedStringArray()
 	# Идём по каталогу, а не по ключам словаря: так порядок в строке склада
 	# совпадает с порядком витрины и не прыгает от покупки к покупке.
@@ -98,5 +106,5 @@ func _stock_text(whole: Dictionary, fragments: int) -> String:
 	if fragments > 0:
 		parts.append("осколки × %d" % fragments)
 	if parts.is_empty():
-		return "Склад пуст"
-	return "Склад: " + ", ".join(parts)
+		return shelves + "   •   склад пуст"
+	return shelves + "   •   " + ", ".join(parts)

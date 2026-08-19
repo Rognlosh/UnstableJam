@@ -17,6 +17,7 @@ const PREVIEW_BOX: float = 72.0
 var _data: ItemData = null
 var _stock: int = 0
 var _money: int = 0
+var _has_room: bool = true
 
 
 ## Товар строки. Назначается один раз при создании.
@@ -31,9 +32,10 @@ func setup(item: ItemData) -> void:
 
 
 ## Пересчёт того, что меняется по ходу закупа.
-func refresh(stock: int, money: int) -> void:
+func refresh(stock: int, money: int, has_room: bool) -> void:
 	_stock = stock
 	_money = money
+	_has_room = has_room
 	if is_node_ready():
 		_refresh()
 
@@ -59,8 +61,14 @@ func _refresh() -> void:
 		_format_mass(_data.mass),
 		stock_note,
 	]
-	buy_button.text = "Купить · %d" % _data.buy_price
-	buy_button.disabled = _money < _data.buy_price
+	# Про нехватку места говорим прямо на кнопке: серая кнопка без причины
+	# читается как поломка.
+	if not _has_room:
+		buy_button.text = "Нет места"
+		buy_button.disabled = true
+	else:
+		buy_button.text = "Купить · %d" % _data.buy_price
+		buy_button.disabled = _money < _data.buy_price
 	_draw_silhouette()
 
 
