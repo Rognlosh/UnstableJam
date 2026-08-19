@@ -45,7 +45,6 @@ const CAMERA_LIFT: float = -80.0
 const CAMERA_LOOK_SMOOTH: float = 3.0
 
 ## Зазор между предметами при выкладке товара на землю.
-const CARGO_GAP: float = 10.0
 ## Подъём над опорой при спавне: тело не должно родиться внутри геометрии.
 const CARGO_LIFT: float = 2.0
 ## Где стоит стеллаж — впереди машины: позади неё стартовая площадка
@@ -53,7 +52,6 @@ const CARGO_LIFT: float = 2.0
 const SHELF_OFFSET_X: float = 420.0
 ## Полезная длина полки. Узкий стеллаж растёт вверх, а не вширь: так он
 ## занимает меньше места рядом с машиной и целиком влезает в кадр.
-const SHELF_WIDTH: float = 380.0
 const SHELF_BOARD_THICKNESS: float = 16.0
 ## Высота нижней полки над землёй. Подобрана под пол кузова: товар лежит
 ## на одном уровне с ним, и тащить его надо вбок, а не задирать вверх.
@@ -62,6 +60,14 @@ const SHELF_BASE_HEIGHT: float = 100.0
 const SHELF_CLEARANCE: float = 48.0
 ## Высота яруса у пустого стеллажа — когда мерить не по чему.
 const SHELF_EMPTY_LEVEL: float = 70.0
+
+## Зазор между рядами битого в нише под стеллажом.
+const DEBRIS_ROW_GAP: float = 4.0
+## Отступ кучи переполнения от дальней стойки стеллажа.
+const DEBRIS_OVERFLOW_GAP: float = 40.0
+## Ширина кучи справа. Ровно столько, чтобы она не вылезла за край
+## погрузочного кадра.
+const DEBRIS_OVERFLOW_WIDTH: float = 240.0
 
 ## Глубина плиты. Ровно как у стартового куска: мельче — и будет видно,
 ## что земля кончается.
@@ -277,12 +283,20 @@ func _unload_to_shelf(returned: Array[BreakableItem] = []) -> void:
 			pending.append(item)
 	pending.append_array(returned)
 
+	# Целое идёт на полки, битое — в нишу под ними. Лимит закупа считается
+	# по тем же правилам и только по целому, так что расходиться им не с чего.
+	var goods: Array[BreakableItem] = []
+	var debris: Array[BreakableItem] = []
+	for item: BreakableItem in pending:
+		if item.piece_id == &"":
+			goods.append(item)
+		else:
+			debris.append(item)
+
 	# Шаг яруса считаем по самой высокой вещи партии: единый шаг читается
 	# лучше, чем полки на разной высоте, и мелочь не теряется под нависшей
 	# доской.
-	var level_height := 0.0
-	for item: BreakableItem in pending:
-		level_height = maxf(level_height, item.get_local_bounds().size.y)
+	var level_height := _tallest(goods)
 	# Пустой стеллаж всё равно строим: на него нужно класть осколки,
 	# иначе с разбитой вазой на руках заезд будет не начать.
 	if level_height <= 0.0:
@@ -290,7 +304,7 @@ func _unload_to_shelf(returned: Array[BreakableItem] = []) -> void:
 
 	_shelf_begin(level_height + SHELF_CLEARANCE)
 
-	for item: BreakableItem in pending:
+	for item: BreakableItem in goods:
 		# Ставим ровно: вещь на полке лежит как товар, а не как её бросили.
 		item.rotation = 0.0
 		var rect := item.get_local_bounds()
@@ -304,6 +318,67 @@ func _unload_to_shelf(returned: Array[BreakableItem] = []) -> void:
 		item.toughness_bonus = LOADING_TOUGHNESS
 
 	_add_posts(_shelf_left, _shelf_ground, _shelf_level, _shelf_level_height)
+	_stack_debris(debris)
+
+
+## Битое сваливают под стеллаж, а когда ниша полна — в кучу за дальней
+## стойкой. Ничего не пропадает: осколок — это деньги, пусть и небольшие,
+## и терять его молча нельзя.
+func _stack_debris(debris: Array[BreakableItem]) -> void:
+	if debris.is_empty():
+		return
+	var step := _tallest(debris) + DEBRIS_ROW_GAP
+	# Сколько рядов помещается между землёй и нижней доской.
+	var nook_height := SHELF_BASE_HEIGHT - SHELF_BOARD_THICKNESS
+	var rows := maxi(1, int(nook_height / step))
+	var leftover := _stack_rows(
+		debris, _shelf_left, _shelf_ground, ShelfLayout.WIDTH, step, rows)
+	if leftover.is_empty():
+		return
+	# Куча растёт вправо от стеллажа: там пусто до края кадра, а таскают
+	# вещи влево, к машине, так что погрузке она не мешает.
+	_stack_rows(
+		leftover,
+		_shelf_left + ShelfLayout.WIDTH + DEBRIS_OVERFLOW_GAP,
+		_shelf_ground,
+		DEBRIS_OVERFLOW_WIDTH,
+		_tallest(leftover) + DEBRIS_ROW_GAP,
+		0)
+
+
+## Раскладывает вещи рядами: слева направо, снизу вверх. Возвращает то,
+## что не поместилось в отведённое число рядов; max_rows = 0 — без предела.
+func _stack_rows(items: Array[BreakableItem], left_x: float, bottom_y: float,
+		width: float, step: float, max_rows: int) -> Array[BreakableItem]:
+	var leftover: Array[BreakableItem] = []
+	var cursor := left_x
+	var row := 0
+	for item: BreakableItem in items:
+		var rect := item.get_local_bounds()
+		# Условие про непустой ряд спасает от вечного переноса вещи,
+		# которая шире всей зоны.
+		if cursor + rect.size.x > left_x + width and cursor > left_x:
+			row += 1
+			cursor = left_x
+		if max_rows > 0 and row >= max_rows:
+			leftover.append(item)
+			continue
+		item.rotation = 0.0
+		item.place_at(Transform2D(0.0, Vector2(
+			cursor - rect.position.x,
+			bottom_y - float(row) * step - CARGO_LIFT - rect.end.y)))
+		item.toughness_bonus = LOADING_TOUGHNESS
+		cursor += rect.size.x + ShelfLayout.GAP
+	return leftover
+
+
+## Высота самой высокой вещи партии. Зазор поверх неё добавляет тот,
+## кто раскладывает: у полок он свой, у ниши свой.
+static func _tallest(items: Array[BreakableItem]) -> float:
+	var tallest := 0.0
+	for item: BreakableItem in items:
+		tallest = maxf(tallest, item.get_local_bounds().size.y)
+	return tallest
 
 
 ## Создаёт тело по записи склада: целую вещь или один осколок.
@@ -336,12 +411,12 @@ func _shelf_begin(level_height: float) -> void:
 func _shelf_reserve(item_size: Vector2) -> Vector2:
 	# Условие про непустой ряд спасает от вечного переноса вещи,
 	# которая шире всей полки.
-	if _shelf_cursor + item_size.x > _shelf_left + SHELF_WIDTH and _shelf_cursor > _shelf_left:
+	if _shelf_cursor + item_size.x > _shelf_left + ShelfLayout.WIDTH and _shelf_cursor > _shelf_left:
 		_shelf_level += 1
 		_shelf_cursor = _shelf_left
 		_add_board(_shelf_left, _level_y(_shelf_ground, _shelf_level, _shelf_level_height))
 	var slot := Vector2(_shelf_cursor, _level_y(_shelf_ground, _shelf_level, _shelf_level_height))
-	_shelf_cursor += item_size.x + CARGO_GAP
+	_shelf_cursor += item_size.x + ShelfLayout.GAP
 	return slot
 
 
@@ -354,12 +429,12 @@ static func _level_y(ground_y: float, level: int, level_height: float) -> float:
 func _add_board(left_x: float, top_y: float) -> void:
 	var board := StaticBody2D.new()
 	board.position = Vector2(
-		left_x + SHELF_WIDTH * 0.5,
+		left_x + ShelfLayout.WIDTH * 0.5,
 		top_y + SHELF_BOARD_THICKNESS * 0.5)
 
 	var shape := CollisionShape2D.new()
 	var rect := RectangleShape2D.new()
-	rect.size = Vector2(SHELF_WIDTH, SHELF_BOARD_THICKNESS)
+	rect.size = Vector2(ShelfLayout.WIDTH, SHELF_BOARD_THICKNESS)
 	shape.shape = rect
 	board.add_child(shape)
 
@@ -375,7 +450,7 @@ func _add_board(left_x: float, top_y: float) -> void:
 ## мешали вытаскивать вещи с крайних мест.
 func _add_posts(left_x: float, ground_y: float, levels: int, level_height: float) -> void:
 	var height := SHELF_BASE_HEIGHT + float(levels) * level_height + SHELF_BOARD_THICKNESS
-	for x: float in [left_x - 8.0, left_x + SHELF_WIDTH + 8.0]:
+	for x: float in [left_x - 8.0, left_x + ShelfLayout.WIDTH + 8.0]:
 		var post := Polygon2D.new()
 		post.polygon = _rect_polygon(Vector2(12.0, height))
 		post.color = Palette.WORLD.timber
@@ -599,7 +674,7 @@ func _is_on_shelf(item: Node2D) -> bool:
 	var pos := item.global_position
 	if pos.x < _shelf_left - SHELF_ZONE_MARGIN:
 		return false
-	if pos.x > _shelf_left + SHELF_WIDTH + SHELF_ZONE_MARGIN:
+	if pos.x > _shelf_left + ShelfLayout.WIDTH + SHELF_ZONE_MARGIN:
 		return false
 	var top := _level_y(_shelf_ground, _shelf_level, _shelf_level_height) - _shelf_level_height
 	return pos.y >= top and pos.y <= _shelf_ground + SHELF_ZONE_MARGIN
