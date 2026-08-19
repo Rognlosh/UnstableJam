@@ -64,6 +64,13 @@ const SHELF_COLOR: Color = Color(0.42, 0.33, 0.24)
 ## Высота яруса у пустого стеллажа — когда мерить не по чему.
 const SHELF_EMPTY_LEVEL: float = 70.0
 
+## Цвет земли стартового куска. Дублируется числом, потому что цвет живёт
+## в сцене куска, а не в данных, — при смене палитры править оба места.
+const APRON_COLOR: Color = Color(0.5563933, 0.5271128, 0.49560964, 1.0)
+## Глубина плиты. Ровно как у стартового куска: мельче — и будет видно,
+## что земля кончается.
+const APRON_DEPTH: float = 1200.0
+
 ## Насколько резво вещь догоняет курсор. Больше — цепче хват и сильнее
 ## удары о борта; меньше — вещь вязнет и отстаёт от мыши.
 const DRAG_GAIN: float = 14.0
@@ -217,6 +224,39 @@ func _build_left_wall() -> void:
 	add_child(wall)
 	# Предел ставим по той же черте, поэтому край кадра и край мира совпадают.
 	_camera.limit_left = int(wall_x)
+	_extend_start_ground(wall_x)
+
+
+## Плита от стены до начала трассы. Без неё слева от машины видна не пустая
+## земля, а дыра в фон: трасса начинается там, где стоит первый кусок.
+func _extend_start_ground(wall_x: float) -> void:
+	var ground_x := _track.global_position.x
+	var width := ground_x - wall_x
+	if width <= 0.0:
+		return
+	var apron := StaticBody2D.new()
+	apron.position = Vector2(wall_x, _track.global_position.y)
+	apron.physics_material_override = _track.surface_material
+
+	var shape := CollisionShape2D.new()
+	var box := RectangleShape2D.new()
+	box.size = Vector2(width, APRON_DEPTH)
+	shape.shape = box
+	# Форма считается от центра, а плита растёт вправо и вниз от угла.
+	shape.position = Vector2(width * 0.5, APRON_DEPTH * 0.5)
+	apron.add_child(shape)
+
+	var fill := Polygon2D.new()
+	fill.polygon = PackedVector2Array([
+		Vector2.ZERO,
+		Vector2(width, 0.0),
+		Vector2(width, APRON_DEPTH),
+		Vector2(0.0, APRON_DEPTH),
+	])
+	fill.color = APRON_COLOR
+	apron.add_child(fill)
+
+	add_child(apron)
 
 
 ## Грузовик ставится на стартовую площадку до первого шага физики,
