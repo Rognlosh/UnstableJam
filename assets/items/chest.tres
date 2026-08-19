@@ -1,7 +1,11 @@
-[gd_resource type="Resource" script_class="ItemData" load_steps=8 format=3]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://p61i2335ur8r"]
 
 [ext_resource type="Script" uid="uid://dlhunjdv6d2mp" path="res://scripts/items/item_data.gd" id="1_item"]
 [ext_resource type="Script" uid="uid://b2i0e702clsfw" path="res://scripts/items/item_piece_data.gd" id="2_piece"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_chest"]
+friction = 0.9
+bounce = 0.02
 
 [sub_resource type="Resource" id="Piece_chest_lid_left"]
 script = ExtResource("2_piece")
@@ -26,10 +30,6 @@ script = ExtResource("2_piece")
 piece_id = &"box_right"
 polygon = PackedVector2Array(0, -6, 35, -6, 35, 20, 0, 20)
 value_share = 0.35
-
-[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_chest"]
-friction = 0.9
-bounce = 0.02
 
 [resource]
 script = ExtResource("1_item")
