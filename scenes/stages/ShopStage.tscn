@@ -39,6 +39,7 @@ theme_override_font_sizes/font_size = 24
 
 [node name="LotScroll" type="ScrollContainer" parent="Margin/VBoxContainer" unique_id=1801053780]
 layout_mode = 2
+size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
 [node name="Lots" type="VBoxContainer" parent="Margin/VBoxContainer/LotScroll" unique_id=1248153681]
