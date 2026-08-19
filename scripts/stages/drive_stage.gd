@@ -100,6 +100,10 @@ const SHELF_ZONE_MARGIN: float = 60.0
 ## Щедро: стопка выше бортов — это перегруз, а не «мимо кузова».
 const BED_CAPACITY_HEIGHT: float = 400.0
 
+## Левый край мира: на сколько он отстоит от точки старта. Ровно столько,
+## чтобы за задним бортом оставалась полоска земли, а не полкадра пустоты.
+const WORLD_LEFT_MARGIN: float = 140.0
+
 @onready var _track: TrackBuilder = $Track
 @onready var _truck: Truck = $Truck
 @onready var _camera: Camera2D = $Camera2D
@@ -167,6 +171,7 @@ func _ready() -> void:
 	_timer_bar.hide()
 	_track.finish_reached.connect(_on_finish_reached)
 	_build_track()
+	_build_left_wall()
 	_place_truck()
 	_unload_to_shelf()
 	_enter_loading()
@@ -193,6 +198,25 @@ func _build_track() -> void:
 	_track.randomize_seed_on_build = false
 	_track.track_seed = GameState.get_day() * SEED_STEP
 	_track.build()
+
+
+## Невидимая стена по левому краю мира и предел камеры на той же черте.
+## Без предела камера показывала бы пустоту слева от машины, а без стены
+## машина могла бы сдать назад за пределы этой картинки.
+func _build_left_wall() -> void:
+	var wall_x := _track.get_start_position().x - WORLD_LEFT_MARGIN
+	var wall := StaticBody2D.new()
+	wall.position = Vector2(wall_x, 0.0)
+	var shape := CollisionShape2D.new()
+	# Бесконечная плоскость вместо прямоугольника: не нужно гадать, как высоко
+	# подскочит груз и как глубоко провалится машина — стена есть везде.
+	var plane := WorldBoundaryShape2D.new()
+	plane.normal = Vector2.RIGHT
+	shape.shape = plane
+	wall.add_child(shape)
+	add_child(wall)
+	# Предел ставим по той же черте, поэтому край кадра и край мира совпадают.
+	_camera.limit_left = int(wall_x)
 
 
 ## Грузовик ставится на стартовую площадку до первого шага физики,
@@ -742,7 +766,9 @@ func _is_recovered(item: BreakableItem) -> bool:
 	if _is_in_bed(item):
 		return true
 	var half := get_viewport_rect().size * 0.5 / _camera.zoom * RECOVERY_MARGIN
-	var offset := item.global_position - _camera.global_position
+	# Именно центр кадра, а не позиция узла: у края мира камера упирается
+	# в предел и стоит не там, куда её просили встать.
+	var offset := item.global_position - _camera.get_screen_center_position()
 	return absf(offset.x) <= half.x and absf(offset.y) <= half.y
 
 
