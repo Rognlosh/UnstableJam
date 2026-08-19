@@ -60,13 +60,9 @@ const SHELF_BOARD_THICKNESS: float = 16.0
 const SHELF_BASE_HEIGHT: float = 100.0
 ## Зазор между вещью и полкой над ней.
 const SHELF_CLEARANCE: float = 48.0
-const SHELF_COLOR: Color = Color(0.42, 0.33, 0.24)
 ## Высота яруса у пустого стеллажа — когда мерить не по чему.
 const SHELF_EMPTY_LEVEL: float = 70.0
 
-## Цвет земли стартового куска. Дублируется числом, потому что цвет живёт
-## в сцене куска, а не в данных, — при смене палитры править оба места.
-const APRON_COLOR: Color = Color(0.5563933, 0.5271128, 0.49560964, 1.0)
 ## Глубина плиты. Ровно как у стартового куска: мельче — и будет видно,
 ## что земля кончается.
 const APRON_DEPTH: float = 1200.0
@@ -253,7 +249,7 @@ func _extend_start_ground(wall_x: float) -> void:
 		Vector2(width, APRON_DEPTH),
 		Vector2(0.0, APRON_DEPTH),
 	])
-	fill.color = APRON_COLOR
+	fill.color = Palette.WORLD.ground
 	apron.add_child(fill)
 
 	add_child(apron)
@@ -369,7 +365,7 @@ func _add_board(left_x: float, top_y: float) -> void:
 
 	var visual := Polygon2D.new()
 	visual.polygon = _rect_polygon(rect.size)
-	visual.color = SHELF_COLOR
+	visual.color = Palette.WORLD.timber
 	board.add_child(visual)
 
 	_shelf.add_child(board)
@@ -382,7 +378,7 @@ func _add_posts(left_x: float, ground_y: float, levels: int, level_height: float
 	for x: float in [left_x - 8.0, left_x + SHELF_WIDTH + 8.0]:
 		var post := Polygon2D.new()
 		post.polygon = _rect_polygon(Vector2(12.0, height))
-		post.color = SHELF_COLOR
+		post.color = Palette.WORLD.timber
 		post.position = Vector2(x, ground_y - height * 0.5)
 		_shelf.add_child(post)
 

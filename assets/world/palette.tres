@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="WorldPalette" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/world_palette.gd" id="1_palette"]
+
+[resource]
+script = ExtResource("1_palette")
+ground = Color(0.5563933, 0.5271128, 0.49560964, 1)
+timber = Color(0.42, 0.33, 0.24, 1)

@@ -148,6 +148,7 @@ func _place_chunk(scene: PackedScene, at: Vector2, progress: float) -> TrackChun
 	chunk.apply_height_scale(_rng.randf_range(low, high))
 	if surface_material != null:
 		chunk.apply_physics_material(surface_material)
+	chunk.apply_ground_color(Palette.WORLD.ground)
 	_chunks.append(chunk)
 	return chunk
 

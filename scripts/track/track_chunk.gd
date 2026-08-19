@@ -70,6 +70,16 @@ func apply_physics_material(surface: PhysicsMaterial) -> void:
 		_collect_nodes()
 	if _body != null:
 		_body.physics_material_override = surface
+	
+
+
+## Красит землю куска из палитры. Цвет в сцене куска остаётся превью
+## для редактора, истина — ресурс палитры.
+func apply_ground_color(color: Color) -> void:
+	if _fill == null:
+		_collect_nodes()
+	if _fill != null:
+		_fill.color = color
 		
 
 ## Растягивает профиль по вертикали. Зовёт сборщик, уже добавив кусок
