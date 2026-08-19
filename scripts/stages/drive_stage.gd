@@ -100,10 +100,6 @@ const SHELF_ZONE_MARGIN: float = 60.0
 ## Щедро: стопка выше бортов — это перегруз, а не «мимо кузова».
 const BED_CAPACITY_HEIGHT: float = 400.0
 
-## Левый край мира: на сколько он отстоит от точки старта. Ровно столько,
-## чтобы за задним бортом оставалась полоска земли, а не полкадра пустоты.
-const WORLD_LEFT_MARGIN: float = 140.0
-
 @onready var _track: TrackBuilder = $Track
 @onready var _truck: Truck = $Truck
 @onready var _camera: Camera2D = $Camera2D
@@ -204,7 +200,11 @@ func _build_track() -> void:
 ## Без предела камера показывала бы пустоту слева от машины, а без стены
 ## машина могла бы сдать назад за пределы этой картинки.
 func _build_left_wall() -> void:
-	var wall_x := _track.get_start_position().x - WORLD_LEFT_MARGIN
+	# Черта считается, а не подбирается: половина погрузочного кадра минус
+	# вынос камеры вправо. На ней предел совпадает с тем, что камера и так
+	# показывает, поэтому кадр не съезжает и машина остаётся на месте.
+	var half_width := get_viewport_rect().size.x * 0.5 / LOADING_ZOOM
+	var wall_x := _track.get_start_position().x + LOADING_CAMERA_OFFSET.x - half_width
 	var wall := StaticBody2D.new()
 	wall.position = Vector2(wall_x, 0.0)
 	var shape := CollisionShape2D.new()
