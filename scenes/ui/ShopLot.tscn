@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://bvtiyb1d1s0or"]
+
+[ext_resource type="Script" uid="uid://cysydj2rveie0" path="res://scripts/ui/shop_lot.gd" id="1_x6ic8"]
+
+[node name="ShopLot" type="PanelContainer" unique_id=664936339 node_paths=PackedStringArray("silhouette", "name_label", "stats_label", "buy_button")]
+script = ExtResource("1_x6ic8")
+silhouette = NodePath("Margin/Row/Preview/Silhouette")
+name_label = NodePath("Margin/Row/Info/NameLabel")
+stats_label = NodePath("Margin/Row/Info/StatsLabel")
+buy_button = NodePath("Margin/Row/BuyButton")
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=188722489]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Row" type="HBoxContainer" parent="Margin" unique_id=152535325]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Preview" type="Control" parent="Margin/Row" unique_id=421045444]
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 2
+
+[node name="Silhouette" type="Polygon2D" parent="Margin/Row/Preview" unique_id=1117314727]
+position = Vector2(44, 44)
+
+[node name="Info" type="VBoxContainer" parent="Margin/Row" unique_id=583945331]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="Margin/Row/Info" unique_id=1721988465]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Ваза"
+
+[node name="StatsLabel" type="Label" parent="Margin/Row/Info" unique_id=350393972]
+layout_mode = 2
+text = "Продажа: 50   •   прочность: низкая   •   вес: 2"
+
+[node name="BuyButton" type="Button" parent="Margin/Row" unique_id=1009728128]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+text = "Купить · 20"

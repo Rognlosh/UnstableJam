@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://bsoja4njafqye"]
 
 [ext_resource type="Script" uid="uid://du2w2v71dp5hf" path="res://scripts/stages/shop_stage.gd" id="1_amwyn"]
+[ext_resource type="PackedScene" uid="uid://bvtiyb1d1s0or" path="res://scenes/ui/ShopLot.tscn" id="2_2qxyq"]
 
-[node name="ShopStage" type="Control" unique_id=1788116682]
+[node name="ShopStage" type="Control" unique_id=1788116682 node_paths=PackedStringArray("header_label", "lots_container", "stock_label", "go_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,23 +11,46 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_amwyn")
+header_label = NodePath("Margin/VBoxContainer/HeaderLabel")
+lots_container = NodePath("Margin/VBoxContainer/LotScroll/Lots")
+stock_label = NodePath("Margin/VBoxContainer/StockLabel")
+go_button = NodePath("Margin/VBoxContainer/GoButton")
+lot_scene = ExtResource("2_2qxyq")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=722942202]
+[node name="Margin" type="MarginContainer" parent="." unique_id=1114399329]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Margin" unique_id=722942202]
+layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="InfoLabel" type="Label" parent="VBoxContainer" unique_id=1147486931]
+[node name="HeaderLabel" type="Label" parent="Margin/VBoxContainer" unique_id=1147486931]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+
+[node name="LotScroll" type="ScrollContainer" parent="Margin/VBoxContainer" unique_id=1801053780]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Lots" type="VBoxContainer" parent="Margin/VBoxContainer/LotScroll" unique_id=1248153681]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="StockLabel" type="Label" parent="Margin/VBoxContainer" unique_id=1349019230]
 layout_mode = 2
 
-[node name="BuyButton" type="Button" parent="VBoxContainer" unique_id=1137879579]
-layout_mode = 2
-text = "Купить вазу (20)"
-
-[node name="GoButton" type="Button" parent="VBoxContainer" unique_id=1064453453]
+[node name="GoButton" type="Button" parent="Margin/VBoxContainer" unique_id=1064453453]
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 text = "В дорогу"
