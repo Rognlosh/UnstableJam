@@ -79,12 +79,14 @@ class Runtime extends QuirkRuntime:
 		# цифры в ресурсе не зависят от того, на какой предмет их надели.
 		var accel := Vector2.ZERO
 
-		# Подъём. Избыток над единицей — то, чем сила пересиливает вес;
-		# на осколке он же и ослабляется.
+		# Подъём. Прикладываем ВСЮ подъёмную силу, а не её избыток над весом:
+		# вес движок вычел из скорости сам, ещё до этого вызова. Прибавь мы
+		# только избыток — тело получило бы вычет веса дважды и не взлетело
+		# бы ни при какой амплитуде.
 		var lift: float = cfg.lift_base
 		if cfg.lift_period > 0.0:
 			lift += cfg.lift_amplitude * sin(_time * TAU / cfg.lift_period + _phase)
-		accel += -gravity * (lift - 1.0) * strength
+		accel += -gravity * lift * strength
 
 		# Сопротивление по вертикали — только в пределах drag_cap.
 		var vertical := state.linear_velocity.dot(up)
@@ -109,5 +111,6 @@ class Runtime extends QuirkRuntime:
 			_debug_time += state.step
 			if _debug_time >= 1.0:
 				_debug_time = 0.0
-				print("[левитация] подъём %.2f · ускорение %.0f · масса %.2f · спит %s"
-					% [lift, accel.y, item.mass, item.sleeping])
+				print("[левитация] подъём %.2f · итог %.0f · скорость %.0f · спит %s"
+					% [lift, accel.y + gravity.y, state.linear_velocity.y,
+					item.sleeping])
