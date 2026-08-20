@@ -29,6 +29,8 @@ var _prev_velocity: Vector2 = Vector2.ZERO
 var _is_broken: bool = false
 var _frames_alive: int = 0
 
+var _quirk: QuirkRuntime = null
+
 @onready var _visual: Polygon2D = $Visual
 @onready var _shape: CollisionPolygon2D = $Shape
 
@@ -60,13 +62,15 @@ func _ready() -> void:
 		push_error("BreakableItem: не задан ItemData или полигон слишком мал")
 		return
 	_visual.polygon = _polygon
-	_visual.color = data.color if level == 0 else data.color.darkened(0.2)
+	var base_color: Color = data.color if level == 0 else data.color.darkened(0.2)
+	_visual.color = data.quirk.tinted(base_color) if _wears_quirk() else base_color
 	_shape.polygon = _polygon
 	mass = maxf(0.05, data.mass * area_ratio())
 	physics_material_override = data.physics_material
 	add_to_group(&"cargo")
 	if level > 0:
 		add_to_group(&"fragments")
+	_setup_quirk()
 	_prev_velocity = linear_velocity
 
 
@@ -77,6 +81,12 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 	var impact: float = (state.linear_velocity - _prev_velocity - gravity_step).length()
 	_prev_velocity = state.linear_velocity
 	_frames_alive += 1
+	
+	
+	# Свойство работает и у помеченного на слом тела: обрывать левитацию
+	# на кадр раньше смысла нет, а ветвление добавилось бы.
+	if _quirk != null:
+		_quirk.physics_step(state)
 
 	if _is_broken or _frames_alive <= GRACE_FRAMES:
 		return
@@ -94,6 +104,31 @@ func break_threshold() -> float:
 		return INF
 	var base := data.break_speed * (data.piece_toughness if level > 0 else 1.0)
 	return base * toughness_bonus
+	
+
+
+## Действует ли свойство на это конкретное тело: у осколка оно может быть
+## ослаблено до нуля.
+func _wears_quirk() -> bool:
+	if data == null or data.quirk == null:
+		return false
+	return level == 0 or data.quirk.piece_strength > 0.0
+
+
+func _setup_quirk() -> void:
+	if not _wears_quirk():
+		return
+	_quirk = data.quirk.create_runtime()
+	if _quirk != null:
+		_quirk.attach(self, data.quirk)
+
+
+## Зовётся Destruction'ом в момент разрушения — единственный шанс свойства
+## сработать напоследок (взрыв, вспышка). Тело в этот момент ещё в дереве:
+## queue_free() откладывает удаление до конца кадра.
+func notify_broken(impact: float, at: Vector2) -> void:
+	if _quirk != null:
+		_quirk.on_break(impact, at)
 
 
 ## Задаёт скорость и одновременно объявляет её ожидаемой.

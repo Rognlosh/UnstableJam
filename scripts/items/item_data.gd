@@ -31,6 +31,11 @@ extends Resource
 @export var physics_material: PhysicsMaterial
 
 
+## Нестабильное свойство. null — обычный товар. Ссылка на общий ресурс,
+## поэтому одну левитацию можно надеть на любое число предметов.
+@export var quirk: ItemQuirk
+
+
 ## Кусок по идентификатору. null, если такого куска нет.
 func get_piece(wanted_id: StringName) -> ItemPieceData:
 	for piece: ItemPieceData in pieces:

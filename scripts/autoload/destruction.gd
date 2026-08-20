@@ -56,6 +56,7 @@ func break_item(item: BreakableItem, impact: float) -> void:
 
 	var over_budget := live_fragment_count() + item_data.pieces.size() > MAX_FRAGMENTS
 	if was_piece or item_data.pieces.is_empty() or over_budget:
+		item.notify_broken(impact, xform.origin)
 		item_pulverized.emit(item_data.id, instance_id)
 		return
 
@@ -73,6 +74,9 @@ func break_item(item: BreakableItem, impact: float) -> void:
 		fragment.angular_velocity = spin + randf_range(-2.5, 2.5)
 		parent.add_child(fragment)
 
+	# Хук зовётся после рождения кусков — иначе будущий взрыв не задел бы
+	# собственные осколки, а это половина его эффекта.
+	item.notify_broken(impact, xform.origin)
 	item_broken.emit(item_data.id, instance_id, impact)
 
 
