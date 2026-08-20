@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://f35p3bxo84pm"]
+
+[ext_resource type="Script" uid="uid://cdv6mqe7orhx0" path="res://scripts/ui/sell_row.gd" id="1_yvw5t"]
+
+[node name="SellRow" type="Control" unique_id=800731700]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("1_yvw5t")
+
+[node name="Track" type="ColorRect" parent="." unique_id=202535445]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Fill" type="ColorRect" parent="." unique_id=1120723704]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=2146319897]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_right = 14
+
+[node name="Row" type="HBoxContainer" parent="Margin" unique_id=886631434]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="Margin/Row" unique_id=1625322777]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+
+[node name="ValueLabel" type="Label" parent="Margin/Row" unique_id=1994491071]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 18
