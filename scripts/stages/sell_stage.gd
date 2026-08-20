@@ -1,9 +1,10 @@
 ## Стадия продажи: превращает итог заезда в деньги и закрывает день.
 ##
-## Сводка идёт по типам МЕСТА, а не по типам товара: ваза, поехавшая целой,
-## остаётся вазой, даже если приехала грудой черепков, а черепок со склада —
-## отдельная строка. Иначе потенциал строки врёт: четыре черепка и одна ваза
-## обещали бы 250 монет при физическом потолке в 90.
+## Строка сводки — это МЕСТО, а не тип товара: каждая погруженная вещь
+## получает свою полосу. Ваза, поехавшая целой, остаётся вазой, даже если
+## приехала грудой черепков, а черепок со склада — отдельное место со своим
+## потенциалом. Иначе обещание строки врёт: четыре черепка и одна ваза
+## сулили бы 250 монет при физическом потолке в 90.
 extends Control
 
 @export var header_label: Label
@@ -18,6 +19,11 @@ extends Control
 ## в инспекторе и её можно подменить, не открывая скрипт.
 @export var row_scene: PackedScene
 
+## Порядок товара в каталоге: id → номер. Нужен сортировке строк и строится
+## один раз за показ экрана, чтобы не искать предмет в массиве на каждое
+## сравнение — сортировка зовёт компаратор куда чаще, чем есть строк.
+var _catalog_order: Dictionary = {}
+
 
 func _ready() -> void:
 	next_day_button.pressed.connect(_on_next_day_pressed)
@@ -28,8 +34,7 @@ func _ready() -> void:
 ## ваза без одного донца стоит дешевле целой, но дороже нуля. Поверх этого
 ## ложится коэффициент за скорость: за долгую доставку платят меньше.
 func _sell_cargo() -> void:
-	var groups := _group_run()
-	var gross := _build_rows(groups)
+	var gross := _build_rows(_collect_places())
 
 	# Коэффициент применяется один раз к сумме, а не к каждой строке:
 	# иначе строки не сходились бы в итог из-за округления, и игрок
@@ -56,68 +61,77 @@ func _sell_cargo() -> void:
 		time_label.text = tr("SELL_TIME") % run_seconds
 
 
-## Сведение записей заезда в группы. Ключ — идентификатор товара плюс
-## признак осколка; в значении копятся две суммы долей: доехавшая
-## и стартовая. Считаем в долях, а не в монетах, чтобы округлять
-## один раз на группу, а не на каждое место.
-func _group_run() -> Dictionary:
+## Записи заезда → список мест, готовых к показу. Монеты считаем здесь,
+## один раз на место: сортировка идёт уже по готовым числам, и округление
+## не зависит от того, в каком порядке строки встали.
+func _collect_places() -> Array[Dictionary]:
 	# get() со значением по умолчанию — на случай, если стадию открыли
 	# в обход перевозки (например, запустив сцену напрямую из редактора).
-	var items: Array = GameState.run_result.get("items", [])
-	var groups: Dictionary = {}
-	for entry: Dictionary in items:
+	var entries: Array = GameState.run_result.get("items", [])
+	var places: Array[Dictionary] = []
+	for entry: Dictionary in entries:
 		var data := ItemCatalog.get_by_id(entry.get("id", &""))
 		if data == null:
 			continue
 		var start: float = entry.get("start", 1.0)
-		# Стартовая доля меньше единицы бывает только у черепка:
-		# целую вещь грузят целиком или не грузят вовсе.
-		var pieces := not is_equal_approx(start, 1.0)
-		var key := _group_key(data.id, pieces)
-		if not groups.has(key):
-			groups[key] = {"data": data, "pieces": pieces, "ratio": 0.0, "start": 0.0}
-		var group: Dictionary = groups[key]
-		group["ratio"] = float(group["ratio"]) + float(entry.get("ratio", 0.0))
-		group["start"] = float(group["start"]) + start
-	return groups
+		var price := float(data.base_price)
+		places.append({
+			"data": data,
+			# Стартовая доля меньше единицы бывает только у черепка:
+			# целую вещь грузят целиком или не грузят вовсе.
+			"pieces": not is_equal_approx(start, 1.0),
+			"revenue": int(round(price * float(entry.get("ratio", 0.0)))),
+			"potential": int(round(price * start)),
+			"order": int(_order_of(data.id)),
+		})
+	places.sort_custom(_compare_places)
+	return places
 
 
-## Строки строятся в порядке каталога, а не в порядке словаря: так позиция
-## товара на экране не прыгает от дня ко дню. Возвращает выручку до
-## коэффициента за время.
-func _build_rows(groups: Dictionary) -> int:
+## Строки в порядке: товар по каталогу → целые перед осколками → дороже
+## перед дешевле. Так уцелевшее собирается сверху, а потери сползают вниз
+## и читаются одной группой, а не вперемешку.
+static func _compare_places(a: Dictionary, b: Dictionary) -> bool:
+	if a["order"] != b["order"]:
+		return a["order"] < b["order"]
+	if a["pieces"] != b["pieces"]:
+		return not bool(a["pieces"])
+	return int(a["revenue"]) > int(b["revenue"])
+
+
+## Возвращает выручку до коэффициента за время.
+func _build_rows(places: Array[Dictionary]) -> int:
 	if row_scene == null:
 		push_error("SellStage: не назначена сцена строки сводки")
 		return 0
 	var gross := 0
-	for data: ItemData in ItemCatalog.all_items():
-		for pieces: bool in [false, true]:
-			var key := _group_key(data.id, pieces)
-			if not groups.has(key):
-				continue
-			var group: Dictionary = groups[key]
-			var revenue := int(round(float(data.base_price) * float(group["ratio"])))
-			var potential := int(round(float(data.base_price) * float(group["start"])))
-			gross += revenue
-			var row := row_scene.instantiate() as SellRow
-			if row == null:
-				push_error("SellStage: сцена строки сводки — не SellRow")
-				return gross
-			# Сначала в дерево, потом настройка: узлы строки приходят
-			# из @export и резолвятся только при входе в дерево.
-			rows_container.add_child(row)
-			row.setup(data, revenue, potential, pieces)
+	for place: Dictionary in places:
+		gross += int(place["revenue"])
+		var row := row_scene.instantiate() as SellRow
+		if row == null:
+			push_error("SellStage: сцена строки сводки — не SellRow")
+			return gross
+		# Сначала в дерево, потом настройка: узлы строки приходят
+		# из @export и резолвятся только при входе в дерево.
+		rows_container.add_child(row)
+		row.setup(place["data"], place["revenue"], place["potential"],
+			place["pieces"])
 	# Пустая сводка бывает не только при проигрыше: стадию можно открыть
 	# напрямую из редактора, и тогда пустой экран без подписи читается
 	# как поломка.
-	empty_label.visible = rows_container.get_child_count() == 0
+	empty_label.visible = places.is_empty()
 	return gross
 
 
-## Ключ группы. Строкой, а не вложенными словарями: словарь словарей
-## пришлось бы разбирать в двух местах вместо одного.
-static func _group_key(id: StringName, pieces: bool) -> String:
-	return "%s|%d" % [id, int(pieces)]
+## Номер товара в каталоге. Индекс строится лениво: экран открывается раз
+## в день, и платить за него при загрузке сцены незачем.
+func _order_of(id: StringName) -> int:
+	if _catalog_order.is_empty():
+		var index := 0
+		for data: ItemData in ItemCatalog.all_items():
+			_catalog_order[data.id] = index
+			index += 1
+	return int(_catalog_order.get(id, _catalog_order.size()))
 
 
 func _on_next_day_pressed() -> void:
