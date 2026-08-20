@@ -180,8 +180,13 @@ func _bump_money() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _tween == null or not _tween.is_running():
 		return
-	var skip := event.is_action_pressed(&"ui_accept") \
-		or (event is InputEventMouseButton and event.pressed)
+	var skip := event.is_action_pressed(&"ui_accept")
+	if not skip:
+		# Через приведение, а не через "is ... and event.pressed": у базового
+		# InputEvent поля pressed нет, обращение к нему читается как Variant,
+		# и всё выражение теряет тип.
+		var click := event as InputEventMouseButton
+		skip = click != null and click.pressed
 	if skip:
 		_tween.set_speed_scale(SKIP_SPEED)
 		get_viewport().set_input_as_handled()
