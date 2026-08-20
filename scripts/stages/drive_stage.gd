@@ -134,9 +134,14 @@ var _elapsed: float = 0.0
 ## самим, а не гонять камеру за шумом мгновенной скорости.
 var _look_ahead: float = 0.0
 
-## Что было погружено: instance_id → идентификатор предмета. По этому
-## списку финиш поймёт, чего недосчитался: живые тела на финише знают
-## свой instance_id, а исходный состав груза известен только отсюда.
+## Что было погружено: instance_id → {"id", "start"}. По этому списку финиш
+## поймёт, чего недосчитался: живые тела на финише знают свой instance_id,
+## а исходный состав груза известен только отсюда.
+##
+## "start" — доля цены, с которой место тронулось: единица у целой вещи,
+## своя доля у черепка со склада. Без неё довезённый черепок неотличим
+## от вазы, приехавшей осколком, и экран продажи обещал бы за место больше,
+## чем оно в принципе могло дать.
 var _loaded: Dictionary = {}
 
 ## Стеллаж существует только на время погрузки: заезд идёт сквозь то место,
@@ -558,7 +563,10 @@ func _start_run() -> void:
 		if _is_in_bed(item):
 			# С этого момента поблажка кончается — заезд начался.
 			item.toughness_bonus = 1.0
-			_loaded[item.instance_id] = item.data.id
+			_loaded[item.instance_id] = {
+				"id": item.data.id,
+				"start": item.value_ratio(),
+			}
 		else:
 			# На склад вещь уходит вместе с идентификатором своего куска:
 			# у целой он пустой, у осколка — свой. Без этого черепки либо
@@ -841,20 +849,28 @@ func _collect_result() -> Dictionary:
 	var lost := 0
 	var total_ratio := 0.0
 	for instance_id: int in _loaded:
-		var ratio: float = clampf(ratios.get(instance_id, 0.0), 0.0, 1.0)
+		var record: Dictionary = _loaded[instance_id]
+		var start: float = record.get("start", 1.0)
+		# Потолок доли — то, с чем место поехало, а не единица: черепок
+		# не может привезти больше, чем в нём было.
+		var ratio: float = clampf(ratios.get(instance_id, 0.0), 0.0, start)
 		total_ratio += ratio
+		# Проверка на ноль идёт первой: у места с нулевой стартовой долей
+		# (битый .tres, потерянный кусок в каталоге) «доехало ровно столько,
+		# сколько везли» формально верно, но называть это доставкой нельзя.
 		var state := &"lost"
-		if is_equal_approx(ratio, 1.0):
+		if ratio <= 0.0:
+			lost += 1
+		elif is_equal_approx(ratio, start):
 			state = &"delivered"
 			delivered += 1
-		elif ratio > 0.0:
+		else:
 			state = &"damaged"
 			damaged += 1
-		else:
-			lost += 1
 		items.append({
-			"id": _loaded[instance_id],
+			"id": record["id"],
 			"ratio": ratio,
+			"start": start,
 			"state": state,
 		})
 

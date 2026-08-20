@@ -12,6 +12,11 @@ extends Control
 ## полосе читается как сбой расчёта, а не как потеря.
 const LOST_KEY: String = "SELL_ROW_LOST"
 
+## Заголовок строки осколков. Отдельным ключом с подстановкой, а не склейкой
+## из двух слов: в других языках порядок слов другой, и «Ваза» + « осколки»
+## переводчику не собрать.
+const PIECES_KEY: String = "SELL_ROW_PIECES"
+
 @export var track: ColorRect
 @export var fill: ColorRect
 @export var name_label: Label
@@ -52,9 +57,13 @@ func _ready() -> void:
 
 ## Товар строки и её числа. Вызывается один раз при создании: за время
 ## показа экрана итог заезда уже не меняется.
-func setup(item: ItemData, revenue: int, potential: int) -> void:
-	_title = item.display_name
-	_fill_color = item.color
+##
+## pieces — строка про черепки, а не про целые вещи. Различие чисто
+## показное: у осколков свой заголовок и приглушённый цвет, ровно как
+## у самих осколков в кузове.
+func setup(item: ItemData, revenue: int, potential: int, pieces: bool = false) -> void:
+	_title = tr(PIECES_KEY) % item.display_name if pieces else item.display_name
+	_fill_color = item.color.darkened(0.2) if pieces else item.color
 	_revenue = maxi(revenue, 0)
 	_potential = maxi(potential, 0)
 	fill_ratio = 0.0

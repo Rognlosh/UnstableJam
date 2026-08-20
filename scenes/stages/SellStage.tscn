@@ -11,18 +11,58 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_qo4s3")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1895023362]
+[node name="Margin" type="MarginContainer" parent="." unique_id=26206810]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Margin" unique_id=1914478817]
+layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="InfoLabel" type="Label" parent="VBoxContainer" unique_id=2135634275]
+[node name="HeaderLabel" type="Label" parent="Margin/VBoxContainer" unique_id=861483174]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+
+[node name="RowScroll" type="ScrollContainer" parent="Margin/VBoxContainer" unique_id=993087907]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Rows" type="VBoxContainer" parent="Margin/VBoxContainer/RowScroll" unique_id=1042501117]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="EmptyLabel" type="Label" parent="Margin/VBoxContainer" unique_id=1934262090]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "SELL_EMPTY"
+
+[node name="Separator" type="HSeparator" parent="Margin/VBoxContainer" unique_id=260614239]
 layout_mode = 2
 
-[node name="NextDayButton" type="Button" parent="VBoxContainer" unique_id=116342288]
+[node name="GrossLabel" type="Label" parent="Margin/VBoxContainer" unique_id=919594352]
 layout_mode = 2
-text = "Следующий день"
+
+[node name="TimeLabel" type="Label" parent="Margin/VBoxContainer" unique_id=1164190351]
+layout_mode = 2
+
+[node name="TotalLabel" type="Label" parent="Margin/VBoxContainer" unique_id=2018762196]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+
+[node name="MoneyLabel" type="Label" parent="Margin/VBoxContainer" unique_id=1116371688]
+layout_mode = 2
+
+[node name="NextDayButton" type="Button" parent="Margin/VBoxContainer" unique_id=68289780]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "SELL_NEXT_DAY"

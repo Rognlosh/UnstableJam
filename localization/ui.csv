@@ -1,2 +1,11 @@
 keys,ru,en
 SELL_ROW_LOST,потеряно,lost
+SELL_ROW_PIECES,%s — осколки,%s shards
+SELL_HEADER,ПРОДАЖА · день %d,SALES · day %d
+SELL_GROSS,Итого за товар: %d,Goods total: %d
+SELL_TIME,В пути %d с,On the road: %d s
+SELL_TIME_LATE,В пути %d с · оплата %d%%,On the road: %d s · payout %d%%
+SELL_TOTAL,Выручка: %d,Revenue: %d
+SELL_MONEY,Деньги: %d · на складе: %d,Money: %d · in stock: %d
+SELL_EMPTY,Не довезли ничего,Nothing made it
+SELL_NEXT_DAY,Следующий день,Next day
