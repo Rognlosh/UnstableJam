@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="ItemDatabase" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="ItemDatabase" format=3 uid="uid://s6cuen6031e6"]
 
-[ext_resource type="Script" path="res://scripts/items/item_database.gd" id="1_db"]
+[ext_resource type="Script" uid="uid://cywi1h61pnbnp" path="res://scripts/items/item_database.gd" id="1_db"]
 [ext_resource type="Script" uid="uid://dlhunjdv6d2mp" path="res://scripts/items/item_data.gd" id="2_item"]
-[ext_resource type="Resource" path="res://assets/items/vase.tres" id="3_vase"]
-[ext_resource type="Resource" path="res://assets/items/chest.tres" id="4_chest"]
+[ext_resource type="Resource" uid="uid://dhevcjqqan18v" path="res://assets/items/vase.tres" id="3_vase"]
+[ext_resource type="Resource" uid="uid://p61i2335ur8r" path="res://assets/items/chest.tres" id="4_chest"]
 [ext_resource type="Resource" path="res://assets/items/chalice.tres" id="5_chalice"]
 
 [resource]
