@@ -33,9 +33,20 @@ extends ItemQuirk
 @export var drag_cap: float = 140.0
 
 ## Боковой снос, px/с². Среднее за период равно нулю: вещь водит вокруг
-## своего места, а не сдувает в одну сторону.
-@export var drift_accel: float = 40.0
+## своего места, а не сдувает в одну сторону. По умолчанию выключен —
+## на узкой подставке он читается как качание, а не как парение.
+@export var drift_accel: float = 0.0
 @export var drift_period: float = 2.4
+
+## Гашение медленного бокового хода, 1/с. Почти невесомая вещь давит
+## на опору пятью процентами своего веса, поэтому трения у неё практически
+## нет: она ползёт по полке от любого шума контакта, тем более что спать
+## мы ей запретили. Гасим этот ход сами.
+@export var creep_damp: float = 8.0
+## До какой скорости гашение работает. Порог низкий намеренно: в кузове
+## вещь едет вместе с машиной на сотнях px/с, и тормозить это движение
+## нельзя — иначе груз просто уползёт к заднему борту.
+@export var creep_speed: float = 30.0
 ## Вращение гасим: парящая вещь, крутящаяся волчком, читается как ошибка.
 @export var angular_damp: float = 1.5
 
@@ -93,12 +104,19 @@ class Runtime extends QuirkRuntime:
 		accel += up * (-cfg.rise_drag * strength \
 			* clampf(vertical, -cfg.drag_cap, cfg.drag_cap))
 
+		var side := Vector2(up.y, -up.x)
+
 		# Боковой снос. Частота своя, несоизмеримая с подъёмом: иначе
 		# движение замкнулось бы в аккуратный овал и читалось бы заводным.
-		if cfg.drift_period > 0.0:
-			var side := Vector2(up.y, -up.x)
+		if cfg.drift_period > 0.0 and cfg.drift_accel > 0.0:
 			accel += side * cfg.drift_accel * strength \
 				* sin(_time * TAU / cfg.drift_period + _phase * 1.7)
+
+		# Гашение ползания. Только для медленного хода: быстрый — это либо
+		# езда вместе с кузовом, либо удар, и трогать его нельзя.
+		var lateral := state.linear_velocity.dot(side)
+		if absf(lateral) < cfg.creep_speed:
+			accel += side * (-cfg.creep_damp * strength * lateral)
 
 		# Интегрируем сами, через скорость, а не через apply_central_force:
 		# сила, поданная из _integrate_forces, применяется относительно шага
