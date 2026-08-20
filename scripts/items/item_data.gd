@@ -32,9 +32,9 @@ extends Resource
 
 
 ## Кусок по идентификатору. null, если такого куска нет.
-func get_piece(id: StringName) -> ItemPieceData:
+func get_piece(wanted_id: StringName) -> ItemPieceData:
 	for piece: ItemPieceData in pieces:
-		if piece.piece_id == id:
+		if piece.piece_id == wanted_id:
 			return piece
 	return null
 

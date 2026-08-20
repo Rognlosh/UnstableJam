@@ -61,11 +61,18 @@ func _ready() -> void:
 ## pieces — строка про черепки, а не про целые вещи. Различие чисто
 ## показное: у осколков свой заголовок и приглушённый цвет, ровно как
 ## у самих осколков в кузове.
-func setup(item: ItemData, revenue: int, potential: int, pieces: bool = false) -> void:
-	_title = tr(PIECES_KEY) % item.display_name if pieces else item.display_name
-	_fill_color = item.color.darkened(0.2) if pieces else item.color
-	_revenue = maxi(revenue, 0)
-	_potential = maxi(potential, 0)
+func setup(item: ItemData, gained: int, full_price: int, pieces: bool = false) -> void:
+	# Развёрнутое ветвление вместо тернарника: tr() % ... отдаёт Variant,
+	# и парсер справедливо ругается на несовместимость веток.
+	if pieces:
+		_title = str(tr(PIECES_KEY) % item.display_name)
+		# Осколки на полке темнее целого товара — строка держит то же правило.
+		_fill_color = item.color.darkened(0.2)
+	else:
+		_title = item.display_name
+		_fill_color = item.color
+	_revenue = maxi(gained, 0)
+	_potential = maxi(full_price, 0)
 	fill_ratio = 0.0
 	shown_revenue = 0.0
 	# is_node_ready() отсекает случай, когда строку настроили сразу после

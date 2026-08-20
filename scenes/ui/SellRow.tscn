@@ -2,12 +2,16 @@
 
 [ext_resource type="Script" uid="uid://cdv6mqe7orhx0" path="res://scripts/ui/sell_row.gd" id="1_yvw5t"]
 
-[node name="SellRow" type="Control" unique_id=800731700]
+[node name="SellRow" type="Control" unique_id=800731700 node_paths=PackedStringArray("track", "fill", "name_label", "value_label")]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 3
 anchors_preset = 0
 mouse_filter = 2
 script = ExtResource("1_yvw5t")
+track = NodePath("Track")
+fill = NodePath("Fill")
+name_label = NodePath("Margin/Row/NameLabel")
+value_label = NodePath("Margin/Row/ValueLabel")
 
 [node name="Track" type="ColorRect" parent="." unique_id=202535445]
 layout_mode = 1

@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://qoa0labdxmof"]
 
 [ext_resource type="Script" uid="uid://cs67475y3gisk" path="res://scripts/stages/sell_stage.gd" id="1_qo4s3"]
+[ext_resource type="PackedScene" uid="uid://f35p3bxo84pm" path="res://scenes/ui/SellRow.tscn" id="2_sr0w1"]
 
-[node name="SellStage" type="Control" unique_id=2091320303]
+[node name="SellStage" type="Control" unique_id=2091320303 node_paths=PackedStringArray("header_label", "rows_container", "empty_label", "gross_label", "time_label", "total_label", "money_label", "next_day_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,6 +11,15 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_qo4s3")
+header_label = NodePath("Margin/VBoxContainer/HeaderLabel")
+rows_container = NodePath("Margin/VBoxContainer/RowScroll/Rows")
+empty_label = NodePath("Margin/VBoxContainer/EmptyLabel")
+gross_label = NodePath("Margin/VBoxContainer/GrossLabel")
+time_label = NodePath("Margin/VBoxContainer/TimeLabel")
+total_label = NodePath("Margin/VBoxContainer/TotalLabel")
+money_label = NodePath("Margin/VBoxContainer/MoneyLabel")
+next_day_button = NodePath("Margin/VBoxContainer/NextDayButton")
+row_scene = ExtResource("2_sr0w1")
 
 [node name="Margin" type="MarginContainer" parent="." unique_id=26206810]
 layout_mode = 1
