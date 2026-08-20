@@ -118,9 +118,11 @@ func _wears_quirk() -> bool:
 func _setup_quirk() -> void:
 	if not _wears_quirk():
 		return
-	_quirk = data.quirk.create_runtime()
+	# Фабрика отдаёт RefCounted — приводим здесь, на стороне, которая
+	# про оба класса и так знает.
+	_quirk = data.quirk.create_runtime() as QuirkRuntime
 	if _quirk != null:
-		_quirk.attach(self, data.quirk)
+		_quirk.attach(self, data.quirk, level)
 
 
 ## Зовётся Destruction'ом в момент разрушения — единственный шанс свойства

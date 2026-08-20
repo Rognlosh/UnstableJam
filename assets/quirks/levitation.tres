@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="LevitationQuirk" format=3 uid="uid://cux3vox8e5vlv"]
+
+[ext_resource type="Script" uid="uid://lh8dew55axqd" path="res://scripts/items/quirks/levitation_quirk.gd" id="1_h8vl1"]
+
+[resource]
+script = ExtResource("1_h8vl1")
+metadata/_custom_type_script = "uid://lh8dew55axqd"

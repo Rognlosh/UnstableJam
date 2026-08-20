@@ -10,19 +10,26 @@ extends RefCounted
 ##   on_break      — вещь разрушается, последний шанс что-то сделать.
 ## Наследник переопределяет только нужные ему: в GDScript нет ключевого
 ## слова override, достаточно объявить метод с тем же именем.
+##
+## Тело типизировано как RigidBody2D, а не BreakableItem: последнее замкнуло
+## бы кольцо ссылок между предметом, его описанием и свойством. Всё, что
+## свойству нужно сверх физики, приходит параметрами.
 
-var item: BreakableItem = null
+var item: RigidBody2D = null
 var quirk: ItemQuirk = null
+## Уровень тела: 0 — целая вещь, больше — осколок.
+var level: int = 0
 ## Сила свойства на этом теле: 1.0 у целой вещи, piece_strength у осколка.
 ## Считается один раз при подключении, чтобы каждое свойство не выясняло
 ## заново, кто оно такое.
 var strength: float = 1.0
 
 
-func attach(target: BreakableItem, source: ItemQuirk) -> void:
+func attach(target: RigidBody2D, source: ItemQuirk, piece_level: int) -> void:
 	item = target
 	quirk = source
-	strength = 1.0 if target.level == 0 else source.piece_strength
+	level = piece_level
+	strength = 1.0 if piece_level == 0 else source.piece_strength
 	_setup()
 
 

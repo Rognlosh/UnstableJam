@@ -24,7 +24,11 @@ extends Resource
 
 
 ## Поведение для одного тела. Переопределяется наследниками.
-func create_runtime() -> QuirkRuntime:
+##
+## Возвращаемый тип — RefCounted, а не QuirkRuntime, намеренно: иначе
+## описание свойства и его поведение ссылались бы друг на друга, а такой
+## цикл движок не разрешает. Приведение делает вызывающая сторона.
+func create_runtime() -> RefCounted:
 	push_error("ItemQuirk: у свойства \"%s\" не задано поведение" % id)
 	return null
 
