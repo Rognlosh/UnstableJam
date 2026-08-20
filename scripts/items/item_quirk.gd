@@ -9,9 +9,11 @@ extends Resource
 ## в QuirkRuntime, по объекту на тело, а фабрикой служит create_runtime().
 
 @export var id: StringName = &""
-@export var display_name: String = ""
+
+## Ключи локализации, а не готовый текст: строки живут в localization/ui.csv.
+@export var name_key: String = ""
 ## Одна фраза для витрины: чем эта вещь опасна в дороге.
-@export var hint: String = ""
+@export var hint_key: String = ""
 
 ## Оттенок, которым свойство метит вещь, пока нет рисованного арта.
 @export var tint: Color = Color(1.0, 1.0, 1.0, 1.0)
@@ -37,3 +39,13 @@ func tinted(base: Color) -> Color:
 	if tint_amount <= 0.0:
 		return base
 	return base.lerp(tint, tint_amount)
+
+
+## Переведённые строки. tr() зовём здесь, а не в интерфейсе: так вызывающая
+## сторона не обязана помнить, что в полях лежат ключи, а не текст.
+func get_display_name() -> String:
+	return tr(name_key) if not name_key.is_empty() else ""
+
+
+func get_hint() -> String:
+	return tr(hint_key) if not hint_key.is_empty() else ""

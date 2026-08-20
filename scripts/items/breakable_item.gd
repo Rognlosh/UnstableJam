@@ -28,7 +28,6 @@ var _polygon: PackedVector2Array = PackedVector2Array()
 var _prev_velocity: Vector2 = Vector2.ZERO
 var _is_broken: bool = false
 var _frames_alive: int = 0
-
 var _quirk: QuirkRuntime = null
 
 @onready var _visual: Polygon2D = $Visual
@@ -81,8 +80,7 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 	var impact: float = (state.linear_velocity - _prev_velocity - gravity_step).length()
 	_prev_velocity = state.linear_velocity
 	_frames_alive += 1
-	
-	
+
 	# Свойство работает и у помеченного на слом тела: обрывать левитацию
 	# на кадр раньше смысла нет, а ветвление добавилось бы.
 	if _quirk != null:
@@ -104,7 +102,6 @@ func break_threshold() -> float:
 		return INF
 	var base := data.break_speed * (data.piece_toughness if level > 0 else 1.0)
 	return base * toughness_bonus
-	
 
 
 ## Действует ли свойство на это конкретное тело: у осколка оно может быть

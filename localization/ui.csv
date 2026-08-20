@@ -9,3 +9,5 @@ SELL_TOTAL,Выручка: %d,Revenue: %d
 SELL_MONEY,Деньги: %d · на складе: %d,Money: %d · in stock: %d
 SELL_EMPTY,Не довезли ничего,Nothing made it
 SELL_NEXT_DAY,Следующий день,Next day
+QUIRK_LEVITATION,Левитация,Levitation
+QUIRK_LEVITATION_HINT,Почти невесома: подскакивает на кочках и норовит выпрыгнуть из кузова.,Nearly weightless — it bounces on every bump and tries to leap out of the bed.

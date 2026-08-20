@@ -30,7 +30,6 @@ extends Resource
 @export var color: Color = Color(0.72, 0.66, 0.5)
 @export var physics_material: PhysicsMaterial
 
-
 ## Нестабильное свойство. null — обычный товар. Ссылка на общий ресурс,
 ## поэтому одну левитацию можно надеть на любое число предметов.
 @export var quirk: ItemQuirk

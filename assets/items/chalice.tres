@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=9 format=3]
+
+[ext_resource type="Script" uid="uid://dlhunjdv6d2mp" path="res://scripts/items/item_data.gd" id="1_item"]
+[ext_resource type="Script" uid="uid://b2i0e702clsfw" path="res://scripts/items/item_piece_data.gd" id="2_piece"]
+[ext_resource type="Resource" uid="uid://cux3vox8e5vlv" path="res://assets/quirks/levitation.tres" id="3_lev"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_chalice"]
+friction = 0.7
+bounce = 0.1
+
+[sub_resource type="Resource" id="Piece_chalice_cup_left"]
+script = ExtResource("2_piece")
+piece_id = &"cup_left"
+polygon = PackedVector2Array(-17, -28, 0, -28, 0, 6, -6, 6, -12, -8)
+value_share = 0.28
+
+[sub_resource type="Resource" id="Piece_chalice_cup_right"]
+script = ExtResource("2_piece")
+piece_id = &"cup_right"
+polygon = PackedVector2Array(0, -28, 17, -28, 12, -8, 6, 6, 0, 6)
+value_share = 0.28
+
+[sub_resource type="Resource" id="Piece_chalice_foot_left"]
+script = ExtResource("2_piece")
+piece_id = &"foot_left"
+polygon = PackedVector2Array(-6, 6, 0, 6, 0, 28, -18, 28)
+value_share = 0.22
+
+[sub_resource type="Resource" id="Piece_chalice_foot_right"]
+script = ExtResource("2_piece")
+piece_id = &"foot_right"
+polygon = PackedVector2Array(0, 6, 6, 6, 18, 28, 0, 28)
+value_share = 0.22
+
+[resource]
+script = ExtResource("1_item")
+id = &"chalice"
+display_name = "Кубок"
+base_price = 90
+buy_price = 55
+mass = 1.6
+break_speed = 300.0
+piece_toughness = 1.6
+piece_value_factor = 0.8
+whole_polygon = PackedVector2Array(-17, -28, 17, -28, 12, -8, 6, 6, 18, 28, -18, 28, -6, 6, -12, -8)
+pieces = Array[ExtResource("2_piece")]([SubResource("Piece_chalice_cup_left"), SubResource("Piece_chalice_cup_right"), SubResource("Piece_chalice_foot_left"), SubResource("Piece_chalice_foot_right")])
+color = Color(0.86, 0.74, 0.38, 1)
+physics_material = SubResource("PhysicsMaterial_chalice")
+quirk = ExtResource("3_lev")
