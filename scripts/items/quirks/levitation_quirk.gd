@@ -39,6 +39,9 @@ extends ItemQuirk
 ## Вращение гасим: парящая вещь, крутящаяся волчком, читается как ошибка.
 @export var angular_damp: float = 1.5
 
+## Временный вывод в консоль раз в секунду: подъём, ускорение, сон.
+@export var debug: bool = false
+
 
 func create_runtime() -> RefCounted:
 	return Runtime.new()
@@ -51,6 +54,7 @@ class Runtime extends QuirkRuntime:
 	## Сдвиг фазы: без него все парящие вещи в кузове дышали бы
 	## синхронно, как одно тело.
 	var _phase: float = 0.0
+	var _debug_time: float = 0.0
 
 	func _setup() -> void:
 		var cfg := quirk as LevitationQuirk
@@ -94,4 +98,16 @@ class Runtime extends QuirkRuntime:
 			accel += side * cfg.drift_accel * strength \
 				* sin(_time * TAU / cfg.drift_period + _phase * 1.7)
 
-		state.apply_central_force(accel * item.mass)
+		# Интегрируем сами, через скорость, а не через apply_central_force:
+		# сила, поданная из _integrate_forces, применяется относительно шага
+		# солвера со сдвигом, и эффект легко потерять. Прибавка к скорости
+		# идёт до решения контактов, поэтому вес по-прежнему учитывается:
+		# поставленный сверху ларец эту прибавку гасит.
+		state.linear_velocity += accel * state.step
+
+		if cfg.debug:
+			_debug_time += state.step
+			if _debug_time >= 1.0:
+				_debug_time = 0.0
+				print("[левитация] подъём %.2f · ускорение %.0f · масса %.2f · спит %s"
+					% [lift, accel.y, item.mass, item.sleeping])

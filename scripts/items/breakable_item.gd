@@ -78,13 +78,16 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 	# иначе предмет «разбивался» бы в воздухе.
 	var gravity_step: Vector2 = state.total_gravity * state.step
 	var impact: float = (state.linear_velocity - _prev_velocity - gravity_step).length()
-	_prev_velocity = state.linear_velocity
 	_frames_alive += 1
 
 	# Свойство работает и у помеченного на слом тела: обрывать левитацию
 	# на кадр раньше смысла нет, а ветвление добавилось бы.
 	if _quirk != null:
 		_quirk.physics_step(state)
+
+	# Эталон фиксируем уже после свойства: подъём и снос — наши собственные
+	# изменения скорости, ударом они не являются.
+	_prev_velocity = state.linear_velocity
 
 	if _is_broken or _frames_alive <= GRACE_FRAMES:
 		return
