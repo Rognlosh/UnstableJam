@@ -19,7 +19,7 @@ var _next_id: int = 0
 
 func spawn_item(item_data: ItemData, parent: Node2D, at: Vector2) -> BreakableItem:
 	var item := ITEM_SCENE.instantiate() as BreakableItem
-	item.setup_whole(item_data, _take_instance_id())
+	item.setup_whole(item_data, take_instance_id())
 	# Позицию задаём ДО add_child: двигать физическое тело после входа
 	# в дерево — плохая привычка, физика этого не любит.
 	item.transform = _local_transform(parent, Transform2D(0.0, at))
@@ -33,7 +33,7 @@ func spawn_piece(
 	item_data: ItemData, piece: ItemPieceData, parent: Node2D, at: Vector2
 ) -> BreakableItem:
 	var item := ITEM_SCENE.instantiate() as BreakableItem
-	item.setup_piece(item_data, _take_instance_id(), piece)
+	item.setup_piece(item_data, take_instance_id(), piece)
 	item.transform = _local_transform(parent, Transform2D(0.0, at))
 	parent.add_child(item)
 	return item
@@ -80,7 +80,10 @@ func live_fragment_count() -> int:
 	return get_tree().get_nodes_in_group(&"fragments").size()
 
 
-func _take_instance_id() -> int:
+## Публичный намеренно: осколки, родившиеся при одном разбитии, делят номер
+## родителя, и стадии перевозки нужно уметь развести их по собственным
+## номерам, когда они становятся самостоятельным грузом.
+func take_instance_id() -> int:
 	_next_id += 1
 	return _next_id
 
