@@ -73,12 +73,23 @@ func setup(item: ItemData, gained: int, full_price: int, pieces: bool = false) -
 		_fill_color = item.color
 	_revenue = maxi(gained, 0)
 	_potential = maxi(full_price, 0)
-	fill_ratio = 0.0
-	shown_revenue = 0.0
+	# Строка сразу показывает итог, а не ноль: анимация — надстройка,
+	# и без неё экран обязан быть верным. Кто собирается анимировать,
+	# сам отматывает строку в начало через rewind().
+	fill_ratio = target_ratio()
+	shown_revenue = float(_revenue)
 	# is_node_ready() отсекает случай, когда строку настроили сразу после
 	# instantiate(): узлы из @export резолвятся только при входе в дерево.
 	if is_node_ready():
 		_apply_all()
+
+
+## Отмотка строки в начало — точка входа для анимации: пустая полоса
+## и ноль в счётчике. Отдельным методом, а не состоянием по умолчанию,
+## чтобы строка без анимации оставалась осмысленной.
+func rewind() -> void:
+	fill_ratio = 0.0
+	shown_revenue = 0.0
 
 
 ## Доля, до которой стадии надо докрутить полосу.
