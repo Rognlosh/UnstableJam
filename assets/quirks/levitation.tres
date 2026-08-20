@@ -10,6 +10,7 @@ name_key = "QUIRK_LEVITATION"
 hint_key = "QUIRK_LEVITATION_HINT"
 tint = Color(0.75, 0.9, 1, 1)
 tint_amount = 0.25
+keeps_awake = true
 piece_strength = 0.5
 lift_base = 0.95
 lift_amplitude = 0.35

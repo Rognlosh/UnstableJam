@@ -30,6 +30,8 @@ func attach(target: RigidBody2D, source: ItemQuirk, piece_level: int) -> void:
 	quirk = source
 	level = piece_level
 	strength = 1.0 if piece_level == 0 else source.piece_strength
+	if source.keeps_awake:
+		target.can_sleep = false
 	_setup()
 
 
