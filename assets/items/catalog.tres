@@ -6,7 +6,9 @@
 [ext_resource type="Resource" uid="uid://p61i2335ur8r" path="res://assets/items/chest.tres" id="4_chest"]
 [ext_resource type="Resource" path="res://assets/items/chalice.tres" id="5_chalice"]
 [ext_resource type="Resource" path="res://assets/items/totem.tres" id="6_totem"]
+[ext_resource type="Resource" path="res://assets/items/amphora.tres" id="7_amphora"]
+[ext_resource type="Resource" path="res://assets/items/flask.tres" id="8_flask"]
 
 [resource]
 script = ExtResource("1_db")
-items = Array[ExtResource("2_item")]([ExtResource("3_vase"), ExtResource("4_chest"), ExtResource("5_chalice"), ExtResource("6_totem")])
+items = Array[ExtResource("2_item")]([ExtResource("3_vase"), ExtResource("4_chest"), ExtResource("5_chalice"), ExtResource("6_totem"), ExtResource("7_amphora"), ExtResource("8_flask")])

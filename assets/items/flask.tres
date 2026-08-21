@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=7 format=3]
+
+[ext_resource type="Script" uid="uid://dlhunjdv6d2mp" path="res://scripts/items/item_data.gd" id="1_item"]
+[ext_resource type="Script" uid="uid://b2i0e702clsfw" path="res://scripts/items/item_piece_data.gd" id="2_piece"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_flask"]
+friction = 0.55
+bounce = 0.12
+
+[sub_resource type="Resource" id="Piece_flask_top"]
+script = ExtResource("2_piece")
+piece_id = &"top"
+polygon = PackedVector2Array(-8, -13, 8, -13, 10, -4, -10, -4)
+value_share = 0.4
+
+[sub_resource type="Resource" id="Piece_flask_bottom_left"]
+script = ExtResource("2_piece")
+piece_id = &"bottom_left"
+polygon = PackedVector2Array(-10, -4, 0, -4, 0, 13, -6, 13, -10, 9)
+value_share = 0.3
+
+[sub_resource type="Resource" id="Piece_flask_bottom_right"]
+script = ExtResource("2_piece")
+piece_id = &"bottom_right"
+polygon = PackedVector2Array(0, -4, 10, -4, 10, 9, 6, 13, 0, 13)
+value_share = 0.3
+
+[resource]
+script = ExtResource("1_item")
+id = &"flask"
+name_key = "ITEM_FLASK"
+base_price = 32
+buy_price = 12
+mass = 0.5
+break_speed = 260.0
+piece_toughness = 1.5
+piece_value_factor = 0.6
+whole_polygon = PackedVector2Array(-8, -13, 8, -13, 10, -4, 10, 9, 6, 13, -6, 13, -10, 9, -10, -4)
+pieces = Array[ExtResource("2_piece")]([SubResource("Piece_flask_top"), SubResource("Piece_flask_bottom_left"), SubResource("Piece_flask_bottom_right")])
+color = Color(0.45, 0.6, 0.52, 1)
+physics_material = SubResource("PhysicsMaterial_flask")
