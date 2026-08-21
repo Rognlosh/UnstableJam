@@ -83,7 +83,8 @@ const DRAG_MAX_SPEED: float = 1400.0
 ## Скорость поворота на Q/E и стрелках, рад/с.
 const ROTATE_SPEED: float = 3.0
 ## Во сколько раз товар прочнее на погрузке. Швырнуть вазу об борт всё ещё
-## можно, а вот уронить её с полки — уже не смертельно.
+## можно, а вот уронить её с полки — уже не смертельно. Множится на обивку,
+## а не заменяет её: поблажка погрузки и прокачка отвечают за разное.
 const LOADING_TOUGHNESS: float = 1.25
 ## С какой скоростью вещь выпускается из руки: остаток разгона гасим,
 ## иначе отпущенная на замахе ваза улетает через весь кузов.
@@ -147,6 +148,11 @@ var _loaded: Dictionary = {}
 
 ## Стеллаж существует только на время погрузки: заезд идёт сквозь то место,
 ## где он стоит, поэтому на старте он уезжает вместе с непогруженным товаром.
+## Прочность груза от обивки кузова. Читается один раз при входе в стадию:
+## менять её посреди заезда нечему, а спрашивать каталог на каждую вещь
+## значило бы гонять поиск по словарю на каждый спавн.
+var _cargo_toughness: float = 1.0
+
 var _shelf: Node2D = null
 
 ## Вещь в руке и точка, за которую её держат, в её собственных координатах.
@@ -181,6 +187,7 @@ func _ready() -> void:
 	_restart_button.hide()
 	_timer_bar.hide()
 	_track.finish_reached.connect(_on_finish_reached)
+	_apply_upgrades()
 	_build_track()
 	_build_left_wall()
 	_place_truck()
@@ -273,6 +280,34 @@ func _extend_start_ground(wall_x: float) -> void:
 
 ## Грузовик ставится на стартовую площадку до первого шага физики,
 ## поэтому телепорт не даёт рывка.
+## Раздаёт купленные прокачки по местам. Зовётся один раз при входе
+## в стадию: между заездами игрок в лавке, а посреди заезда прокачки
+## не появляются.
+##
+## Разветвления по идентификатору здесь нет намеренно — каждая линия
+## это просто число, которое кладётся в свой параметр. База лежит в самом
+## каталоге, поэтому непрокачанная машина получает те же значения, что
+## получила бы без всей этой механики.
+func _apply_upgrades() -> void:
+	_truck.bed_wall_height = UpgradeCatalog.value_of(
+		UpgradeCatalog.BED_WALLS_ID, _truck.bed_wall_height)
+	_truck.wheel_radius = UpgradeCatalog.value_of(
+		UpgradeCatalog.WHEELS_ID, _truck.wheel_radius)
+	_cargo_toughness = UpgradeCatalog.value_of(UpgradeCatalog.PADDING_ID, 1.0)
+
+	# Мотору нужны два числа, а ступень хранит одно. Момент растёт линейно,
+	# потолок оборотов — как корень из него: тяга и максимальная скорость
+	# связаны через сопротивление, которое само растёт со скоростью, и вдвое
+	# более сильный мотор не везёт вдвое быстрее. Заодно это удерживает
+	# прокачку от превращения в «та же машина, только быстрее»: прибавка
+	# к скорости заметно скромнее прибавки к тяге.
+	var engine_gain := UpgradeCatalog.value_of(UpgradeCatalog.ENGINE_ID, 1.0)
+	if not is_equal_approx(engine_gain, 1.0):
+		_truck.motor_torque *= engine_gain
+		_truck.brake_torque *= engine_gain
+		_truck.max_wheel_speed *= sqrt(engine_gain)
+
+
 func _place_truck() -> void:
 	_truck.teleport_to(_track.get_start_position())
 	_look_ahead = 0.0
@@ -325,7 +360,7 @@ func _unload_to_shelf(returned: Array[BreakableItem] = []) -> void:
 		item.place_at(Transform2D(0.0, Vector2(
 			slot.x - rect.position.x,
 			slot.y - CARGO_LIFT - rect.end.y)))
-		item.toughness_bonus = LOADING_TOUGHNESS
+		item.toughness_bonus = _cargo_toughness * LOADING_TOUGHNESS
 
 	_add_posts(_shelf_left, _shelf_ground, _shelf_level, _shelf_level_height)
 	_stack_debris(debris)
@@ -377,7 +412,7 @@ func _stack_rows(items: Array[BreakableItem], left_x: float, bottom_y: float,
 		item.place_at(Transform2D(0.0, Vector2(
 			cursor - rect.position.x,
 			bottom_y - float(row) * step - CARGO_LIFT - rect.end.y)))
-		item.toughness_bonus = LOADING_TOUGHNESS
+		item.toughness_bonus = _cargo_toughness * LOADING_TOUGHNESS
 		cursor += rect.size.x + ShelfLayout.GAP
 	return leftover
 
@@ -567,7 +602,7 @@ func _start_run() -> void:
 			continue
 		if _is_in_bed(item):
 			# С этого момента поблажка кончается — заезд начался.
-			item.toughness_bonus = 1.0
+			item.toughness_bonus = _cargo_toughness
 			# Осколки одного разбития наследуют номер родительской вещи:
 			# в дороге это правильно, они складываются обратно в её долю.
 			# Но в кузове каждый из них — отдельное место, и под общим
@@ -654,7 +689,7 @@ func _restart_run() -> void:
 	var relocate := _truck.chassis.global_transform * was.affine_inverse()
 	for item: BreakableItem in in_bed:
 		item.place_at(relocate * item.global_transform)
-		item.toughness_bonus = LOADING_TOUGHNESS
+		item.toughness_bonus = _cargo_toughness * LOADING_TOUGHNESS
 
 	# Склад снова под рукой: непогруженное можно доложить.
 	_unload_to_shelf(returned)

@@ -41,3 +41,15 @@ SHOP_HANDOUT_HINT,"Старик собрал, что нашлось на зад�
 SHOP_HANDOUT_TAKE,Взять,Take it
 SHOP_HEADER,ЗАКУП · день %d · деньги %d,MARKET · day %d · money %d
 SHOP_HEADER_GOAL,ЗАКУП · день %d · деньги %d · до лавки %d,MARKET · day %d · money %d · shop in %d
+UPGRADE_LEVEL,%s · ур. %d/%d,%s · lv %d/%d
+UPGRADE_MAXED,Предел,Maxed out
+UPGRADE_SHELVES,Полки в лавке,Shop shelves
+UPGRADE_SHELVES_HINT,Ещё один ярус стеллажа: за раз можно закупить больше товара.,One more shelf tier: you can stock up on more goods per run.
+UPGRADE_BED_WALLS,Борта кузова,Cargo bed walls
+UPGRADE_BED_WALLS_HINT,Доски выше — товар реже вылетает за борт на кочках.,Taller boards mean fewer goods bouncing out over the bumps.
+UPGRADE_PADDING,Обивка кузова,Bed padding
+UPGRADE_PADDING_HINT,Войлок и солома под грузом: удар держится дольше до трещины.,Felt and straw under the load: goods take a harder knock before cracking.
+UPGRADE_WHEELS,Колёса,Wheels
+UPGRADE_WHEELS_HINT,Колёса больше: мелкая рябь не цепляет обод и машина едет быстрее — но в гору тянет хуже.,"Bigger wheels: fine ripples stop catching the rim and the truck runs faster, though it pulls uphill worse."
+UPGRADE_ENGINE,Мотор,Engine
+UPGRADE_ENGINE_HINT,"Больше момента: подъёмы берутся внатяг, разгон быстрее.",More torque: climbs go through under load and the truck picks up speed sooner.

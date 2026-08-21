@@ -134,15 +134,21 @@ func _on_buy_pressed(item: ItemData) -> void:
 	_refresh()
 
 
-## Покупка прокачки. Лавка наставника обрабатывается здесь же особым случаем,
-## а не системой эффектов: прокачек на джем набирается две-три, и каждая
-## трогает свой угол игры — общего языка описания у них нет.
+## Покупка следующей ступени. Что именно куплено, стадия не разбирает: она
+## поднимает уровень линии, а значение с него читают те, кому оно нужно —
+## заезд и раскладка склада. Особый случай здесь ровно один, и он не про
+## эффект: покупка лавки заканчивает партию.
 func _on_upgrade_pressed(upgrade: UpgradeData) -> void:
-	if upgrade == null or GameState.has_upgrade(upgrade.id):
+	if upgrade == null:
 		return
-	if not GameState.spend_money(upgrade.price):
+	var level := GameState.upgrade_level(upgrade.id)
+	if level >= upgrade.level_count():
 		return
-	GameState.purchased_upgrades.append(upgrade.id)
+	# Проверка и списание — одной операцией: spend_money() возвращает false,
+	# если не хватило, и тогда состояние не меняется вовсе.
+	if not GameState.spend_money(upgrade.price_at(level + 1)):
+		return
+	GameState.set_upgrade_level(upgrade.id, level + 1)
 	if upgrade.id == UpgradeCatalog.SHOP_DEED_ID:
 		# Смена стадии сама перерисует всё, что нужно; обновлять витрину,
 		# которую сейчас снесут, незачем.
@@ -233,17 +239,37 @@ func _refresh_header(money: int) -> void:
 		header_label.text = tr("SHOP_HEADER") % [day, money]
 
 
+## Строка лавки показывает, где линия сейчас стоит, и цену одного шага
+## вперёд. Полную стоимость линии не показываем: копить игрок будет
+## на ближайшую ступень, а сумма всех четырёх только отпугнёт.
 func _refresh_upgrades(money: int) -> void:
 	for lot: OfferLot in _upgrade_lots:
 		var upgrade: UpgradeData = _upgrade_lots[lot]
-		if GameState.has_upgrade(upgrade.id):
-			lot.set_action(tr("UPGRADE_OWNED"), false)
-		elif money < upgrade.price:
+		var level := GameState.upgrade_level(upgrade.id)
+		var total := upgrade.level_count()
+		lot.set_title(_upgrade_title(upgrade, level, total))
+		if level >= total:
+			# У линии из одной ступени «уровень 1 из 1» звучит как недоделка:
+			# лавку покупают, а не прокачивают.
+			lot.set_action(tr("UPGRADE_OWNED" if total <= 1 else "UPGRADE_MAXED"), false)
+			continue
+		var price := upgrade.price_at(level + 1)
+		if money < price:
 			# Показываем недостачу, а не цену: цену игрок уже прочёл выше,
 			# а вопрос у него один — сколько ещё возить.
-			lot.set_action(tr("UPGRADE_SHORT") % (upgrade.price - money), false)
+			lot.set_action(tr("UPGRADE_SHORT") % (price - money), false)
 		else:
-			lot.set_action(tr("UPGRADE_BUY") % upgrade.price, true)
+			lot.set_action(tr("UPGRADE_BUY") % price, true)
+
+
+## Заголовок строки. Ступень дописывается к названию, а не отдельной меткой:
+## иначе пришлось бы править сцену строки ради одного числа, а строка
+## обслуживает ещё и бесплатный ящик, которому ступени не нужны.
+func _upgrade_title(upgrade: UpgradeData, level: int, total: int) -> String:
+	var title := upgrade.get_display_name()
+	if total <= 1:
+		return title
+	return tr("UPGRADE_LEVEL") % [title, level, total]
 
 
 func _refresh_handout() -> void:
@@ -259,7 +285,7 @@ func _refresh_handout() -> void:
 ## пришлось бы хранить у каждого предмета, а выигрыш нулевой.
 func _stock_text(whole: Dictionary, fragments: int) -> String:
 	var shelves := "Полки: %d / %d" % [
-		ShelfLayout.levels_used(GameState.cargo_actual), ShelfLayout.MAX_LEVELS,
+		ShelfLayout.levels_used(GameState.cargo_actual), ShelfLayout.max_levels(),
 	]
 	var parts: PackedStringArray = PackedStringArray()
 	# Идём по каталогу, а не по ключам словаря: так порядок в строке склада

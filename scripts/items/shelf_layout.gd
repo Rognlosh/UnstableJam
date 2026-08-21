@@ -10,9 +10,17 @@ extends RefCounted
 ## перевозки: значения обязаны совпадать.
 const WIDTH: float = 380.0
 const GAP: float = 10.0
-## Сколько полок в стеллаже. В будущем станет прокачкой, поэтому число
-## лежит одно и в одном месте.
-const MAX_LEVELS: int = 4
+## Сколько полок в стеллаже без прокачек. Дальше их число растёт линией
+## SHELVES, поэтому спрашивать вместимость надо через max_levels(),
+## а не через эту константу.
+const BASE_LEVELS: int = 1
+
+
+## Вместимость склада с учётом купленных полок. Значение живёт в каталоге
+## прокачек, а не здесь: полки — покупка, и цена с числом ступеней правятся
+## в инспекторе вместе с остальными линиями.
+static func max_levels() -> int:
+	return int(UpgradeCatalog.value_of(UpgradeCatalog.SHELVES_ID, float(BASE_LEVELS)))
 
 
 ## Сколько полок занимают эти записи склада. Осколки пропускаются: битое
@@ -27,12 +35,12 @@ static func fits(entries: Array, extra: ItemData) -> bool:
 		return false
 	var widths := _widths(entries)
 	widths.append(extra.get_bounds().size.x)
-	return _pack(widths) <= MAX_LEVELS
+	return _pack(widths) <= max_levels()
 
 
 ## Свободные полки — для строки состояния склада.
 static func levels_left(entries: Array) -> int:
-	return maxi(0, MAX_LEVELS - levels_used(entries))
+	return maxi(0, max_levels() - levels_used(entries))
 
 
 static func _widths(entries: Array) -> PackedFloat32Array:

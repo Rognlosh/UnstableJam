@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1_upg"]
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_level.gd" id="2_lvl"]
+
+[sub_resource type="Resource" id="Resource_lv1"]
+script = ExtResource("2_lvl")
+price = 150
+value = 96.0
+
+[sub_resource type="Resource" id="Resource_lv2"]
+script = ExtResource("2_lvl")
+price = 450
+value = 140.0
+
+[sub_resource type="Resource" id="Resource_lv3"]
+script = ExtResource("2_lvl")
+price = 1100
+value = 190.0
+
+[sub_resource type="Resource" id="Resource_lv4"]
+script = ExtResource("2_lvl")
+price = 2400
+value = 256.0
+
+[resource]
+script = ExtResource("1_upg")
+id = &"bed_walls"
+name_key = "UPGRADE_BED_WALLS"
+hint_key = "UPGRADE_BED_WALLS_HINT"
+base_value = 64.0
+levels = Array[ExtResource("2_lvl")]([SubResource("Resource_lv1"), SubResource("Resource_lv2"), SubResource("Resource_lv3"), SubResource("Resource_lv4")])

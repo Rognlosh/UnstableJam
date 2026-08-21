@@ -1,9 +1,14 @@
-[gd_resource type="Resource" script_class="UpgradeDatabase" format=3]
+[gd_resource type="Resource" script_class="UpgradeDatabase" load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/upgrades/upgrade_database.gd" id="1_db"]
 [ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="2_upg"]
-[ext_resource type="Resource" path="res://assets/upgrades/shop_deed.tres" id="3_deed"]
+[ext_resource type="Resource" path="res://assets/upgrades/shelves.tres" id="3_shelves"]
+[ext_resource type="Resource" path="res://assets/upgrades/bed_walls.tres" id="4_walls"]
+[ext_resource type="Resource" path="res://assets/upgrades/padding.tres" id="5_padding"]
+[ext_resource type="Resource" path="res://assets/upgrades/wheels.tres" id="6_wheels"]
+[ext_resource type="Resource" path="res://assets/upgrades/engine.tres" id="7_engine"]
+[ext_resource type="Resource" path="res://assets/upgrades/shop_deed.tres" id="8_deed"]
 
 [resource]
 script = ExtResource("1_db")
-upgrades = Array[ExtResource("2_upg")]([ExtResource("3_deed")])
+upgrades = Array[ExtResource("2_upg")]([ExtResource("3_shelves"), ExtResource("4_walls"), ExtResource("5_padding"), ExtResource("6_wheels"), ExtResource("7_engine"), ExtResource("8_deed")])

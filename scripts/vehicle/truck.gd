@@ -65,6 +65,18 @@ extends Node2D
 ## столько же, сколько давали прежние 24 на колесе поменьше.
 @export_range(4.0, 60.0, 0.5) var max_wheel_speed: float = 20.0
 
+@export_group("Колёса")
+
+## Радиус колеса. Прокачиваемый параметр, и обмен здесь не в одну сторону:
+## сила на ободе равна моменту, делённому на радиус, поэтому МАЛЕНЬКОЕ колесо
+## тянет в гору лучше. Зато оно цепляется за мелкую частую рябь гребёнки,
+## где большое прокатывается поверх, и при том же потолке оборотов едет
+## медленнее (скорость = радиус × обороты).
+@export_range(16.0, 60.0, 1.0) var wheel_radius: float = 34.0:
+	set(value):
+		wheel_radius = maxf(4.0, value)
+		_apply_wheel_radius()
+
 @export_group("Наклон")
 
 ## Момент, которым A/D крутят раму.
@@ -115,6 +127,7 @@ func _ready() -> void:
 	_collect_parts()
 	_push_spring_params()
 	_apply_bed_walls()
+	_apply_wheel_radius()
 
 
 func _physics_process(_delta: float) -> void:
@@ -243,6 +256,34 @@ func _apply_bed_walls() -> void:
 			visual.kind = DebugShape.Kind.RECTANGLE
 			visual.size = rect.size
 			visual.position = Vector2.ZERO
+
+
+## Перестраивает колёса под текущий радиус: и форму, и её визуал.
+##
+## Форма создаётся заново, а не правится на месте: в сцене оба колеса делят
+## один CircleShape2D (второе получено дублированием первого), и правка
+## «одного» молча меняла бы оба — сейчас это совпало бы с нужным результатом,
+## но сломалось бы в тот день, когда колёса станут разными.
+##
+## Якорей подвески радиус не касается: суставы цепляются за центр колеса,
+## а не за обод, поэтому rebuild_suspension() здесь не нужна.
+func _apply_wheel_radius() -> void:
+	for wheel: RigidBody2D in _wheels:
+		for child in wheel.get_children():
+			var shape := child as CollisionShape2D
+			if shape == null:
+				continue
+			var circle := CircleShape2D.new()
+			circle.radius = wheel_radius
+			shape.shape = circle
+
+			# Визуал — ребёнок самой коллизии, поэтому едет за ней.
+			for sub in shape.get_children():
+				var visual := sub as DebugShape
+				if visual == null:
+					continue
+				visual.kind = DebugShape.Kind.CIRCLE
+				visual.radius = wheel_radius
 
 
 ## Внутренние границы кузова по X, в координатах рамы: x — задняя стенка,
