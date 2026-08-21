@@ -11,9 +11,9 @@ action_button = NodePath("Margin/Row/ActionButton")
 [node name="Margin" type="MarginContainer" parent="." unique_id=1930100011]
 layout_mode = 2
 theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
+theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_bottom = 6
 
 [node name="Row" type="HBoxContainer" parent="Margin" unique_id=1930100012]
 layout_mode = 2
