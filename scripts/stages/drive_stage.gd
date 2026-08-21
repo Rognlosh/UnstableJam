@@ -29,11 +29,12 @@ enum Phase {
 ## До какого коэффициента опускается доход к концу полосы.
 @export_range(0.0, 1.0, 0.05) var late_payout: float = 0.6
 
-@export_group("")
+## Зерно трассы для отладки. Ноль — обычное поведение, зерно берётся
+## из партии. Любое другое значение заставляет заезд собирать одну и ту же
+## трассу, чтобы можно было переигрывать пойманный баг.
+@export var debug_track_seed: int = 0
 
-## Множитель зерна. Простое число, чтобы соседние дни давали
-## непохожие трассы, а не сдвинутые версии одной.
-const SEED_STEP: int = 7919
+@export_group("")
 
 ## Насколько камера уходит вперёд по ходу движения на полном ходу.
 const CAMERA_LOOK_AHEAD: float = 240.0
@@ -206,8 +207,12 @@ func _process(delta: float) -> void:
 
 func _build_track() -> void:
 	_track.randomize_seed_on_build = false
-	_track.track_seed = GameState.get_day() * SEED_STEP
+	_track.track_seed = debug_track_seed if debug_track_seed != 0 \
+		else GameState.track_seed_for_day(GameState.get_day())
 	_track.build()
+	# Зерно в консоль: без него воспроизвести пойманный на трассе баг
+	# можно только пересказом.
+	print("[трасса] день %d · зерно %d" % [GameState.get_day(), _track.track_seed])
 
 
 ## Невидимая стена по левому краю мира и предел камеры на той же черте.
