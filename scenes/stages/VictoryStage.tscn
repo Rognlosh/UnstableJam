@@ -1,0 +1,59 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/stages/story_stage.gd" id="1_story"]
+
+[node name="VictoryStage" type="Control" unique_id=1910300200 node_paths=PackedStringArray("continue_button")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_story")
+next_stage = 1
+continue_button = NodePath("Margin/VBoxContainer/ContinueButton")
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=1910300201]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 64
+theme_override_constants/margin_top = 64
+theme_override_constants/margin_right = 64
+theme_override_constants/margin_bottom = 64
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Margin" unique_id=1910300202]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="Margin/VBoxContainer" unique_id=1910300203]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "VICTORY_TITLE"
+
+[node name="P1" type="Label" parent="Margin/VBoxContainer" unique_id=1910300204]
+layout_mode = 2
+text = "VICTORY_P1"
+autowrap_mode = 3
+
+[node name="P2" type="Label" parent="Margin/VBoxContainer" unique_id=1910300205]
+layout_mode = 2
+text = "VICTORY_P2"
+autowrap_mode = 3
+
+[node name="P3" type="Label" parent="Margin/VBoxContainer" unique_id=1910300206]
+layout_mode = 2
+text = "VICTORY_P3"
+autowrap_mode = 3
+
+[node name="Spacer" type="Control" parent="Margin/VBoxContainer" unique_id=1910300207]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ContinueButton" type="Button" parent="Margin/VBoxContainer" unique_id=1910300208]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "VICTORY_CONTINUE"

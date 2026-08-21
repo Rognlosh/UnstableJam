@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="UpgradeDatabase" format=3 uid="uid://c1upgcatalog0"]
+[gd_resource type="Resource" script_class="UpgradeDatabase" format=3]
 
 [ext_resource type="Script" path="res://scripts/upgrades/upgrade_database.gd" id="1_db"]
 [ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="2_upg"]

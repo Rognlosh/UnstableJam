@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="HandoutData" format=3 uid="uid://dhandout00001"]
+[gd_resource type="Resource" script_class="HandoutData" format=3]
 
 [ext_resource type="Script" path="res://scripts/items/handout_data.gd" id="1_hand"]
 [ext_resource type="Script" path="res://scripts/items/item_data.gd" id="2_item"]
