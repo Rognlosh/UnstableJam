@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ExplosionQuirk" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/quirks/explosion_quirk.gd" id="1_expl"]
+
+[resource]
+script = ExtResource("1_expl")
+id = &"explosion"
+name_key = "QUIRK_EXPLOSION"
+hint_key = "QUIRK_EXPLOSION_HINT"
+tint = Color(1, 0.55, 0.25, 1)
+tint_amount = 0.3
+keeps_awake = false
+piece_strength = 0.4
+radius = 240.0
+kick_speed = 560.0
+spin_kick = 6.0
+vehicle_factor = 0.12
+max_targets = 32

@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=9 format=3]
+
+[ext_resource type="Script" uid="uid://dlhunjdv6d2mp" path="res://scripts/items/item_data.gd" id="1_item"]
+[ext_resource type="Script" uid="uid://b2i0e702clsfw" path="res://scripts/items/item_piece_data.gd" id="2_piece"]
+[ext_resource type="Resource" path="res://assets/quirks/explosion.tres" id="3_expl"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_totem"]
+friction = 0.85
+bounce = 0.05
+
+[sub_resource type="Resource" id="Piece_totem_head_left"]
+script = ExtResource("2_piece")
+piece_id = &"head_left"
+polygon = PackedVector2Array(-14, -34, 0, -34, 0, -6, -10, -6, -18, -18)
+value_share = 0.3
+
+[sub_resource type="Resource" id="Piece_totem_head_right"]
+script = ExtResource("2_piece")
+piece_id = &"head_right"
+polygon = PackedVector2Array(0, -34, 14, -34, 18, -18, 10, -6, 0, -6)
+value_share = 0.3
+
+[sub_resource type="Resource" id="Piece_totem_base_left"]
+script = ExtResource("2_piece")
+piece_id = &"base_left"
+polygon = PackedVector2Array(-10, -6, 0, -6, 0, 34, -16, 34, -10, 26)
+value_share = 0.2
+
+[sub_resource type="Resource" id="Piece_totem_base_right"]
+script = ExtResource("2_piece")
+piece_id = &"base_right"
+polygon = PackedVector2Array(0, -6, 10, -6, 10, 26, 16, 34, 0, 34)
+value_share = 0.2
+
+[resource]
+script = ExtResource("1_item")
+id = &"totem"
+name_key = "ITEM_TOTEM"
+base_price = 140
+buy_price = 85
+mass = 3.0
+break_speed = 620.0
+piece_toughness = 1.4
+piece_value_factor = 0.75
+whole_polygon = PackedVector2Array(-14, -34, 14, -34, 18, -18, 10, -6, 10, 26, 16, 34, -16, 34, -10, 26, -10, -6, -18, -18)
+pieces = Array[ExtResource("2_piece")]([SubResource("Piece_totem_head_left"), SubResource("Piece_totem_head_right"), SubResource("Piece_totem_base_left"), SubResource("Piece_totem_base_right")])
+color = Color(0.62, 0.31, 0.2, 1)
+physics_material = SubResource("PhysicsMaterial_totem")
+quirk = ExtResource("3_expl")
