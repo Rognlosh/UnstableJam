@@ -2,8 +2,10 @@
 
 [ext_resource type="Script" uid="uid://du2w2v71dp5hf" path="res://scripts/stages/shop_stage.gd" id="1_amwyn"]
 [ext_resource type="PackedScene" uid="uid://bvtiyb1d1s0or" path="res://scenes/ui/ShopLot.tscn" id="2_2qxyq"]
+[ext_resource type="PackedScene" path="res://scenes/ui/UpgradeLot.tscn" id="3_uplot"]
+[ext_resource type="Resource" path="res://assets/items/handout.tres" id="4_hand"]
 
-[node name="ShopStage" type="Control" unique_id=1788116682 node_paths=PackedStringArray("header_label", "lots_container", "stock_label", "go_button")]
+[node name="ShopStage" type="Control" unique_id=1788116682 node_paths=PackedStringArray("header_label", "tabs", "lots_container", "stock_label", "go_button", "upgrades_container", "handout_lot")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -12,10 +14,15 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_amwyn")
 header_label = NodePath("Margin/VBoxContainer/HeaderLabel")
-lots_container = NodePath("Margin/VBoxContainer/LotScroll/Lots")
+tabs = NodePath("Margin/VBoxContainer/Tabs")
+lots_container = NodePath("Margin/VBoxContainer/Tabs/Goods/LotScroll/Lots")
 stock_label = NodePath("Margin/VBoxContainer/StockLabel")
 go_button = NodePath("Margin/VBoxContainer/GoButton")
 lot_scene = ExtResource("2_2qxyq")
+upgrades_container = NodePath("Margin/VBoxContainer/Tabs/Upgrades/UpgradeList")
+upgrade_lot_scene = ExtResource("3_uplot")
+handout_lot = NodePath("Margin/VBoxContainer/Tabs/Goods/HandoutLot")
+handout = ExtResource("4_hand")
 
 [node name="Margin" type="MarginContainer" parent="." unique_id=1114399329]
 layout_mode = 1
@@ -37,12 +44,35 @@ theme_override_constants/separation = 12
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 
-[node name="LotScroll" type="ScrollContainer" parent="Margin/VBoxContainer" unique_id=1801053780]
+[node name="Tabs" type="TabContainer" parent="Margin/VBoxContainer" unique_id=1910300401]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Goods" type="VBoxContainer" parent="Margin/VBoxContainer/Tabs" unique_id=1910300402]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HandoutLot" parent="Margin/VBoxContainer/Tabs/Goods" instance=ExtResource("3_uplot") unique_id=1910300403]
+layout_mode = 2
+visible = false
+
+[node name="LotScroll" type="ScrollContainer" parent="Margin/VBoxContainer/Tabs/Goods" unique_id=1801053780]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="Lots" type="VBoxContainer" parent="Margin/VBoxContainer/LotScroll" unique_id=1248153681]
+[node name="Lots" type="VBoxContainer" parent="Margin/VBoxContainer/Tabs/Goods/LotScroll" unique_id=1248153681]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="Upgrades" type="ScrollContainer" parent="Margin/VBoxContainer/Tabs" unique_id=1910300404]
+visible = false
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="UpgradeList" type="VBoxContainer" parent="Margin/VBoxContainer/Tabs/Upgrades" unique_id=1910300405]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3

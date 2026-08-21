@@ -39,3 +39,5 @@ SHOP_TAB_UPGRADES,Лавка,Shop
 SHOP_HANDOUT,Ящик от Вельда,A crate from Veld
 SHOP_HANDOUT_HINT,"Старик собрал, что нашлось на задах склада. Даром — но больше не проси.",The old man scraped together whatever was at the back of the store. Free — but do not ask twice.
 SHOP_HANDOUT_TAKE,Взять,Take it
+SHOP_HEADER,ЗАКУП · день %d · деньги %d,MARKET · day %d · money %d
+SHOP_HEADER_GOAL,ЗАКУП · день %d · деньги %d · до лавки %d,MARKET · day %d · money %d · shop in %d
