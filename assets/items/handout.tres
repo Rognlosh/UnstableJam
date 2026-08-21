@@ -4,10 +4,10 @@
 [ext_resource type="Script" path="res://scripts/items/item_data.gd" id="2_item"]
 [ext_resource type="Resource" uid="uid://dhevcjqqan18v" path="res://assets/items/vase.tres" id="3_vase"]
 [ext_resource type="Resource" uid="uid://p61i2335ur8r" path="res://assets/items/chest.tres" id="4_chest"]
-[ext_resource type="Resource" path="res://assets/items/chalice.tres" id="5_chalice"]
+[ext_resource type="Resource" path="res://assets/items/flask.tres" id="5_flask"]
 
 [resource]
 script = ExtResource("1_hand")
 name_key = "SHOP_HANDOUT"
 hint_key = "SHOP_HANDOUT_HINT"
-items = Array[ExtResource("2_item")]([ExtResource("5_chalice"), ExtResource("5_chalice"), ExtResource("4_chest"), ExtResource("3_vase")])
+items = Array[ExtResource("2_item")]([ExtResource("5_flask"), ExtResource("5_flask"), ExtResource("4_chest"), ExtResource("3_vase")])
