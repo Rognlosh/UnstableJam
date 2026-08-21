@@ -1,27 +1,29 @@
 ## Стадия закупа: витрина товаров, лавка наставника и склад.
 ##
-## Единственное место в игре, где тратятся деньги, — и поэтому же
-## единственное, где живут прокачки. Строки витрины про деньги не знают,
-## они лишь сообщают, что кнопку нажали: разделение нужно ради будущего
-## аукциона, у которого другой источник лотов, но та же покупка.
+## Единственное место в игре, где тратятся деньги, — теперь на двух вкладках.
+## Товар и прокачки разведены не по смыслу «покупок двух сортов», а по частоте:
+## товар берут каждый день, прокачку — считаное число раз за партию, и мешать
+## их в один список значит топить витрину строками, которые почти всегда
+## недоступны.
+##
+## Строки про деньги не знают: витрине сообщают, хватает ли, а решение
+## принимает стадия. Разделение нужно ради будущего аукциона — у него другой
+## источник лотов, но та же покупка.
 extends Control
 
 @export var header_label: Label
 @export var tabs: TabContainer
 @export var lots_container: VBoxContainer
+@export var upgrades_container: VBoxContainer
 @export var stock_label: Label
 @export var go_button: Button
 ## Сцена строки витрины. Через @export, а не preload: сцену видно
 ## в инспекторе и её можно подменить, не открывая скрипт.
 @export var lot_scene: PackedScene
-
-@export_group("Лавка наставника")
-@export var upgrades_container: VBoxContainer
-@export var upgrade_lot_scene: PackedScene
-## Строка подачки стоит в сцене готовой, а не создаётся кодом: она одна,
-## её место на вкладке товара фиксировано, и прятать готовый узел дешевле,
-## чем каждый раз пересобирать.
-@export var handout_lot: UpgradeLot
+## Сцена строки-предложения — ею рисуются и прокачки, и бесплатный ящик.
+@export var offer_lot_scene: PackedScene
+## Набор подачки. Ресурсом, а не константой: состав ящика балансируется
+## в инспекторе вместе с ценами предметов.
 @export var handout: HandoutData
 
 ## Строка витрины → её товар. Словарь, а не два параллельных массива:
@@ -29,22 +31,32 @@ extends Control
 var _lots: Dictionary = {}
 ## Строка лавки → её прокачка.
 var _upgrade_lots: Dictionary = {}
+## Строка бесплатного ящика. Живёт на вкладке товара и прячется целиком,
+## пока игрок не на дне.
+var _handout_lot: OfferLot = null
+## Самый дешёвый закуп в каталоге — порог, ниже которого игрок считается
+## неспособным купить хоть что-нибудь. Считается один раз: каталог за время
+## работы игры не меняется.
+var _cheapest_price: int = -1
 
 
 func _ready() -> void:
 	go_button.pressed.connect(_on_go_pressed)
 	GameState.money_changed.connect(_on_money_changed)
-	# Заголовки вкладок в коде, а не именами узлов: имя узла ключом
-	# локализации быть не может, а вкладки должны переводиться вместе
-	# со всем остальным.
-	if tabs != null:
-		tabs.set_tab_title(0, tr("SHOP_TAB_GOODS"))
-		tabs.set_tab_title(1, tr("SHOP_TAB_UPGRADES"))
-	if handout_lot != null:
-		handout_lot.activated.connect(_on_handout_pressed)
+	_setup_tabs()
+	_build_handout()
 	_build_lots()
 	_build_upgrades()
 	_refresh()
+
+
+## Заголовки вкладок ставим кодом, а не именами узлов: имя узла — это ещё
+## и путь в NodePath, и переименовывать его ради перевода нельзя.
+func _setup_tabs() -> void:
+	if tabs == null:
+		return
+	tabs.set_tab_title(0, tr("SHOP_TAB_GOODS"))
+	tabs.set_tab_title(1, tr("SHOP_TAB_UPGRADES"))
 
 
 ## Витрина строится один раз: состав каталога за время закупа не меняется.
@@ -65,22 +77,44 @@ func _build_lots() -> void:
 		_lots[lot] = item
 
 
-## Лавка наставника. Купленные прокачки со вкладки не убираются, а гаснут:
-## список — это ещё и напоминание, что уже сделано.
+## Лавка наставника. Пустой каталог прокачек — не ошибка: вкладка просто
+## останется пустой, и это верное поведение, если прокачки вырежут из скоупа.
 func _build_upgrades() -> void:
-	if upgrades_container == null or upgrade_lot_scene == null:
+	if offer_lot_scene == null or upgrades_container == null:
 		return
-	for data: UpgradeData in UpgradeCatalog.all_upgrades():
-		var lot := upgrade_lot_scene.instantiate() as UpgradeLot
+	for upgrade: UpgradeData in UpgradeCatalog.all_upgrades():
+		if upgrade == null:
+			continue
+		var lot := _make_offer(upgrades_container)
 		if lot == null:
-			push_error("ShopStage: сцена строки прокачки — не UpgradeLot")
 			return
-		upgrades_container.add_child(lot)
-		lot.setup(data.get_display_name(), data.get_hint())
-		# bind() докладывает аргумент к сигналу: activated приходит пустым,
-		# а обработчику нужна прокачка, по которой кликнули.
-		lot.activated.connect(_on_upgrade_pressed.bind(data))
-		_upgrade_lots[lot] = data
+		lot.setup(upgrade.get_display_name(), upgrade.get_hint())
+		# bind() докладывает аргумент к вызову обработчика — сам по себе
+		# сигнал не знает, какой строке он принадлежит.
+		lot.action_pressed.connect(_on_upgrade_pressed.bind(upgrade))
+		_upgrade_lots[lot] = upgrade
+
+
+## Бесплатный ящик стоит первым на вкладке товара, до всех лотов: когда он
+## виден, покупать всё равно нечего, и прятать его под шестью недоступными
+## строками было бы издевательством.
+func _build_handout() -> void:
+	if offer_lot_scene == null or handout == null or handout.items.is_empty():
+		return
+	_handout_lot = _make_offer(lots_container)
+	if _handout_lot == null:
+		return
+	_handout_lot.setup(tr(handout.name_key), tr(handout.hint_key))
+	_handout_lot.action_pressed.connect(_on_handout_pressed)
+
+
+func _make_offer(parent: VBoxContainer) -> OfferLot:
+	var lot := offer_lot_scene.instantiate() as OfferLot
+	if lot == null:
+		push_error("ShopStage: сцена строки-предложения — не OfferLot")
+		return null
+	parent.add_child(lot)
+	return lot
 
 
 func _on_money_changed(_new_amount: int) -> void:
@@ -100,51 +134,58 @@ func _on_buy_pressed(item: ItemData) -> void:
 	_refresh()
 
 
-## Покупка прокачки. Лавка обрабатывается здесь же особым случаем — их одна
-## на игру, и заводить ради неё систему эффектов на день до фриза незачем.
-func _on_upgrade_pressed(data: UpgradeData) -> void:
-	if data == null or GameState.has_upgrade(data.id):
+## Покупка прокачки. Лавка наставника обрабатывается здесь же особым случаем,
+## а не системой эффектов: прокачек на джем набирается две-три, и каждая
+## трогает свой угол игры — общего языка описания у них нет.
+func _on_upgrade_pressed(upgrade: UpgradeData) -> void:
+	if upgrade == null or GameState.has_upgrade(upgrade.id):
 		return
-	if not GameState.spend_money(data.price):
+	if not GameState.spend_money(upgrade.price):
 		return
-	GameState.purchased_upgrades.append(data.id)
-	if data.id == UpgradeCatalog.SHOP_DEED_ID:
-		# Финал показывается ровно здесь и ровно один раз: повторно купить
-		# лавку нельзя, поэтому отдельный флаг «победу видели» не нужен.
+	GameState.purchased_upgrades.append(upgrade.id)
+	if upgrade.id == UpgradeCatalog.SHOP_DEED_ID:
+		# Смена стадии сама перерисует всё, что нужно; обновлять витрину,
+		# которую сейчас снесут, незачем.
 		StageManager.instance.change_stage(StageManager.Stage.VICTORY)
 		return
 	_refresh()
 
 
-## Ящик от наставника. Кладётся на склад целиком, деньги не трогает.
+## Ящик от наставника. Условие выдачи проверяем ещё раз, а не полагаемся
+## на спрятанную строку: между показом и нажатием состояние измениться
+## не может, но правило важнее, чем текущая невозможность его нарушить.
 func _on_handout_pressed() -> void:
 	if not _handout_available():
 		return
 	for item: ItemData in handout.items:
-		if item != null:
-			GameState.cargo_actual.append(GameState.cargo_entry(item.id))
+		if item == null:
+			continue
+		GameState.cargo_actual.append(GameState.cargo_entry(item.id))
 	_refresh()
 
 
-## Условие выдачи — факт нищеты, а не остаток места на полке. Проверяй мы
-## место, бесплатным товаром выгодно было бы затыкать щели каждый день,
-## и аварийная механика превратилась бы в ежедневную рутину.
+## Игрок на дне: купить не может ничего и везти нечего. Оба условия
+## обязательны. По одним деньгам ящик выдавался бы поверх полного склада,
+## по одному пустому складу — богатому игроку, который просто ещё не начал
+## закупаться.
 func _handout_available() -> bool:
 	if handout == null or handout.items.is_empty():
 		return false
 	if not GameState.cargo_actual.is_empty():
 		return false
-	return GameState.get_money() < _cheapest_buy_price()
+	return GameState.get_money() < _get_cheapest_price()
 
 
-## Самый дешёвый лот витрины. Порог считается от каталога, а не константой:
-## подешевей товар — и подачка перестала бы выдаваться там, где надо.
-func _cheapest_buy_price() -> int:
-	var cheapest := -1
+func _get_cheapest_price() -> int:
+	if _cheapest_price >= 0:
+		return _cheapest_price
+	_cheapest_price = 0
 	for item: ItemData in ItemCatalog.all_items():
-		if cheapest < 0 or item.buy_price < cheapest:
-			cheapest = item.buy_price
-	return maxi(cheapest, 0)
+		if item == null:
+			continue
+		if _cheapest_price == 0 or item.buy_price < _cheapest_price:
+			_cheapest_price = item.buy_price
+	return _cheapest_price
 
 
 func _on_go_pressed() -> void:
@@ -153,7 +194,7 @@ func _on_go_pressed() -> void:
 
 func _refresh() -> void:
 	var money := GameState.get_money()
-	header_label.text = _header_text(money)
+	_refresh_header(money)
 
 	# Склад считаем один раз на всю витрину, а не по разу на строку.
 	var whole: Dictionary = {}
@@ -178,38 +219,40 @@ func _refresh() -> void:
 	go_button.disabled = GameState.cargo_actual.is_empty()
 
 
-## Шапка. Цель показывается, пока лавка не выкуплена: без неё непонятно,
-## к чему копить, а после покупки строка превратилась бы в напоминание
-## о том, что копить больше не на что.
-func _header_text(money: int) -> String:
+## Шапка держит и состояние дня, и цель партии: без неё непонятно, к чему
+## копить. После выкупа цель уходит — строка «до лавки: 0» висела бы
+## напоминанием о задаче, которой больше нет.
+func _refresh_header(money: int) -> void:
 	var day := GameState.get_day()
-	var price := UpgradeCatalog.shop_deed_price()
-	if price <= 0 or GameState.has_upgrade(UpgradeCatalog.SHOP_DEED_ID):
-		return tr("SHOP_HEADER") % [day, money]
-	return tr("SHOP_HEADER_GOAL") % [day, money, maxi(price - money, 0)]
+	var deed_price := UpgradeCatalog.shop_deed_price()
+	if deed_price > 0 and not GameState.has_upgrade(UpgradeCatalog.SHOP_DEED_ID):
+		header_label.text = tr("SHOP_HEADER_GOAL") % [
+			day, money, maxi(0, deed_price - money),
+		]
+	else:
+		header_label.text = tr("SHOP_HEADER") % [day, money]
 
 
-## Кнопка прокачки говорит, чего не хватает: серая кнопка без причины
-## читается как поломка. Та же логика, что у «Нет места» на витрине.
 func _refresh_upgrades(money: int) -> void:
-	for lot: UpgradeLot in _upgrade_lots:
-		var data: UpgradeData = _upgrade_lots[lot]
-		if GameState.has_upgrade(data.id):
+	for lot: OfferLot in _upgrade_lots:
+		var upgrade: UpgradeData = _upgrade_lots[lot]
+		if GameState.has_upgrade(upgrade.id):
 			lot.set_action(tr("UPGRADE_OWNED"), false)
-		elif money >= data.price:
-			lot.set_action("%s · %d" % [tr("UPGRADE_BUY"), data.price], true)
+		elif money < upgrade.price:
+			# Показываем недостачу, а не цену: цену игрок уже прочёл выше,
+			# а вопрос у него один — сколько ещё возить.
+			lot.set_action(tr("UPGRADE_SHORT") % (upgrade.price - money), false)
 		else:
-			lot.set_action(tr("UPGRADE_SHORT") % (data.price - money), false)
+			lot.set_action(tr("UPGRADE_BUY") % upgrade.price, true)
 
 
 func _refresh_handout() -> void:
-	if handout_lot == null:
+	if _handout_lot == null:
 		return
 	var available := _handout_available()
-	handout_lot.visible = available
+	_handout_lot.visible = available
 	if available:
-		handout_lot.setup(tr(handout.name_key), tr(handout.hint_key))
-		handout_lot.set_action(tr("SHOP_HANDOUT_TAKE"), true)
+		_handout_lot.set_action(tr("SHOP_HANDOUT_TAKE"), true)
 
 
 ## Строка склада. Числа пишем как «Ваза × 2», а не «2 вазы»: склонения

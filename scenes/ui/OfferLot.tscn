@@ -1,0 +1,40 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/offer_lot.gd" id="1_offer"]
+
+[node name="OfferLot" type="PanelContainer" unique_id=1930100010 node_paths=PackedStringArray("name_label", "hint_label", "action_button")]
+script = ExtResource("1_offer")
+name_label = NodePath("Margin/Row/Info/NameLabel")
+hint_label = NodePath("Margin/Row/Info/HintLabel")
+action_button = NodePath("Margin/Row/ActionButton")
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=1930100011]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Row" type="HBoxContainer" parent="Margin" unique_id=1930100012]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Info" type="VBoxContainer" parent="Margin/Row" unique_id=1930100013]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="Margin/Row/Info" unique_id=1930100014]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Лавка наставника"
+
+[node name="HintLabel" type="Label" parent="Margin/Row/Info" unique_id=1930100015]
+layout_mode = 2
+autowrap_mode = 3
+text = "Вельд отдаёт дело целиком."
+
+[node name="ActionButton" type="Button" parent="Margin/Row" unique_id=1930100016]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+size_flags_vertical = 4
+text = "Купить · 3000"
