@@ -65,7 +65,7 @@ signal finish_reached
 @export var surface_material: PhysicsMaterial
 
 const START_MARGIN: float = 200.0
-const START_HEIGHT: float = 80.0
+const START_HEIGHT: float = 90.0
 
 var _rng := RandomNumberGenerator.new()
 var _chunks: Array[TrackChunk] = []

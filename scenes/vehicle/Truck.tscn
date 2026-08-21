@@ -20,7 +20,7 @@ size = Vector2(8, 64)
 size = Vector2(8, 64)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_f4ujx"]
-radius = 28.0
+radius = 34.0
 
 [node name="Truck" type="Node2D" unique_id=791205458 node_paths=PackedStringArray("bed_walls")]
 script = ExtResource("1_bnfew")
@@ -118,7 +118,7 @@ shape = SubResource("CircleShape2D_f4ujx")
 [node name="Visual" type="Node2D" parent="WheelRear/Shape" unique_id=141094887]
 script = ExtResource("1_chhu4")
 kind = 1
-radius = 28.0
+radius = 34.0
 metadata/_custom_type_script = "uid://5wxv1gs56ldx"
 
 [node name="WheelFront" type="RigidBody2D" parent="." unique_id=639193781]
@@ -133,5 +133,5 @@ shape = SubResource("CircleShape2D_f4ujx")
 [node name="Visual" type="Node2D" parent="WheelFront/Shape" unique_id=1842547281]
 script = ExtResource("1_chhu4")
 kind = 1
-radius = 28.0
+radius = 34.0
 metadata/_custom_type_script = "uid://5wxv1gs56ldx"

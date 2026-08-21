@@ -19,6 +19,13 @@ extends TrackChunk
 ## Перекос жребия к мелким волнам. 1.0 — все размеры равновероятны,
 ## 2.2 — крупные выпадают заметно реже, 4.0 — почти никогда.
 @export_range(1.0, 4.0, 0.1) var small_bias: float = 2.2
+## Потолок крутизны склона волны. У синуса максимальный уклон равен
+## TAU * амплитуда / шаг, и при коротком шаге даже скромная амплитуда даёт
+## стенку под сорок градусов: колесо упирается в неё и машина встаёт.
+## Амплитуда обрезается по этому потолку, поэтому мелкая рябь остаётся
+## мелкой, а трясти не перестаёт.
+@export_range(0.2, 1.5, 0.05) var max_slope: float = 0.7
+
 ## Сколько точек на волну. Меньше восьми — синус превращается в пилу.
 @export_range(4, 16) var samples_per_wave: int = 8
 ## Глубина юбки вниз, чтобы низ куска не попадал в кадр.
@@ -63,6 +70,9 @@ func _generate(rng: RandomNumberGenerator) -> void:
 			step = remaining
 		else:
 			step = minf(step, remaining)
+		# Обрезаем амплитуду уже по итоговому шагу: хвостовая волна бывает
+		# короче жребия, и без этого она встала бы отвесной стенкой.
+		amplitude = minf(amplitude, max_slope * step / TAU)
 		for i in range(1, samples_per_wave + 1):
 			var f := float(i) / float(samples_per_wave)
 			points.append(Vector2(x + step * f, -amplitude * sin(f * TAU)))
