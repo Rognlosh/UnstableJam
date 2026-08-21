@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="UpgradeDatabase" format=3 uid="uid://c1upgcatalog0"]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_database.gd" id="1_db"]
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="2_upg"]
+[ext_resource type="Resource" path="res://assets/upgrades/shop_deed.tres" id="3_deed"]
+
+[resource]
+script = ExtResource("1_db")
+upgrades = Array[ExtResource("2_upg")]([ExtResource("3_deed")])

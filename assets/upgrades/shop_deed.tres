@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://bqx1shopdeed0"]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1_upg"]
+
+[resource]
+script = ExtResource("1_upg")
+id = &"shop_deed"
+name_key = "UPGRADE_SHOP_DEED"
+hint_key = "UPGRADE_SHOP_DEED_HINT"
+price = 3000

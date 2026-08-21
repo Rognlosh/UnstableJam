@@ -7,19 +7,25 @@
 class_name StageManager
 extends Node
 
-## Перечисление стадий игровой петли.
+## Перечисление стадий. Первая и последняя — сюжетные: они лежат вне петли
+## и проходятся по одному разу за партию, но грузятся тем же механизмом,
+## поэтому особыми случаями внутри менеджера не становятся.
 enum Stage {
-	SHOP,   ## закуп товара
-	DRIVE,  ## перевозка — ядро игры
-	SELL,   ## продажа и итог дня
+	INTRO,    ## наставник ставит задачу — показывается один раз при старте
+	SHOP,     ## закуп товара
+	DRIVE,    ## перевозка — ядро игры
+	SELL,     ## продажа и итог дня
+	VICTORY,  ## лавка выкуплена — показывается один раз, петля продолжается
 }
 
 ## Сопоставление стадии и файла сцены.
 ## Ключ — Stage (под капотом int), значение — путь res://.
 const STAGE_SCENES: Dictionary = {
+	Stage.INTRO: "res://scenes/stages/IntroStage.tscn",
 	Stage.SHOP: "res://scenes/stages/ShopStage.tscn",
 	Stage.DRIVE: "res://scenes/stages/DriveStage.tscn",
 	Stage.SELL: "res://scenes/stages/SellStage.tscn",
+	Stage.VICTORY: "res://scenes/stages/VictoryStage.tscn",
 }
 
 ## Длительность затемнения и прояснения (в секундах, каждая половина).
@@ -64,7 +70,7 @@ func _ready() -> void:
 	# эту строку заберёт кнопка «Новая игра».
 	GameState.reset_new_game()
 
-	_load_stage(Stage.SHOP)
+	_load_stage(Stage.INTRO)
 	await _fade(0.0)
 
 

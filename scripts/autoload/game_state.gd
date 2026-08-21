@@ -41,6 +41,17 @@ var run_seed: int = 0
 ## остаётся лежать и переходит на следующий день.
 var cargo_actual: Array[Dictionary] = []
 
+## Купленные прокачки — список идентификаторов из каталога прокачек.
+## Массив, а не словарь со счётчиками: уровни (борта 1 → 2 → 3) заводятся
+## отдельными записями каталога, поэтому «куплено» остаётся булевым.
+var purchased_upgrades: Array[StringName] = []
+
+
+## Куплена ли прокачка. Отдельный метод, а не has() на массиве: вызывающей
+## стороне не надо знать, чем список окажется завтра.
+func has_upgrade(id: StringName) -> bool:
+	return purchased_upgrades.has(id)
+
 
 ## Запись склада. Метод не static намеренно: GameState — автозагрузка,
 ## то есть экземпляр, и статический метод, вызванный через него, даёт
@@ -71,6 +82,7 @@ func reset_new_game() -> void:
 	# мало, два запуска подряд могут лечь слишком близко.
 	run_seed = int(Time.get_ticks_usec()) ^ randi()
 	cargo_actual.clear()
+	purchased_upgrades.clear()
 	run_result.clear()
 
 

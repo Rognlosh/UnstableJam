@@ -16,6 +16,26 @@ ITEM_CHEST,Ларец,Casket
 ITEM_CHALICE,Кубок,Chalice
 ITEM_TOTEM,Тотем огненного бога,Totem of the fire god
 QUIRK_EXPLOSION,Гнев огня,Wrath of fire
-QUIRK_EXPLOSION_HINT,Разбившись, расшвыривает всё вокруг — соседям по кузову достаётся первым.,When it breaks it hurls everything aside — its neighbours in the bed get it first.
+QUIRK_EXPLOSION_HINT,"Разбившись, расшвыривает всё вокруг — соседям по кузову достаётся первым.",When it breaks it hurls everything aside — its neighbours in the bed get it first.
 ITEM_AMPHORA,Большая амфора,Great amphora
 ITEM_FLASK,Флакон,Flask
+INTRO_TITLE,Лавка старого Вельда,Old Veld's shop
+INTRO_P1,Старый Вельд возит хрупкое сорок лет и больше не удержит вожжи. Лавку он отдаст — но не даром и не первому встречному.,"Old Veld has hauled fragile goods for forty years and can no longer hold the reins. He will hand the shop over — but not for free, and not to just anyone."
+INTRO_P2,"Три тысячи монет, говорит он. Накопишь — подпишем бумагу. За городом дороги такие, что и камень бьётся, а половина здешнего товара с норовом.","Three thousand coins, he says. Save that up and we sign the deed. Past the town gates the roads break stone itself, and half the goods around here have a temper."
+INTRO_P3,"Пока бери телегу, бери, что по карману, и вези. Остальное дорога объяснит сама.","For now take the truck, buy what you can afford, and drive. The road will explain the rest."
+INTRO_CONTINUE,В путь,Hit the road
+VICTORY_TITLE,Бумага подписана,The deed is signed
+VICTORY_P1,"Вельд пересчитывает монеты дважды, потом ещё раз — не от недоверия, а потому что не верит, что дожил.","Veld counts the coins twice, then once more — not out of distrust, but because he cannot believe he lived to see it."
+VICTORY_P2,"Ключ ложится на стойку. Лавка твоя: стены, полки, долги и вывеска, которую давно пора перекрасить.","The key lands on the counter. The shop is yours: walls, shelves, debts, and a sign that badly needs repainting."
+VICTORY_P3,"Денег не осталось совсем. Но дорога никуда не делась, а старик обещал собрать ящик на первый рейс.","Not a coin is left. But the road is still there, and the old man promised to put together a crate for the first run."
+VICTORY_CONTINUE,Открыть лавку,Open the shop
+UPGRADE_SHOP_DEED,Лавка наставника,The mentor's shop
+UPGRADE_SHOP_DEED_HINT,Вельд отдаёт дело целиком и забирает всё накопленное до последней монеты.,Veld hands over the whole business and takes every coin you saved.
+UPGRADE_BUY,Купить,Buy
+UPGRADE_OWNED,Куплено,Owned
+UPGRADE_SHORT,Не хватает %d,Short by %d
+SHOP_TAB_GOODS,Товар,Goods
+SHOP_TAB_UPGRADES,Лавка,Shop
+SHOP_HANDOUT,Ящик от Вельда,A crate from Veld
+SHOP_HANDOUT_HINT,"Старик собрал, что нашлось на задах склада. Даром — но больше не проси.",The old man scraped together whatever was at the back of the store. Free — but do not ask twice.
+SHOP_HANDOUT_TAKE,Взять,Take it
