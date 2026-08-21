@@ -35,7 +35,7 @@ value_share = 0.22
 [resource]
 script = ExtResource("1_item")
 id = &"chalice"
-display_name = "Кубок"
+name_key = "ITEM_CHALICE"
 base_price = 90
 buy_price = 55
 mass = 1.6

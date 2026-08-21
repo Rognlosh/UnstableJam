@@ -34,7 +34,7 @@ value_share = 0.2
 [resource]
 script = ExtResource("1_item")
 id = &"vase"
-display_name = "Ваза"
+name_key = "ITEM_VASE"
 base_price = 50
 buy_price = 20
 mass = 2.0

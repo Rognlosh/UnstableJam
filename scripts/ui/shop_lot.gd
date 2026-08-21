@@ -12,6 +12,9 @@ const PREVIEW_BOX: float = 72.0
 @export var silhouette: Polygon2D
 @export var name_label: Label
 @export var stats_label: Label
+## Строка нестабильного свойства. У обычного товара прячется целиком,
+## иначе под каждой вазой болталась бы пустая полоса.
+@export var quirk_label: Label
 @export var buy_button: Button
 
 var _data: ItemData = null
@@ -53,7 +56,7 @@ func _on_buy_pressed() -> void:
 func _refresh() -> void:
 	if _data == null:
 		return
-	name_label.text = _data.display_name
+	name_label.text = _data.get_display_name()
 	var stock_note := "" if _stock <= 0 else "   •   на складе: %d" % _stock
 	stats_label.text = "Продажа: %d   •   прочность: %s   •   вес: %s%s" % [
 		_data.base_price,
@@ -69,7 +72,23 @@ func _refresh() -> void:
 	else:
 		buy_button.text = "Купить · %d" % _data.buy_price
 		buy_button.disabled = _money < _data.buy_price
+	_refresh_quirk()
 	_draw_silhouette()
+
+
+## Свойство подаётся тем же цветом, которым метит вещь: строка витрины
+## и силуэт в кузове читаются как одно и то же, без легенды.
+func _refresh_quirk() -> void:
+	if quirk_label == null:
+		return
+	var quirk := _data.quirk
+	quirk_label.visible = quirk != null
+	if quirk == null:
+		return
+	quirk_label.text = "%s — %s" % [quirk.get_display_name(), quirk.get_hint()]
+	# Оттенок берём в полную силу, а не через tint_amount: на силуэте он
+	# лишь подкрашивает вещь, а тексту нужна читаемая заливка.
+	quirk_label.add_theme_color_override(&"font_color", quirk.tint)
 
 
 ## Силуэт вписывается в квадрат постоянной стороны: иначе высокая ваза

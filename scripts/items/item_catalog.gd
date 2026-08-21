@@ -54,7 +54,7 @@ static func _ensure_index() -> void:
 			push_error("ItemCatalog: в каталоге пустая строка — проверь catalog.tres")
 			continue
 		if data.id == &"":
-			push_error("ItemCatalog: у предмета \"%s\" не заполнен id" % data.display_name)
+			push_error("ItemCatalog: у предмета \"%s\" не заполнен id" % data.name_key)
 			continue
 		if _by_id.has(data.id):
 			# Молчаливый дубль — худший случай: половина игры работает

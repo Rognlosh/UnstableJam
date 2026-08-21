@@ -65,11 +65,11 @@ func setup(item: ItemData, gained: int, full_price: int, pieces: bool = false) -
 	# Развёрнутое ветвление вместо тернарника: tr() % ... отдаёт Variant,
 	# и парсер справедливо ругается на несовместимость веток.
 	if pieces:
-		_title = str(tr(PIECES_KEY) % item.display_name)
+		_title = str(tr(PIECES_KEY) % item.get_display_name())
 		# Осколки на полке темнее целого товара — строка держит то же правило.
 		_fill_color = item.color.darkened(0.2)
 	else:
-		_title = item.display_name
+		_title = item.get_display_name()
 		_fill_color = item.color
 	_revenue = maxi(gained, 0)
 	_potential = maxi(full_price, 0)

@@ -2,11 +2,12 @@
 
 [ext_resource type="Script" uid="uid://cysydj2rveie0" path="res://scripts/ui/shop_lot.gd" id="1_x6ic8"]
 
-[node name="ShopLot" type="PanelContainer" unique_id=664936339 node_paths=PackedStringArray("silhouette", "name_label", "stats_label", "buy_button")]
+[node name="ShopLot" type="PanelContainer" unique_id=664936339 node_paths=PackedStringArray("silhouette", "name_label", "stats_label", "quirk_label", "buy_button")]
 script = ExtResource("1_x6ic8")
 silhouette = NodePath("Margin/Row/Preview/Silhouette")
 name_label = NodePath("Margin/Row/Info/NameLabel")
 stats_label = NodePath("Margin/Row/Info/StatsLabel")
+quirk_label = NodePath("Margin/Row/Info/QuirkLabel")
 buy_button = NodePath("Margin/Row/BuyButton")
 
 [node name="Margin" type="MarginContainer" parent="." unique_id=188722489]
@@ -39,6 +40,12 @@ text = "Ваза"
 [node name="StatsLabel" type="Label" parent="Margin/Row/Info" unique_id=350393972]
 layout_mode = 2
 text = "Продажа: 50   •   прочность: низкая   •   вес: 2"
+
+[node name="QuirkLabel" type="Label" parent="Margin/Row/Info" unique_id=1490233871]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.9, 1, 1)
+autowrap_mode = 3
+text = "Левитация — почти невесома: подскакивает на кочках."
 
 [node name="BuyButton" type="Button" parent="Margin/Row" unique_id=1009728128]
 custom_minimum_size = Vector2(150, 0)

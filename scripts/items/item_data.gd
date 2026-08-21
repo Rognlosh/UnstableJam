@@ -4,7 +4,9 @@ extends Resource
 ## Описание предмета: как выглядит, сколько весит, когда бьётся, на что.
 
 @export var id: StringName = &""
-@export var display_name: String = ""
+## Ключ локализации названия, а не готовый текст: строки живут
+## в localization/ui.csv. Читать через get_display_name().
+@export var name_key: String = ""
 @export var base_price: int = 10
 ## Цена закупа. Отдельным полем, а не наценкой от base_price: у крепкого
 ## дешёвого товара и у хрупкого дорогого разрыв между покупкой и продажей
@@ -60,3 +62,9 @@ func get_bounds() -> Rect2:
 ## Ширина и высота силуэта — короткая запись для укладки.
 func get_size() -> Vector2:
 	return get_bounds().size
+
+
+## Переведённое название. tr() зовём здесь, чтобы вызывающая сторона
+## не обязана была помнить, что в поле лежит ключ, а не текст.
+func get_display_name() -> String:
+	return tr(name_key) if not name_key.is_empty() else ""

@@ -102,7 +102,7 @@ func _stock_text(whole: Dictionary, fragments: int) -> String:
 	for item: ItemData in ItemCatalog.all_items():
 		var count: int = int(whole.get(item.id, 0))
 		if count > 0:
-			parts.append("%s × %d" % [item.display_name, count])
+			parts.append("%s × %d" % [item.get_display_name(), count])
 	if fragments > 0:
 		parts.append("осколки × %d" % fragments)
 	if parts.is_empty():
