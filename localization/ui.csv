@@ -20,14 +20,14 @@ QUIRK_EXPLOSION_HINT,"Разбившись, расшвыривает всё во
 ITEM_AMPHORA,Большая амфора,Great amphora
 ITEM_FLASK,Флакон,Flask
 INTRO_TITLE,Лавка старого Вельда,Old Veld's shop
-INTRO_P1,Старый Вельд возит хрупкое сорок лет и больше не удержит вожжи. Лавку он отдаст — но не даром и не первому встречному.,"Old Veld has hauled fragile goods for forty years and can no longer hold the reins. He will hand the shop over — but not for free, and not to just anyone."
-INTRO_P2,"Три тысячи монет, говорит он. Накопишь — подпишем бумагу. За городом дороги такие, что и камень бьётся, а половина здешнего товара с норовом.","Three thousand coins, he says. Save that up and we sign the deed. Past the town gates the roads break stone itself, and half the goods around here have a temper."
-INTRO_P3,"Пока бери телегу, бери, что по карману, и вези. Остальное дорога объяснит сама.","For now take the truck, buy what you can afford, and drive. The road will explain the rest."
+INTRO_P1,"Моторы вытеснили магию отовсюду, где она стоила дорого. В доме её осталось на подогретый чайник да на замок, знающий хозяина; настоящую — ту, что тысячу лет назад вложили в вещь, — покупают теперь те, у кого есть чем платить. Такие вещи Вельд возит сорок лет и больше не удержит руль.",Engines pushed magic out of everywhere it used to cost money. What is left at home warms the kettle and remembers a key; the real kind — the kind sealed into an object a thousand years ago — is bought by those who can pay. Veld has hauled those objects for forty years and can no longer hold the wheel.
+INTRO_P2,"Три тысячи крон, говорит он, и лавка твоя, Бракк. Копи. За городом дороги такие, что и камень трескается, а чары в этом товаре держатся на честном слове: какие простоят ещё век, какие — до первой кочки.","Three thousand crowns, he says, and the shop is yours, Brakk. Save it up. Past the town the roads crack stone itself, and the magic in these goods hangs by a thread: some of it will last another century, some of it to the first pothole."
+INTRO_P3,"Бери грузовик, бери, что по карману, и вези. Остальное дорога объяснит сама.","Take the truck, buy what you can afford, and drive. The road will explain the rest."
 INTRO_CONTINUE,В путь,Hit the road
 VICTORY_TITLE,Бумага подписана,The deed is signed
-VICTORY_P1,"Вельд пересчитывает монеты дважды, потом ещё раз — не от недоверия, а потому что не верит, что дожил.","Veld counts the coins twice, then once more — not out of distrust, but because he cannot believe he lived to see it."
-VICTORY_P2,"Ключ ложится на стойку. Лавка твоя: стены, полки, долги и вывеска, которую давно пора перекрасить.","The key lands on the counter. The shop is yours: walls, shelves, debts, and a sign that badly needs repainting."
-VICTORY_P3,"Денег не осталось совсем. Но дорога никуда не делась, а старик обещал собрать ящик на первый рейс.","Not a coin is left. But the road is still there, and the old man promised to put together a crate for the first run."
+VICTORY_P1,"Вельд пересчитывает деньги дважды, потом ещё раз — не от недоверия, а потому что не верит, что дожил.","Veld counts the money twice, then once more — not out of distrust, but because he cannot believe he lived to see it."
+VICTORY_P2,"Ключ ложится на стойку. Лавка твоя, Бракк: стены, полки, долги и вывеска, которую давно пора перекрасить.","The key lands on the counter. The shop is yours, Brakk: walls, shelves, debts, and a sign that badly needs repainting."
+VICTORY_P3,"На счету не осталось ничего. Но дорога никуда не делась, а старик обещал собрать ящик на первый рейс.","Not a crown is left. But the road is still there, and the old man promised to put together a crate for the first run."
 VICTORY_CONTINUE,Открыть лавку,Open the shop
 UPGRADE_SHOP_DEED,Лавка наставника,The mentor's shop
 UPGRADE_SHOP_DEED_HINT,Вельд отдаёт дело целиком и забирает всё накопленное до последней монеты.,Veld hands over the whole business and takes every coin you saved.
@@ -53,7 +53,7 @@ UPGRADE_WHEELS,Колёса,Wheels
 UPGRADE_WHEELS_HINT,Колёса больше: рябь не цепляет обод — но в гору тянет хуже.,Bigger wheels: ripples stop catching the rim — but worse uphill pull.
 UPGRADE_ENGINE,Мотор,Engine
 UPGRADE_ENGINE_HINT,Больше момента: подъёмы берутся внатяг.,More torque: climbs go through under load.
-MENU_TITLE,Лавка старого Вельда,Old Veld's Shop
+MENU_TITLE,Хрупкое: содержит магию,Fragile: Contains Magic
 MENU_NEW_GAME,Новая игра,New game
 MENU_LANG_EN,English,English
 MENU_LANG_RU,Русский,Русский
