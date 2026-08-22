@@ -5,3 +5,4 @@
 [resource]
 script = ExtResource("1_palette")
 ground = Color(0.3919629, 0.59736496, 0.27485928, 1)
+backdrop = Color(0.13, 0.15, 0.2, 1)

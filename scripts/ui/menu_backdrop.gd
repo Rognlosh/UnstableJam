@@ -11,9 +11,10 @@
 extends Control
 
 ## Сколько полос по ширине экрана и сколько предметов держим в каждой.
-## Полос немного: за буквами заголовка должно быть видно фон, а не рябь.
-const LANE_COUNT: int = 5
-const PER_LANE: int = 3
+## Двадцать восемь узлов на экран: плотно, но это по-прежнему рисовка
+## тридцати полигонов за кадр, а не тридцати тел в физике.
+const LANE_COUNT: int = 7
+const PER_LANE: int = 4
 
 ## Разброс скорости падения (px/с). Скорость постоянна для предмета,
 ## а не для полосы: одинаково падающая колонка читается как сетка.
@@ -27,9 +28,6 @@ const SPIN_MAX: float = 0.32
 ## Предметы в игре мелкие (от 20×26 до 64×86 px) и на фоне 1280×720
 ## теряются, поэтому на заставке они крупнее натуральной величины.
 const ITEM_SCALE: float = 1.7
-
-## Прозрачность. Единственная ручка, которой фон делается заметнее или тише.
-const ITEM_ALPHA: float = 0.3
 
 ## Запас за краями экрана, в котором предмет ещё живёт: половина самой
 ## крупной вещи с учётом масштаба и поворота на 45°.
@@ -57,6 +55,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	_rng.randomize()
+	_add_background()
 	_collect_items()
 	if _items.is_empty():
 		# Каталог пуст или без полигонов — фон просто не появится.
@@ -71,6 +70,17 @@ func _ready() -> void:
 			# первые несколько секунд меню показывает пустоту.
 			drifter.node.position.y = _rng.randf_range(-MARGIN, size.y)
 			_drifters.append(drifter)
+
+
+## Подложка. Создаётся кодом, а не кладётся в сцену цветным прямоугольником,
+## потому что цвет обязан приходить из палитры: ровно ради этого палитра
+## и заводилась — иначе оттенок разъедется с остальной игрой при первой правке.
+func _add_background() -> void:
+	var bg := ColorRect.new()
+	bg.color = Palette.WORLD.backdrop
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(bg)
 
 
 func _process(delta: float) -> void:
@@ -114,9 +124,9 @@ func _respawn(drifter: Drifter) -> void:
 		points.append(point + offset)
 	drifter.node.polygon = points
 
-	var color: Color = data.color
-	color.a = ITEM_ALPHA
-	drifter.node.color = color
+	# Цвет ровно тот же, что у вещи в кузове: фон — это тот товар,
+	# который игрок сейчас пойдёт возить, а не абстрактный узор.
+	drifter.node.color = data.color
 
 	# Ширина полосы считается при каждом появлении, а не при старте:
 	# так фон переживает изменение размера окна без единого сигнала.
