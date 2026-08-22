@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/SettingsPanel.tscn" id="2_settings"]
 [ext_resource type="Script" path="res://scripts/ui/menu_backdrop.gd" id="3_backdrop"]
 
-[node name="MenuStage" type="Control" unique_id=1466210000 node_paths=PackedStringArray("new_game_button", "quit_button")]
+[node name="MenuStage" type="Control" unique_id=1466210000 node_paths=PackedStringArray("continue_button", "new_game_button", "quit_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -12,6 +12,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_menu")
+continue_button = NodePath("Center/VBoxContainer/ContinueButton")
 new_game_button = NodePath("Center/VBoxContainer/NewGameButton")
 quit_button = NodePath("Center/VBoxContainer/QuitButton")
 
@@ -47,6 +48,11 @@ horizontal_alignment = 1
 [node name="TitleSpacer" type="Control" parent="Center/VBoxContainer" unique_id=1466210004]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
+
+[node name="ContinueButton" type="Button" parent="Center/VBoxContainer" unique_id=1466210021]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "MENU_CONTINUE"
 
 [node name="NewGameButton" type="Button" parent="Center/VBoxContainer" unique_id=1466210005]
 custom_minimum_size = Vector2(0, 48)

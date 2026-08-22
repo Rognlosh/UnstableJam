@@ -85,9 +85,12 @@ func cargo_entry(id: StringName, piece: StringName = &"") -> Dictionary:
 var run_result: Dictionary = {}
 
 
-## Готовим состояние к новой игре. Вызывается из главного меню (этап 4),
-## пока — при старте, чтобы гарантировать чистый старт при перезапуске сцены.
+## Готовим состояние к новой игре. Единственный вызов — кнопка «Новая игра».
 func reset_new_game() -> void:
+	# Старое сохранение стирается сразу, а не перезаписывается при первой
+	# покупке: брось игрок новую партию на вступлении — и «Продолжить»
+	# воскресило бы прошлую, которую он только что решил не продолжать.
+	clear_save()
 	set_money(STARTING_MONEY)
 	set_day(STARTING_DAY)
 	# Время в микросекундах вперемешку со случайным числом: одного времени
@@ -152,6 +155,92 @@ func set_day(value: int) -> void:
 func advance_day() -> void:
 	set_day(_day + 1)
 	run_result.clear()
+
+
+## --- Сохранение ---
+##
+## Хранится ровно то, что нельзя вывести заново: день, деньги, склад,
+## прокачки и зерно партии. Зерно — чтобы после загрузки дорога дня осталась
+## той же самой: без него игрок, вышедший на трудной трассе, возвращался бы
+## на другую, и переигрывать день можно было бы до тех пор, пока не выпадет
+## лёгкая.
+##
+## Точка сохранения одна — закуп. Заезд не сохраняется намеренно: середина
+## заезда это несколько десятков тел со скоростями, а выход посреди дороги
+## возвращает игрока к началу того же дня, где товар ещё лежит на складе.
+
+const SAVE_PATH: String = "user://save.cfg"
+const SAVE_SECTION: String = "run"
+## Версия формата. Ломается формат — старый файл выбрасывается, а не
+## читается наполовину: половина загруженной партии хуже, чем новая.
+const SAVE_VERSION: int = 1
+
+
+func has_save() -> bool:
+	return FileAccess.file_exists(SAVE_PATH)
+
+
+func save_game() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value(SAVE_SECTION, "version", SAVE_VERSION)
+	cfg.set_value(SAVE_SECTION, "day", _day)
+	cfg.set_value(SAVE_SECTION, "money", _money)
+	cfg.set_value(SAVE_SECTION, "seed", run_seed)
+
+	# StringName переводим в String руками, а не полагаемся на сериализацию
+	# словаря: тип ключа при чтении обратно восстанавливается не всегда,
+	# а промах в типе ключа — это молча пустой словарь прокачек.
+	var upgrades: Dictionary = {}
+	for id: StringName in upgrade_levels:
+		upgrades[String(id)] = int(upgrade_levels[id])
+	cfg.set_value(SAVE_SECTION, "upgrades", upgrades)
+
+	var cargo: Array = []
+	for entry: Dictionary in cargo_actual:
+		cargo.append([String(entry.get("id", "")), String(entry.get("piece", ""))])
+	cfg.set_value(SAVE_SECTION, "cargo", cargo)
+
+	var err: Error = cfg.save(SAVE_PATH)
+	if err != OK:
+		push_warning("GameState: не удалось сохранить партию, код " + str(err))
+
+
+## Загрузка. false означает «сохранения нет или оно негодное» — вызывающая
+## сторона тогда начинает новую игру, а не показывает пустой экран.
+func load_game() -> bool:
+	var cfg := ConfigFile.new()
+	if cfg.load(SAVE_PATH) != OK:
+		return false
+	if int(cfg.get_value(SAVE_SECTION, "version", 0)) != SAVE_VERSION:
+		clear_save()
+		return false
+
+	set_day(int(cfg.get_value(SAVE_SECTION, "day", STARTING_DAY)))
+	set_money(int(cfg.get_value(SAVE_SECTION, "money", STARTING_MONEY)))
+	run_seed = int(cfg.get_value(SAVE_SECTION, "seed", 0))
+
+	upgrade_levels.clear()
+	var upgrades: Dictionary = cfg.get_value(SAVE_SECTION, "upgrades", {})
+	for id: String in upgrades:
+		upgrade_levels[StringName(id)] = int(upgrades[id])
+
+	cargo_actual.clear()
+	var cargo: Array = cfg.get_value(SAVE_SECTION, "cargo", [])
+	for entry: Variant in cargo:
+		var pair: Array = entry
+		if pair.size() < 2:
+			continue
+		cargo_actual.append(cargo_entry(StringName(pair[0]), StringName(pair[1])))
+
+	# Результат прошлого заезда не сохраняется и сохраняться не должен:
+	# загрузка всегда приходится на начало дня, когда возить ещё нечего.
+	run_result.clear()
+	return true
+
+
+func clear_save() -> void:
+	if has_save():
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
 
 
 ## --- Генерация ---

@@ -151,7 +151,9 @@ func _on_upgrade_pressed(upgrade: UpgradeData) -> void:
 	GameState.set_upgrade_level(upgrade.id, level + 1)
 	if upgrade.id == UpgradeCatalog.SHOP_DEED_ID:
 		# Смена стадии сама перерисует всё, что нужно; обновлять витрину,
-		# которую сейчас снесут, незачем.
+		# которую сейчас снесут, незачем. А вот записать партию надо здесь:
+		# _refresh() с его сохранением на этой ветке не случится.
+		GameState.save_game()
 		StageManager.instance.change_stage(StageManager.Stage.VICTORY)
 		return
 	_refresh()
@@ -223,6 +225,12 @@ func _refresh() -> void:
 	stock_label.text = _stock_text(whole, fragments)
 	# Ехать пустым бессмысленно: заезд закончится итогом из одних нулей.
 	go_button.disabled = GameState.cargo_actual.is_empty()
+
+	# Единственная точка сохранения партии. Здесь потому, что через _refresh()
+	# проходит любое изменение состояния в закупе — покупка, прокачка, ящик
+	# от наставника, — и отдельные вызовы по обработчикам пришлось бы держать
+	# в голове при добавлении следующей кнопки.
+	GameState.save_game()
 
 
 ## Шапка держит и состояние дня, и цель партии: без неё непонятно, к чему

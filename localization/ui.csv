@@ -65,3 +65,6 @@ PAUSE_TITLE,Пауза,Paused
 PAUSE_RESUME,Продолжить,Resume
 PAUSE_EXIT,В главное меню,Main menu
 PAUSE_EXIT_CONFIRM,Точно? Партия пропадёт,Sure? The run is lost
+MENU_CONTINUE,Продолжить партию,Continue
+MENU_CONTINUE_FAILED,Сохранение повреждено,Save file is damaged
+MENU_NEW_GAME_CONFIRM,Точно? Сохранение сотрётся,Sure? The save is erased
