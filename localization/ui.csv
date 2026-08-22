@@ -27,10 +27,10 @@ INTRO_P4,"— Три тысячи крон, и лавка твоя, Бракк. 
 INTRO_P5,"— Так что бери наш старый грузовичок, скупай что по карману и вези в лавку. Продажу беру на себя. Дороги в наше время строить так и не научились, так что будь аккуратнее. Кто знает, сколько ещё проживут чары в артефактах — тысячи лет или до первой кочки.","— So take our old truck, buy whatever you can afford and haul it back to the shop. The selling I will handle. Nobody ever did learn to build a decent road around here, so go careful. Who knows how long the magic in those artefacts will hold — another thousand years, or until the first pothole."
 INTRO_P6,"И вот ты, молодой фавн по имени Бракк, берёшь старый грузовичок и отправляешься в путь...","And so you, a young faun by the name of Brakk, take the old truck and set out on the road..."
 INTRO_CONTINUE,В путь,Hit the road
-VICTORY_TITLE,Бумага подписана,The deed is signed
-VICTORY_P1,"Вельд пересчитывает деньги дважды, потом ещё раз — не от недоверия, а потому что не верит, что дожил.","Veld counts the money twice, then once more — not out of distrust, but because he cannot believe he lived to see it."
-VICTORY_P2,"Ключ ложится на стойку. Лавка твоя, Бракк: стены, полки, долги и вывеска, которую давно пора перекрасить.","The key lands on the counter. The shop is yours, Brakk: walls, shelves, debts, and a sign that badly needs repainting."
-VICTORY_P3,"На счету не осталось ничего. Но дорога никуда не делась, а старик обещал собрать ящик на первый рейс.","Not a crown is left. But the road is still there, and the old man promised to put together a crate for the first run."
+VICTORY_TITLE,Конец одной дороги — начало новой,The end of one road is the start of another
+VICTORY_P1,Вельд пересчитывает деньги. И ещё раз. И ещё раз. По глазам видно — в безбедную старость он не верил. С еле скрываемой радостью старик передаёт тебе ключ и купчую на лавку.,"Veld counts the money. Then again. Then once more. You can see it in his eyes — he never believed he would have an easy old age. Barely hiding his delight, the old man hands you the key and the deed to the shop."
+VICTORY_P2,"— Ну что же, Бракк, заведение теперь твоё. Даю тебе моё стариковское благословение и полное право переделать тут всё, что захочешь.","— Well then, Brakk, the place is yours now. You have an old man's blessing and full leave to make over anything you find here."
+VICTORY_P3,Переделывать тут явно есть что. О состоянии здания старик беспокоился не сильно — а здание ещё старше него самого. Готов к новому приключению?,There is plainly a great deal to make over. The old man never worried much about the state of the building — and the building is older than he is. Ready for a new adventure?
 VICTORY_CONTINUE,Открыть лавку,Open the shop
 UPGRADE_SHOP_DEED,Лавка наставника,The mentor's shop
 UPGRADE_SHOP_DEED_HINT,Вельд отдаёт дело целиком и забирает всё накопленное до последней монеты.,Veld hands over the whole business and takes every coin you saved.
