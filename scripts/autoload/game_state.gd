@@ -239,8 +239,14 @@ func load_game() -> bool:
 
 
 func clear_save() -> void:
-	if has_save():
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
+	if not has_save():
+		return
+	# Путь отдаём как есть, без globalize_path(): DirAccess понимает user://
+	# сам, а в веб-сборке настоящей файловой системы под ним нет — там
+	# user:// это IndexedDB, и «абсолютный» путь указывает в никуда.
+	var err: Error = DirAccess.remove_absolute(SAVE_PATH)
+	if err != OK:
+		push_warning("GameState: не удалось удалить сохранение, код " + str(err))
 
 
 ## --- Генерация ---
