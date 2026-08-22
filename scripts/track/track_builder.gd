@@ -149,6 +149,7 @@ func _place_chunk(scene: PackedScene, at: Vector2, progress: float) -> TrackChun
 	if surface_material != null:
 		chunk.apply_physics_material(surface_material)
 	chunk.apply_ground_style(Palette.WORLD)
+	chunk.verify_seam()
 	_chunks.append(chunk)
 	return chunk
 

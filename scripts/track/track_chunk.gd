@@ -283,6 +283,32 @@ func apply_height_scale(factor: float) -> void:
 	exit_offset_y *= factor
 	_sync_fill()
 
+## Сверяет фактический профиль с тем, что кусок о себе заявляет.
+##
+## Сборщик двигает курсор на get_exit_position(), а рисует кусок по своему
+## контуру. Разойдись эти двое — и следующий кусок встанет поверх текущего
+## или с разрывом, причём в редакторе всё выглядит правильно: профиль там
+## ещё не сгенерирован по зерну и не растянут по высоте. Поэтому проверяем
+## уже в игре, после всех правок, и называем сцену по имени.
+func verify_seam() -> void:
+	if _outline == null:
+		_collect_nodes()
+	if _outline == null:
+		return
+	var points := _outline.polygon
+	if points.size() < 4:
+		return
+	var last := points[points.size() - 3]
+	var claimed := get_exit_position()
+	if last.distance_to(claimed) > 1.0:
+		push_warning("Кусок %s: профиль кончается в (%.1f, %.1f), а выход заявлен в (%.1f, %.1f) — следующий кусок встанет со смещением на (%.1f, %.1f)." % [
+			scene_file_path.get_file(), last.x, last.y, claimed.x, claimed.y,
+			claimed.x - last.x, claimed.y - last.y])
+	if not points[0].is_equal_approx(Vector2.ZERO):
+		push_warning("Кусок %s: вход в (%.1f, %.1f) вместо (0, 0)." % [
+			scene_file_path.get_file(), points[0].x, points[0].y])
+
+
 ## Сборщик выдаёт куску зерно перед тем, как растягивать его по высоте.
 ## Куски с нарисованной геометрией зерно игнорируют, параметрические —
 ## строят по нему свой профиль.
