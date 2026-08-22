@@ -122,7 +122,7 @@ const BUSH_GAP: Vector2 = Vector2(260.0, 900.0)
 ## Доля скорости у каждого слоя дали, от дальнего к ближнему.
 ## Первый — не гряда, а сплошная дымка: она закрывает пустоту, которая
 ## иначе видна в провале моста и в глубоких промоинах.
-const HILL_FACTORS: Array[float] = [0.18, 0.38, 0.62]
+const HILL_FACTORS: Array[float] = [0.18, 0.18, 0.38, 0.62]
 ## Насколько подошва гряд ниже линии старта трассы.
 const HILL_FOOT: float = 30.0
 ## Шаг точек силуэта и запас за левым краем.
@@ -263,8 +263,15 @@ func _build_backdrop() -> void:
 	# и без неё гряды сливаются в одно пятно.
 	var turf: Color = Palette.WORLD.soil_turf
 	_add_hill_layer(0, base_y - 150.0, 90.0, turf.lerp(Palette.WORLD.sky, 0.7), HAZE_DEPTH, false)
-	_add_hill_layer(1, base_y - 60.0, 190.0, turf.lerp(Palette.WORLD.sky, 0.42), HILL_DEPTH, true)
-	_add_hill_layer(2, base_y, 120.0, turf.lerp(Palette.WORLD.sky, 0.1), HILL_DEPTH, true)
+	# Толща за дорогой. Гряды уходят вниз всего на HILL_DEPTH — глубже им
+	# нельзя, иначе ближняя зелень заливает провал моста, — и под ними
+	# открывалась бледная дымка, которая читается как небо под холмами.
+	# Ровный слой цвета земли закрывает всё, что ниже горизонта: за дорогой
+	# земля, а не воздух. Амплитуда нулевая: это не гряда, а фон.
+	_add_hill_layer(1, base_y + 40.0, 0.0,
+		Palette.WORLD.ground.lerp(Palette.WORLD.sky, 0.3), HAZE_DEPTH, false)
+	_add_hill_layer(2, base_y - 60.0, 190.0, turf.lerp(Palette.WORLD.sky, 0.42), HILL_DEPTH, true)
+	_add_hill_layer(3, base_y, 120.0, turf.lerp(Palette.WORLD.sky, 0.1), HILL_DEPTH, true)
 
 
 func _add_hill_layer(index: int, base_y: float, amplitude: float,
@@ -305,6 +312,8 @@ func _hill_polygon(span: float, base_y: float, amplitude: float,
 
 
 static func _hill_height(x: float, amplitude: float, phase: float) -> float:
+	if is_zero_approx(amplitude):
+		return 0.0
 	var a := sin(x / 780.0 + phase)
 	var b := sin(x / 331.0 + phase * 2.1) * 0.45
 	var c := sin(x / 137.0 + phase * 3.7) * 0.18
@@ -321,7 +330,7 @@ func _plant_bushes(layer: Node2D, span: float, base_y: float,
 	var rng := RandomNumberGenerator.new()
 	rng.seed = _track.track_seed + layer_seed * 7919
 	var phase := float(layer_seed) * 1.7
-	var height: float = BUSH_HEIGHT * (0.7 if layer_seed == 1 else 1.0)
+	var height: float = BUSH_HEIGHT * (0.7 if layer_seed == 2 else 1.0)
 	var scale_factor: float = height / float(BUSH_TEXTURE.get_height())
 	var x := 0.0
 	while x < span:
