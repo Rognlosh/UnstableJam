@@ -1,12 +1,11 @@
-[gd_resource type="Resource" script_class="UpgradeData" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://6yado5lrtfja"]
 
-[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1_upg"]
-[ext_resource type="Script" path="res://scripts/upgrades/upgrade_level.gd" id="2_lvl"]
+[ext_resource type="Script" uid="uid://deniaj81t6jb" path="res://scripts/upgrades/upgrade_data.gd" id="1_upg"]
+[ext_resource type="Script" uid="uid://mko847w3ott5" path="res://scripts/upgrades/upgrade_level.gd" id="2_lvl"]
 
 [sub_resource type="Resource" id="Resource_lv1"]
 script = ExtResource("2_lvl")
 price = 3000
-value = 1.0
 
 [resource]
 script = ExtResource("1_upg")

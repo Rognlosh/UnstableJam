@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="UpgradeData" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://bro0rphyp6ipu"]
 
-[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1_upg"]
-[ext_resource type="Script" path="res://scripts/upgrades/upgrade_level.gd" id="2_lvl"]
+[ext_resource type="Script" uid="uid://deniaj81t6jb" path="res://scripts/upgrades/upgrade_data.gd" id="1_upg"]
+[ext_resource type="Script" uid="uid://mko847w3ott5" path="res://scripts/upgrades/upgrade_level.gd" id="2_lvl"]
 
 [sub_resource type="Resource" id="Resource_lv1"]
 script = ExtResource("2_lvl")
@@ -23,5 +23,4 @@ script = ExtResource("1_upg")
 id = &"engine"
 name_key = "UPGRADE_ENGINE"
 hint_key = "UPGRADE_ENGINE_HINT"
-base_value = 1.0
 levels = Array[ExtResource("2_lvl")]([SubResource("Resource_lv1"), SubResource("Resource_lv2"), SubResource("Resource_lv3")])
