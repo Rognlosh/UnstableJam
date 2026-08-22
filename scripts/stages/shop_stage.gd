@@ -40,6 +40,10 @@ var _handout_lot: OfferLot = null
 var _cheapest_price: int = -1
 
 
+## Сколько добавляет чит на деньги за одно нажатие.
+const CHEAT_MONEY: int = 1000
+
+
 func _ready() -> void:
 	go_button.pressed.connect(_on_go_pressed)
 	GameState.money_changed.connect(_on_money_changed)
@@ -211,6 +215,29 @@ func _get_cheapest_price() -> int:
 
 func _on_go_pressed() -> void:
 	StageManager.instance.change_stage(StageManager.Stage.DRIVE)
+
+
+## Чит на деньги: Ctrl + Shift + M добавляет CHEAT_MONEY.
+##
+## Живёт в закупе, а не в автозагрузке, по двум причинам. Здесь стоит
+## единственная точка сохранения партии (_refresh), поэтому начисленное
+## переживает выход из игры само, без отдельного вызова. И здесь же
+## единственный экран, где деньги видно — нажатие сразу даёт обратную связь,
+## а не оставляет гадать, сработало ли.
+##
+## Клавиша читается по physical_keycode: keycode зависит от раскладки,
+## и на русской та же кнопка пришла бы как «Ь».
+func _unhandled_key_input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if key == null or not key.pressed or key.echo:
+		return
+	if key.physical_keycode != KEY_M:
+		return
+	if not key.ctrl_pressed or not key.shift_pressed:
+		return
+	GameState.earn_money(CHEAT_MONEY)
+	_refresh()
+	get_viewport().set_input_as_handled()
 
 
 func _refresh() -> void:
