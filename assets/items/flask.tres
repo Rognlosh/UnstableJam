@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dlhunjdv6d2mp" path="res://scripts/items/item_data.gd" id="1_item"]
 [ext_resource type="Script" uid="uid://b2i0e702clsfw" path="res://scripts/items/item_piece_data.gd" id="2_piece"]
+[ext_resource type="Texture2D" path="res://assets/art/items/flask.svg" id="9_tex"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_flask"]
 friction = 0.55
@@ -39,3 +40,5 @@ whole_polygon = PackedVector2Array(-8, -13, 8, -13, 10, -4, 10, 9, 6, 13, -6, 13
 pieces = Array[ExtResource("2_piece")]([SubResource("Piece_flask_top"), SubResource("Piece_flask_bottom_left"), SubResource("Piece_flask_bottom_right")])
 color = Color(0.45, 0.6, 0.52, 1)
 physics_material = SubResource("PhysicsMaterial_flask")
+texture = ExtResource("9_tex")
+texture_rect = Rect2(-12.032, -13.529, 22.620, 27.468)

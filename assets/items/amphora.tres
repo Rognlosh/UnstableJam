@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dlhunjdv6d2mp" path="res://scripts/items/item_data.gd" id="1_item"]
 [ext_resource type="Script" uid="uid://b2i0e702clsfw" path="res://scripts/items/item_piece_data.gd" id="2_piece"]
+[ext_resource type="Texture2D" path="res://assets/art/items/amphora.svg" id="9_tex"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_amphora"]
 friction = 0.6
@@ -45,3 +46,5 @@ whole_polygon = PackedVector2Array(-10, -43, 10, -43, 12, -33, 26, -14, 32, 6, 2
 pieces = Array[ExtResource("2_piece")]([SubResource("Piece_amphora_neck_left"), SubResource("Piece_amphora_neck_right"), SubResource("Piece_amphora_body_left"), SubResource("Piece_amphora_body_right")])
 color = Color(0.55, 0.42, 0.3, 1)
 physics_material = SubResource("PhysicsMaterial_amphora")
+texture = ExtResource("9_tex")
+texture_rect = Rect2(-28.874, -43.997, 55.256, 87.907)

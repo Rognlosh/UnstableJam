@@ -8,4 +8,7 @@ script = ExtResource("1_ydfca")
 
 [node name="Visual" type="Polygon2D" parent="." unique_id=13087490]
 
+[node name="Sprite" type="Sprite2D" parent="." unique_id=13087491]
+visible = false
+
 [node name="Shape" type="CollisionPolygon2D" parent="." unique_id=679985319]

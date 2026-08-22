@@ -31,6 +31,7 @@ var _frames_alive: int = 0
 var _quirk: QuirkRuntime = null
 
 @onready var _visual: Polygon2D = $Visual
+@onready var _sprite: Sprite2D = $Sprite
 @onready var _shape: CollisionPolygon2D = $Shape
 
 
@@ -61,9 +62,8 @@ func _ready() -> void:
 		push_error("BreakableItem: не задан ItemData или полигон слишком мал")
 		return
 	_visual.polygon = _polygon
-	var base_color: Color = data.color if level == 0 else data.color.darkened(0.2)
-	_visual.color = data.quirk.tinted(base_color) if _wears_quirk() else base_color
 	_shape.polygon = _polygon
+	_apply_look()
 	mass = maxf(0.05, data.mass * area_ratio())
 	physics_material_override = data.physics_material
 	add_to_group(&"cargo")
@@ -105,6 +105,77 @@ func break_threshold() -> float:
 		return INF
 	var base := data.break_speed * (data.piece_toughness if level > 0 else 1.0)
 	return base * toughness_bonus
+
+
+## Есть ли у предмета рисунок и куда его класть. Пустой прямоугольник
+## считаем отсутствием посадки: растянуть текстуру в ноль всё равно нечем.
+func _has_texture() -> bool:
+	if data.texture == null:
+		return false
+	return data.texture_rect.size.x > 0.0 and data.texture_rect.size.y > 0.0
+
+
+## Вид тела. Три случая: целая вещь со спрайтом, осколок с куском той же
+## текстуры и всё остальное — плоской заливкой, как было до появления арта.
+##
+## Осколок нельзя рисовать спрайтом: Sprite2D не умеет обрезаться по
+## произвольному контуру, а кусок вазы обязан показывать ровно свою часть
+## картинки. Polygon2D обрезается по своему полигону сам, и это ровно то,
+## что нужно. Целую же вещь, наоборот, полигоном рисовать нельзя: контур
+## задан под физику и уже вреза́л бы ручки амфоры и пробку вазы.
+func _apply_look() -> void:
+	var quirk_look: ItemQuirk = data.quirk if _wears_quirk() else null
+	if _has_texture():
+		if level == 0:
+			_apply_sprite(quirk_look)
+		else:
+			_apply_textured_polygon(quirk_look)
+		return
+	_sprite.visible = false
+	var base_color: Color = data.color if level == 0 else data.color.darkened(0.2)
+	_visual.color = quirk_look.tinted(base_color) if quirk_look != null else base_color
+
+
+func _apply_sprite(quirk_look: ItemQuirk) -> void:
+	_visual.visible = false
+	_sprite.visible = true
+	_sprite.texture = data.texture
+	# centered = false переносит якорь в левый верхний угол холста —
+	# только тогда позиция и масштаб однозначно кладут текстуру
+	# в заданный прямоугольник, без поправки на половину размера.
+	_sprite.centered = false
+	_sprite.position = data.texture_rect.position
+	_sprite.scale = data.texture_rect.size / Vector2(data.texture.get_size())
+	_sprite.modulate = quirk_look.tinted(Color.WHITE) if quirk_look != null else Color.WHITE
+
+
+func _apply_textured_polygon(quirk_look: ItemQuirk) -> void:
+	_sprite.visible = false
+	_visual.visible = true
+	_visual.texture = data.texture
+	_visual.uv = _texture_uv()
+	# У Polygon2D с текстурой color работает множителем, поэтому серый
+	# затемняет осколок ровно так же, как darkened() затемнял заливку.
+	var base_color := Color.WHITE.darkened(0.2)
+	_visual.color = quirk_look.tinted(base_color) if quirk_look != null else base_color
+
+
+## Координаты текстуры для каждой вершины полигона — в пикселях картинки,
+## а не в долях от единицы.
+##
+## Полигон осколка сдвинут в собственный центр, и вернуть его в систему
+## целого предмета умеет только rest_offset: там и записано, какому месту
+## вещи соответствует этот кусок. Без него все осколки показывали бы
+## один и тот же участок рисунка — свой центр.
+func _texture_uv() -> PackedVector2Array:
+	var rect := data.texture_rect
+	var texture_size := Vector2(data.texture.get_size())
+	var uv := PackedVector2Array()
+	uv.resize(_polygon.size())
+	for i in _polygon.size():
+		var point: Vector2 = _polygon[i] + rest_offset
+		uv[i] = (point - rect.position) / rect.size * texture_size
+	return uv
 
 
 ## Действует ли свойство на это конкретное тело: у осколка оно может быть
