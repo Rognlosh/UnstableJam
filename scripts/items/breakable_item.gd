@@ -116,7 +116,11 @@ func break_threshold() -> float:
 ## что нужно. Целую же вещь, наоборот, полигоном рисовать нельзя: контур
 ## задан под физику и уже вреза́л бы ручки амфоры и пробку вазы.
 func _apply_look() -> void:
-	var quirk_look: ItemQuirk = data.quirk if _wears_quirk() else null
+	# Тернарник тут не годится: у ветвей типы ItemQuirk и null, и парсер
+	# считает их несовместимыми — отсюда предупреждение при перезагрузке.
+	var quirk_look: ItemQuirk = null
+	if _wears_quirk():
+		quirk_look = data.quirk
 	if data.has_texture():
 		if level == 0:
 			_apply_sprite(quirk_look)

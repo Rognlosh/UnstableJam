@@ -4,6 +4,7 @@
 
 [node name="ChunkStepDown" type="Node2D"]
 script = ExtResource("1_chunk")
+length = 1000.0
 exit_offset_y = 140
 difficulty = 1
 weight = 1.5
