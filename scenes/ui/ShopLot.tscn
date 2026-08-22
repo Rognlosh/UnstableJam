@@ -25,7 +25,7 @@ theme_override_constants/separation = 14
 custom_minimum_size = Vector2(88, 88)
 layout_mode = 2
 
-[node name="Silhouette" type="Polygon2D" parent="Margin/Row/Preview" unique_id=1117314727]
+[node name="Silhouette" type="Node2D" parent="Margin/Row/Preview" unique_id=1117314727]
 position = Vector2(44, 44)
 
 [node name="Info" type="VBoxContainer" parent="Margin/Row" unique_id=583945331]

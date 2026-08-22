@@ -107,14 +107,6 @@ func break_threshold() -> float:
 	return base * toughness_bonus
 
 
-## Есть ли у предмета рисунок и куда его класть. Пустой прямоугольник
-## считаем отсутствием посадки: растянуть текстуру в ноль всё равно нечем.
-func _has_texture() -> bool:
-	if data.texture == null:
-		return false
-	return data.texture_rect.size.x > 0.0 and data.texture_rect.size.y > 0.0
-
-
 ## Вид тела. Три случая: целая вещь со спрайтом, осколок с куском той же
 ## текстуры и всё остальное — плоской заливкой, как было до появления арта.
 ##
@@ -125,7 +117,7 @@ func _has_texture() -> bool:
 ## задан под физику и уже вреза́л бы ручки амфоры и пробку вазы.
 func _apply_look() -> void:
 	var quirk_look: ItemQuirk = data.quirk if _wears_quirk() else null
-	if _has_texture():
+	if data.has_texture():
 		if level == 0:
 			_apply_sprite(quirk_look)
 		else:
@@ -139,13 +131,9 @@ func _apply_look() -> void:
 func _apply_sprite(quirk_look: ItemQuirk) -> void:
 	_visual.visible = false
 	_sprite.visible = true
-	_sprite.texture = data.texture
-	# centered = false переносит якорь в левый верхний угол холста —
-	# только тогда позиция и масштаб однозначно кладут текстуру
-	# в заданный прямоугольник, без поправки на половину размера.
-	_sprite.centered = false
-	_sprite.position = data.texture_rect.position
-	_sprite.scale = data.texture_rect.size / Vector2(data.texture.get_size())
+	# Посадку картинки знает ресурс — здесь она не повторяется,
+	# иначе тело и превью разъехались бы при первой же правке.
+	data.fit_sprite(_sprite)
 	_sprite.modulate = quirk_look.tinted(Color.WHITE) if quirk_look != null else Color.WHITE
 
 

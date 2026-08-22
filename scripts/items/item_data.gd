@@ -56,6 +56,67 @@ func get_piece(wanted_id: StringName) -> ItemPieceData:
 	return null
 
 
+## Есть ли у предмета рисунок и задано ли, куда его класть. Пустой
+## прямоугольник считаем отсутствием посадки: растянуть текстуру в ноль
+## всё равно нечем.
+func has_texture() -> bool:
+	if texture == null:
+		return false
+	return texture_rect.size.x > 0.0 and texture_rect.size.y > 0.0
+
+
+## Кладёт текстуру в texture_rect: после вызова спрайт занимает ровно этот
+## прямоугольник в координатах предмета.
+##
+## Единственное место, где записано, как рисунок соотносится с вещью.
+## Тело предмета, витрина закупа и фон меню зовут его же — иначе правка
+## посадки чинилась бы в трёх файлах, и один из трёх забылся бы.
+func fit_sprite(sprite: Sprite2D) -> void:
+	if not has_texture():
+		return
+	sprite.texture = texture
+	# centered = false переносит якорь в левый верхний угол холста —
+	# только тогда позиция и масштаб однозначно кладут текстуру
+	# в заданный прямоугольник, без поправки на половину размера.
+	sprite.centered = false
+	sprite.position = texture_rect.position
+	sprite.scale = texture_rect.size / Vector2(texture.get_size())
+
+
+## Готовый узел вида для превью: спрайт, если рисунок есть, полигон
+## с заливкой, если нет.
+##
+## Центр вещи оказывается в начале координат узла — так предмет
+## с несимметричным силуэтом не съезжает в угол рамки и вращается
+## вокруг себя, а не вокруг своего угла.
+##
+## box — сторона квадрата, в который вещь вписывается целиком. Ноль
+## означает натуральный размер: вызывающая сторона масштабирует сама.
+func make_visual(box: float = 0.0) -> Node2D:
+	var bounds := get_bounds()
+	var center := bounds.get_center()
+	var side := maxf(bounds.size.x, bounds.size.y)
+	var factor := 1.0
+	if box > 0.0 and side > 0.0:
+		factor = box / side
+	if has_texture():
+		var sprite := Sprite2D.new()
+		fit_sprite(sprite)
+		# Подгонку под коробку домножаем на масштаб текстуры, а не заменяем:
+		# в scale уже лежит перевод пикселей картинки в единицы предмета.
+		sprite.position = (sprite.position - center) * factor
+		sprite.scale *= factor
+		return sprite
+	var polygon_node := Polygon2D.new()
+	polygon_node.polygon = whole_polygon
+	polygon_node.color = color
+	# offset сдвигает точки до масштабирования, поэтому центрирование
+	# и подгонка размера не мешают друг другу.
+	polygon_node.offset = -center
+	polygon_node.scale = Vector2.ONE * factor
+	return polygon_node
+
+
 ## Габариты целого предмета в его собственных координатах.
 ## Нужны укладке груза: предметы разного размера нельзя раскладывать
 ## постоянным шагом, отступ считается от фактической ширины и высоты.

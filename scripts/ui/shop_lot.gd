@@ -9,7 +9,9 @@ signal buy_pressed(item: ItemData)
 ## Сторона квадрата, в который вписывается силуэт товара.
 const PREVIEW_BOX: float = 72.0
 
-@export var silhouette: Polygon2D
+## Пустой якорь в середине рамки: превью подвешивается сюда узлом,
+## который выдаёт сам предмет.
+@export var silhouette: Node2D
 @export var name_label: Label
 @export var stats_label: Label
 ## Строка нестабильного свойства. У обычного товара прячется целиком,
@@ -18,6 +20,7 @@ const PREVIEW_BOX: float = 72.0
 @export var buy_button: Button
 
 var _data: ItemData = null
+var _preview: Node2D = null
 var _stock: int = 0
 var _money: int = 0
 var _has_room: bool = true
@@ -91,21 +94,17 @@ func _refresh_quirk() -> void:
 	quirk_label.add_theme_color_override(&"font_color", quirk.tint)
 
 
-## Силуэт вписывается в квадрат постоянной стороны: иначе высокая ваза
+## Превью вписывается в квадрат постоянной стороны: иначе высокая ваза
 ## и приземистый ларец нарисовались бы в одном масштабе только случайно.
+##
+## Строится один раз, а не при каждом _refresh(): товар строки назначается
+## однажды, а пересчёт зовётся на каждое изменение денег — пересоздавать
+## узел на каждую покупку значило бы дёргать сборщик мусора зря.
 func _draw_silhouette() -> void:
-	silhouette.polygon = _data.whole_polygon
-	silhouette.color = _data.color
-	var rect := _data.get_bounds()
-	var side := maxf(rect.size.x, rect.size.y)
-	if side <= 0.0:
+	if _preview != null:
 		return
-	# Смещение уводит центр силуэта в начало координат узла, а сам узел
-	# стоит в середине рамки — так предмет с несимметричным полигоном
-	# не съезжает в угол.
-	silhouette.offset = -rect.get_center()
-	var factor := PREVIEW_BOX / side
-	silhouette.scale = Vector2(factor, factor)
+	_preview = _data.make_visual(PREVIEW_BOX)
+	silhouette.add_child(_preview)
 
 
 ## Порог удара в пикселях в секунду игроку не говорит ничего, поэтому
