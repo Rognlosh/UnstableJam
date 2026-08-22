@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/stages/menu_stage.gd" id="1_menu"]
 [ext_resource type="PackedScene" path="res://scenes/ui/SettingsPanel.tscn" id="2_settings"]
+[ext_resource type="Script" path="res://scripts/ui/menu_backdrop.gd" id="3_backdrop"]
 
 [node name="MenuStage" type="Control" unique_id=1466210000 node_paths=PackedStringArray("new_game_button", "quit_button")]
 layout_mode = 3
@@ -13,6 +14,16 @@ grow_vertical = 2
 script = ExtResource("1_menu")
 new_game_button = NodePath("Center/VBoxContainer/NewGameButton")
 quit_button = NodePath("Center/VBoxContainer/QuitButton")
+
+[node name="Backdrop" type="Control" parent="." unique_id=1466210020]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_backdrop")
 
 [node name="Center" type="CenterContainer" parent="." unique_id=1466210001]
 layout_mode = 1
