@@ -119,15 +119,20 @@ const BUSH_HEIGHT: float = 44.0
 ## Разброс расстояния между кустами.
 const BUSH_GAP: Vector2 = Vector2(260.0, 900.0)
 
-## Доля скорости камеры у каждой гряды, от дальней к ближней.
-const HILL_FACTORS: Array[float] = [0.35, 0.62]
+## Доля скорости у каждого слоя дали, от дальнего к ближнему.
+## Первый — не гряда, а сплошная дымка: она закрывает пустоту, которая
+## иначе видна в провале моста и в глубоких промоинах.
+const HILL_FACTORS: Array[float] = [0.18, 0.38, 0.62]
 ## Насколько подошва гряд ниже линии старта трассы.
 const HILL_FOOT: float = 30.0
 ## Шаг точек силуэта и запас за левым краем.
 const HILL_STEP: float = 56.0
 const HILL_MARGIN: float = 1400.0
-## Насколько подошва уходит вниз, чтобы её край не показался на спуске.
-const HILL_DEPTH: float = 2200.0
+## Насколько подошва уходит вниз. У гряд немного: под ними обязана
+## просвечивать дымка, иначе ближняя зелень заливает весь провал моста.
+## У самой дымки — на всю глубину мира.
+const HILL_DEPTH: float = 460.0
+const HAZE_DEPTH: float = 4000.0
 
 var _hill_layers: Array[Node2D] = []
 
@@ -253,16 +258,17 @@ func _build_backdrop() -> void:
 	add_child(sky_layer)
 
 	var base_y: float = _track.global_position.y + HILL_FOOT
-	# Дальняя гряда выше, бледнее и медленнее ближней. Бледность —
-	# не украшение: воздушная перспектива это единственное, чем два
-	# одинаково зелёных силуэта отличаются друг от друга на расстоянии.
+	# Чем дальше, тем бледнее. Воздушная перспектива — единственное, чем
+	# два одинаково зелёных силуэта отличаются друг от друга на расстоянии,
+	# и без неё гряды сливаются в одно пятно.
 	var turf: Color = Palette.WORLD.soil_turf
-	_add_hill_layer(0, base_y - 60.0, 190.0, turf.lerp(Palette.WORLD.sky, 0.45), 0)
-	_add_hill_layer(1, base_y, 120.0, turf.lerp(Palette.WORLD.sky, 0.12), 1)
+	_add_hill_layer(0, base_y - 150.0, 90.0, turf.lerp(Palette.WORLD.sky, 0.7), HAZE_DEPTH, false)
+	_add_hill_layer(1, base_y - 60.0, 190.0, turf.lerp(Palette.WORLD.sky, 0.42), HILL_DEPTH, true)
+	_add_hill_layer(2, base_y, 120.0, turf.lerp(Palette.WORLD.sky, 0.1), HILL_DEPTH, true)
 
 
 func _add_hill_layer(index: int, base_y: float, amplitude: float,
-		color: Color, layer_seed: int) -> void:
+		color: Color, depth: float, with_bushes: bool) -> void:
 	var layer := Node2D.new()
 	# Отрицательный z_index уводит слой за трассу и за грузовик,
 	# оставаясь при этом в общем холсте — камера двигает его сама.
@@ -274,15 +280,17 @@ func _add_hill_layer(index: int, base_y: float, amplitude: float,
 	# свою долю трассы плюс экран с запасом.
 	var span: float = _track.get_total_length() * HILL_FACTORS[index] + HILL_MARGIN
 	var polygon := Polygon2D.new()
-	polygon.polygon = _hill_polygon(span, base_y, amplitude, layer_seed)
+	polygon.polygon = _hill_polygon(span, base_y, amplitude, index, depth)
 	polygon.color = color
 	layer.add_child(polygon)
-	_plant_bushes(layer, span, base_y, amplitude, layer_seed)
+	if with_bushes:
+		_plant_bushes(layer, span, base_y, amplitude, index)
 
 
 ## Гряда: сумма трёх синусов с несоизмеримыми периодами. Несоизмеримыми —
 ## чтобы силуэт не начал повторяться на длине заезда и не читался узором.
-func _hill_polygon(span: float, base_y: float, amplitude: float, layer_seed: int) -> PackedVector2Array:
+func _hill_polygon(span: float, base_y: float, amplitude: float,
+		layer_seed: int, depth: float) -> PackedVector2Array:
 	var points := PackedVector2Array()
 	var phase := float(layer_seed) * 1.7
 	var x := -HILL_MARGIN
@@ -291,8 +299,8 @@ func _hill_polygon(span: float, base_y: float, amplitude: float, layer_seed: int
 		x += HILL_STEP
 	# Замыкаем вниз: подошва уходит заведомо ниже любой ямы на трассе,
 	# иначе край гряды показался бы в кадре на спуске.
-	points.append(Vector2(span, base_y + HILL_DEPTH))
-	points.append(Vector2(-HILL_MARGIN, base_y + HILL_DEPTH))
+	points.append(Vector2(span, base_y + depth))
+	points.append(Vector2(-HILL_MARGIN, base_y + depth))
 	return points
 
 
@@ -313,7 +321,7 @@ func _plant_bushes(layer: Node2D, span: float, base_y: float,
 	var rng := RandomNumberGenerator.new()
 	rng.seed = _track.track_seed + layer_seed * 7919
 	var phase := float(layer_seed) * 1.7
-	var height: float = BUSH_HEIGHT * (0.7 if layer_seed == 0 else 1.0)
+	var height: float = BUSH_HEIGHT * (0.7 if layer_seed == 1 else 1.0)
 	var scale_factor: float = height / float(BUSH_TEXTURE.get_height())
 	var x := 0.0
 	while x < span:
@@ -934,8 +942,15 @@ func _update_camera(delta: float) -> void:
 ## на подъёме, как горизонт начинает дышать, а это заметно даже боковым
 ## зрением.
 func _update_hills() -> void:
+	if _truck.chassis == null:
+		return
+	# Считаем от машины, а не от камеры. У камеры поверх положения машины
+	# висит сглаженный вынос вперёд и переход между двумя ракурсами на
+	# старте: даль отражала бы оба, и на зуме кусты уезжали бы вбок,
+	# хотя грузовик стоит.
+	var anchor: float = _truck.chassis.global_position.x
 	for i in _hill_layers.size():
-		_hill_layers[i].position.x = _camera.global_position.x * (1.0 - HILL_FACTORS[i])
+		_hill_layers[i].position.x = anchor * (1.0 - HILL_FACTORS[i])
 
 
 func _update_status() -> void:

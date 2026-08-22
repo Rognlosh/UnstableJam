@@ -47,7 +47,18 @@ extends Node2D
 ## Машина едет по ПЕСКУ: дорога здесь грунтовая, и верхний слой обязан
 ## быть песчаным. Дёрн лежит ниже дороги, а зелень, которую видно над
 ## горизонтом, — это холмы за дорогой, отдельный фоновый слой.
-const SOIL_DEPTHS: Array[float] = [5.0, 38.0, 5.0, 28.0, 4.0]
+const SOIL_DEPTHS: Array[float] = [4.0, 30.0, 4.0, 20.0, 3.0]
+
+## Насколько глубокий слой отрывается от микрорельефа, доля на границу.
+##
+## Настоящие слои залегания не повторяют каждую кочку: чем глубже, тем
+## ровнее лежит порода. Без этого пирог копировал изломы поверхности
+## один в один, и на вершине уступа полосы сходились острым клином.
+## Верхняя граница остаётся точной всегда — иначе между дорогой
+## и грунтом появилась бы щель.
+const SOIL_RELAX: float = 0.34
+## Окно сглаживания в точках профиля.
+const SOIL_SMOOTH_WINDOW: int = 9
 
 var _body: StaticBody2D
 var _outline: CollisionPolygon2D
@@ -118,13 +129,20 @@ func _build_soil(palette: WorldPalette) -> void:
 		palette.soil_sand_edge, palette.soil_sand, palette.soil_sand_edge,
 		palette.soil_subturf, palette.soil_subturf_edge,
 	]
+	var relaxed := _smooth(surface, SOIL_SMOOTH_WINDOW)
+	# Границы считаем заранее и по порядку: низ каждой полосы обязан быть
+	# ровно верхом следующей, иначе между ними проступит толща.
+	var edges: Array[PackedVector2Array] = []
 	var depth := 0.0
+	for i in SOIL_DEPTHS.size() + 1:
+		edges.append(_edge(surface, relaxed, depth, minf(float(i) * SOIL_RELAX, 1.0)))
+		if i < SOIL_DEPTHS.size():
+			depth += SOIL_DEPTHS[i]
 	for i in SOIL_DEPTHS.size():
 		var band := Polygon2D.new()
-		band.polygon = _band(surface, depth, depth + SOIL_DEPTHS[i])
+		band.polygon = _band(edges[i], edges[i + 1])
 		band.color = colors[i]
 		_soil.add_child(band)
-		depth += SOIL_DEPTHS[i]
 
 
 ## Профиль поверхности: контур без двух последних точек. Юбка в слои
@@ -139,16 +157,45 @@ func _surface_points() -> PackedVector2Array:
 	return points.slice(0, points.size() - 2)
 
 
-## Полоса между двумя глубинами: профиль сверху, он же снизу в обратном
-## порядке. Обход замкнутый, поэтому Polygon2D закрашивает ровно ленту
-## между ними.
-static func _band(surface: PackedVector2Array, top: float, bottom: float) -> PackedVector2Array:
+## Граница слоя: профиль, опущенный на глубину и подтянутый к сглаженному
+## тем сильнее, чем глубже лежит.
+static func _edge(surface: PackedVector2Array, relaxed: PackedVector2Array,
+		depth: float, relax: float) -> PackedVector2Array:
 	var points := PackedVector2Array()
-	for point: Vector2 in surface:
-		points.append(point + Vector2(0.0, top))
-	for i in range(surface.size() - 1, -1, -1):
-		points.append(surface[i] + Vector2(0.0, bottom))
+	for i in surface.size():
+		var y: float = lerpf(surface[i].y, relaxed[i].y, relax) + depth
+		points.append(Vector2(surface[i].x, y))
 	return points
+
+
+## Полоса между двумя границами: верхняя как есть, нижняя в обратном
+## порядке. Обход замкнутый, поэтому Polygon2D закрашивает ровно ленту.
+static func _band(top: PackedVector2Array, bottom: PackedVector2Array) -> PackedVector2Array:
+	var points := PackedVector2Array(top)
+	for i in range(bottom.size() - 1, -1, -1):
+		points.append(bottom[i])
+	return points
+
+
+## Скользящее среднее по высоте. Края профиля не трогаем: там стык
+## с соседним куском, и разъехавшиеся на пиксель слои дали бы шов
+## через всю толщу земли.
+static func _smooth(surface: PackedVector2Array, window: int) -> PackedVector2Array:
+	var count := surface.size()
+	var result := PackedVector2Array(surface)
+	if count < window * 2:
+		return result
+	var half := window / 2
+	for i in range(half, count - half):
+		var sum := 0.0
+		for k in range(i - half, i + half + 1):
+			sum += surface[k].y
+		# Ближе к краям отпускаем сглаживание, чтобы оно сошло на нет
+		# ровно к стыку, а не оборвалось ступенькой.
+		var edge_fade: float = minf(float(i), float(count - 1 - i)) / float(window * 2)
+		result[i] = Vector2(surface[i].x,
+			lerpf(surface[i].y, sum / float(window), minf(edge_fade, 1.0)))
+	return result
 
 
 
