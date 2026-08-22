@@ -40,10 +40,14 @@ extends Node2D
 ## из досок или у куска с точной геометрией стыка масштаб выключается.
 @export var allow_height_scale: bool = true
 
-## Толщины слоёв грунта сверху вниз, в пикселях: дёрн, кайма песка,
-## песок, кайма песка, нижний дёрн, кайма. Всё, что глубже, — заливка
-## контура, то есть однотонная толща.
-const SOIL_DEPTHS: Array[float] = [34.0, 5.0, 38.0, 5.0, 28.0, 4.0]
+## Толщины слоёв грунта сверху вниз, в пикселях: кайма песка, песок,
+## кайма песка, дёрн, кайма дёрна. Всё, что глубже, — заливка контура,
+## то есть однотонная толща.
+##
+## Машина едет по ПЕСКУ: дорога здесь грунтовая, и верхний слой обязан
+## быть песчаным. Дёрн лежит ниже дороги, а зелень, которую видно над
+## горизонтом, — это холмы за дорогой, отдельный фоновый слой.
+const SOIL_DEPTHS: Array[float] = [5.0, 38.0, 5.0, 28.0, 4.0]
 
 var _body: StaticBody2D
 var _outline: CollisionPolygon2D
@@ -111,8 +115,8 @@ func _build_soil(palette: WorldPalette) -> void:
 	# Добавляем последним ребёнком тела — значит рисуется поверх заливки.
 	_body.add_child(_soil)
 	var colors: Array[Color] = [
-		palette.soil_turf, palette.soil_sand_edge, palette.soil_sand,
-		palette.soil_sand_edge, palette.soil_subturf, palette.soil_subturf_edge,
+		palette.soil_sand_edge, palette.soil_sand, palette.soil_sand_edge,
+		palette.soil_subturf, palette.soil_subturf_edge,
 	]
 	var depth := 0.0
 	for i in SOIL_DEPTHS.size():

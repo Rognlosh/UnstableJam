@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_palette")
 ground = Color(0.541, 0.353, 0.188, 1)
+sky = Color(0.78, 0.88, 0.91, 1)
 soil_turf = Color(0.557, 0.82, 0.208, 1)
 soil_sand = Color(0.969, 0.851, 0.573, 1)
 soil_sand_edge = Color(0.878, 0.71, 0.396, 1)
