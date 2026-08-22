@@ -122,6 +122,10 @@ const BED_CAPACITY_HEIGHT: float = 400.0
 @onready var _start_panel: PanelContainer = $HUD/StartPanel
 @onready var _start_button: Button = $HUD/StartPanel/VBoxContainer/StartButton
 @onready var _hint_label: Label = $HUD/StartPanel/VBoxContainer/HintLabel
+## Подсказка по управлению машиной. Живёт отдельной панелью, а не строкой
+## в StartPanel: та висит только на погрузке, а клавиши нужны именно
+## на дороге, где спросить уже не у кого.
+@onready var _controls_panel: PanelContainer = $HUD/ControlsPanel
 @onready var _restart_button: HoldButton = $HUD/RestartButton
 @onready var _timer_bar: TimerBar = $HUD/TimerBar
 @onready var _timer_label: Label = $HUD/TimerBar/TimeLabel
@@ -583,6 +587,7 @@ func _enter_loading() -> void:
 	_truck.controls_enabled = false
 	_truck.set_frozen(true)
 	_finish_panel.hide()
+	_controls_panel.hide()
 	_start_panel.show()
 
 
@@ -639,6 +644,7 @@ func _start_run() -> void:
 	_truck.controls_enabled = true
 	_truck.auto_brake = false
 	_start_panel.hide()
+	_controls_panel.show()
 	_restart_button.show()
 	_timer_bar.show()
 
@@ -866,6 +872,7 @@ func _on_finish_reached() -> void:
 	# за кадр, пока игрок читает итог.
 	_truck.controls_enabled = false
 	_truck.auto_brake = true
+	_controls_panel.hide()
 	_restart_button.hide()
 	GameState.run_result = _collect_result()
 	_update_result_label()

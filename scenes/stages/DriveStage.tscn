@@ -143,3 +143,23 @@ horizontal_alignment = 1
 [node name="ToShopButton" type="Button" parent="HUD/FinishPanel/VBoxContainer" unique_id=1803490011]
 layout_mode = 2
 text = "DRIVE_TO_SHOP"
+
+[node name="ControlsPanel" type="PanelContainer" parent="HUD" unique_id=1477203551]
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -260.0
+offset_top = -50.0
+offset_right = 260.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="ControlsLabel" type="Label" parent="HUD/ControlsPanel" unique_id=1477203552]
+layout_mode = 2
+text = "DRIVE_CONTROLS"
+horizontal_alignment = 1

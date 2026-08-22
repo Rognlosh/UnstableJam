@@ -96,3 +96,4 @@ DRIVE_FINISH_DELIVERED,Доехало целыми: %d,Arrived intact: %d
 DRIVE_FINISH_DAMAGED,Повреждено: %d,Damaged: %d
 DRIVE_FINISH_LOST,Потеряно: %d,Lost: %d
 DRIVE_TO_SHOP,В лавку,To the shop
+DRIVE_CONTROLS,W/S — вперёд и назад   ·   A/D — качнуть корпус в воздухе,W/S — forward and back   ·   A/D — swing the body in mid-air
