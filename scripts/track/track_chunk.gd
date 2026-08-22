@@ -71,6 +71,13 @@ const SOIL_SMOOTH_WINDOW: int = 15
 const SOIL_MAX_SLOPE: float = 0.7
 ## Ниже какой доли заданной толщины слою сжиматься нельзя.
 const SOIL_MIN_THICKNESS: float = 0.35
+## На сколько пикселей ограничение уклона вправе опустить границу.
+##
+## Без потолка глубокая яма тянет слои за собой далеко в стороны: у моста
+## провал в четыреста пикселей уводил грунт под ровной дорогой на восемьдесят,
+## и между колёсами и песком открывался просвет в фон. Потолок оставляет
+## разворот уклона там, где он нужен, — у самого обрыва.
+const SOIL_MAX_DROP: float = 26.0
 
 var _body: StaticBody2D
 var _outline: CollisionPolygon2D
@@ -141,7 +148,8 @@ func _build_soil(palette: WorldPalette) -> void:
 		palette.soil_sand_edge, palette.soil_sand, palette.soil_sand_edge,
 		palette.soil_subturf, palette.soil_subturf_edge,
 	]
-	var relaxed := _limit_slope(_smooth(surface, SOIL_SMOOTH_WINDOW), SOIL_MAX_SLOPE)
+	var smoothed := _smooth(surface, SOIL_SMOOTH_WINDOW)
+	var relaxed := _limit_slope(smoothed, SOIL_MAX_SLOPE, SOIL_MAX_DROP)
 	# Границы считаем заранее и по порядку: низ каждой полосы обязан быть
 	# ровно верхом следующей, иначе между ними проступит толща.
 	var edges: Array[PackedVector2Array] = []
@@ -236,7 +244,8 @@ static func _smooth(surface: PackedVector2Array, window: int) -> PackedVector2Ar
 ## Опускает, а не поднимает, намеренно: поднятая точка вылезла бы выше
 ## дороги и слой проступил бы сквозь неё. Опущенная лишь утолщает то,
 ## что лежит над ней, а это ровно то, как выглядит срез обрыва.
-static func _limit_slope(surface: PackedVector2Array, max_slope: float) -> PackedVector2Array:
+static func _limit_slope(surface: PackedVector2Array, max_slope: float,
+		max_drop: float) -> PackedVector2Array:
 	var count := surface.size()
 	if count < 2:
 		return surface
@@ -247,6 +256,11 @@ static func _limit_slope(surface: PackedVector2Array, max_slope: float) -> Packe
 	for i in range(count - 2, -1, -1):
 		var run: float = absf(result[i + 1].x - result[i].x) * max_slope
 		result[i] = Vector2(result[i].x, maxf(result[i].y, result[i + 1].y - run))
+	# Потолок смещения. Считаем от исходного профиля, а не от предыдущей
+	# точки: иначе ограничение расползлось бы вдоль всего куска шагами
+	# по max_drop и мы вернулись бы к той же яме, только медленнее.
+	for i in count:
+		result[i] = Vector2(result[i].x, minf(result[i].y, surface[i].y + max_drop))
 	return result
 
 
