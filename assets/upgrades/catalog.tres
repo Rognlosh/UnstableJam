@@ -1,13 +1,13 @@
-[gd_resource type="Resource" script_class="UpgradeDatabase" load_steps=9 format=3]
+[gd_resource type="Resource" script_class="UpgradeDatabase" format=3 uid="uid://c7087p71518wp"]
 
-[ext_resource type="Script" path="res://scripts/upgrades/upgrade_database.gd" id="1_db"]
-[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="2_upg"]
-[ext_resource type="Resource" path="res://assets/upgrades/shelves.tres" id="3_shelves"]
-[ext_resource type="Resource" path="res://assets/upgrades/bed_walls.tres" id="4_walls"]
-[ext_resource type="Resource" path="res://assets/upgrades/padding.tres" id="5_padding"]
-[ext_resource type="Resource" path="res://assets/upgrades/wheels.tres" id="6_wheels"]
-[ext_resource type="Resource" path="res://assets/upgrades/engine.tres" id="7_engine"]
-[ext_resource type="Resource" path="res://assets/upgrades/shop_deed.tres" id="8_deed"]
+[ext_resource type="Script" uid="uid://ci5ukxtgtdviw" path="res://scripts/upgrades/upgrade_database.gd" id="1_db"]
+[ext_resource type="Script" uid="uid://deniaj81t6jb" path="res://scripts/upgrades/upgrade_data.gd" id="2_upg"]
+[ext_resource type="Resource" uid="uid://4kgjxcwloe2k" path="res://assets/upgrades/shelves.tres" id="3_shelves"]
+[ext_resource type="Resource" uid="uid://chmouixqlmrp0" path="res://assets/upgrades/bed_walls.tres" id="4_walls"]
+[ext_resource type="Resource" uid="uid://bla1atvgsi31u" path="res://assets/upgrades/padding.tres" id="5_padding"]
+[ext_resource type="Resource" uid="uid://cmjo4r2cpxej7" path="res://assets/upgrades/wheels.tres" id="6_wheels"]
+[ext_resource type="Resource" uid="uid://bro0rphyp6ipu" path="res://assets/upgrades/engine.tres" id="7_engine"]
+[ext_resource type="Resource" uid="uid://6yado5lrtfja" path="res://assets/upgrades/shop_deed.tres" id="8_deed"]
 
 [resource]
 script = ExtResource("1_db")
