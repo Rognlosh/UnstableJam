@@ -278,8 +278,34 @@ func _extend_start_ground(wall_x: float) -> void:
 	])
 	fill.color = Palette.WORLD.ground
 	apron.add_child(fill)
+	_add_apron_soil(apron, width)
 
 	add_child(apron)
+
+
+## Те же слои грунта, что у кусков трассы, только по прямой: плита
+## примыкает к трассе вплотную, и без них на стыке была бы ступенька
+## из дёрна в голую землю.
+##
+## Толщины и цвета берём из тех же двух мест, что и трасса, — иначе
+## правка палитры чинила бы стык только с одной стороны.
+func _add_apron_soil(apron: StaticBody2D, width: float) -> void:
+	var palette := Palette.WORLD
+	var colors: Array[Color] = [
+		palette.soil_turf, palette.soil_sand_edge, palette.soil_sand,
+		palette.soil_sand_edge, palette.soil_subturf, palette.soil_subturf_edge,
+	]
+	var depth := 0.0
+	for i in TrackChunk.SOIL_DEPTHS.size():
+		var bottom: float = depth + TrackChunk.SOIL_DEPTHS[i]
+		var band := Polygon2D.new()
+		band.polygon = PackedVector2Array([
+			Vector2(0.0, depth), Vector2(width, depth),
+			Vector2(width, bottom), Vector2(0.0, bottom),
+		])
+		band.color = colors[i]
+		apron.add_child(band)
+		depth = bottom
 
 
 ## Грузовик ставится на стартовую площадку до первого шага физики,

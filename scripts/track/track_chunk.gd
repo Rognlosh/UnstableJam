@@ -40,9 +40,15 @@ extends Node2D
 ## из досок или у куска с точной геометрией стыка масштаб выключается.
 @export var allow_height_scale: bool = true
 
+## Толщины слоёв грунта сверху вниз, в пикселях: дёрн, кайма песка,
+## песок, кайма песка, нижний дёрн, кайма. Всё, что глубже, — заливка
+## контура, то есть однотонная толща.
+const SOIL_DEPTHS: Array[float] = [34.0, 5.0, 38.0, 5.0, 28.0, 4.0]
+
 var _body: StaticBody2D
 var _outline: CollisionPolygon2D
 var _fill: Polygon2D
+var _soil: Node2D
 
 
 func _ready() -> void:
@@ -73,14 +79,74 @@ func apply_physics_material(surface: PhysicsMaterial) -> void:
 	
 
 
-## Красит землю куска из палитры. Цвет в сцене куска остаётся превью
-## для редактора, истина — ресурс палитры.
-func apply_ground_color(color: Color) -> void:
+## Красит землю куска из палитры и настилает поверх неё слои грунта.
+## Цвет в сцене куска остаётся превью для редактора, истина — палитра.
+##
+## Звать строго ПОСЛЕ apply_height_scale(): слои строятся по профилю
+## поверхности, а растяжка этот профиль правит.
+func apply_ground_style(palette: WorldPalette) -> void:
 	if _fill == null:
 		_collect_nodes()
-	if _fill != null:
-		_fill.color = color
-		
+	if _fill == null or _body == null:
+		return
+	_fill.color = palette.ground
+	_build_soil(palette)
+
+
+## Полосы грунта — это тот же профиль поверхности, сдвинутый вниз
+## на толщину предыдущих слоёв. Поэтому дёрн повторяет каждую кочку
+## и каждую яму, а слоёный пирог виден в разрезе на стенках промоин
+## и на уступе рампы, где земля обрывается.
+##
+## Полосы живут в отдельном узле, а не прямо в теле: _collect_nodes()
+## ищет заливку как первый попавшийся Polygon2D среди детей тела,
+## и полдюжины новых полигонов рядом с ней сбили бы этот поиск.
+func _build_soil(palette: WorldPalette) -> void:
+	var surface := _surface_points()
+	if surface.size() < 2:
+		return
+	if _soil != null:
+		_soil.free()
+	_soil = Node2D.new()
+	# Добавляем последним ребёнком тела — значит рисуется поверх заливки.
+	_body.add_child(_soil)
+	var colors: Array[Color] = [
+		palette.soil_turf, palette.soil_sand_edge, palette.soil_sand,
+		palette.soil_sand_edge, palette.soil_subturf, palette.soil_subturf_edge,
+	]
+	var depth := 0.0
+	for i in SOIL_DEPTHS.size():
+		var band := Polygon2D.new()
+		band.polygon = _band(surface, depth, depth + SOIL_DEPTHS[i])
+		band.color = colors[i]
+		_soil.add_child(band)
+		depth += SOIL_DEPTHS[i]
+
+
+## Профиль поверхности: контур без двух последних точек. Юбка в слои
+## не идёт — она уходит на километр вниз, и полоса дёрна по ней
+## растянулась бы на весь экран.
+func _surface_points() -> PackedVector2Array:
+	if _outline == null:
+		return PackedVector2Array()
+	var points := _outline.polygon
+	if points.size() < 4:
+		return PackedVector2Array()
+	return points.slice(0, points.size() - 2)
+
+
+## Полоса между двумя глубинами: профиль сверху, он же снизу в обратном
+## порядке. Обход замкнутый, поэтому Polygon2D закрашивает ровно ленту
+## между ними.
+static func _band(surface: PackedVector2Array, top: float, bottom: float) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	for point: Vector2 in surface:
+		points.append(point + Vector2(0.0, top))
+	for i in range(surface.size() - 1, -1, -1):
+		points.append(surface[i] + Vector2(0.0, bottom))
+	return points
+
+
 
 ## Растягивает профиль по вертикали. Зовёт сборщик, уже добавив кусок
 ## в дерево: правим точки полигона, а не scale узла — масштаб на теле
