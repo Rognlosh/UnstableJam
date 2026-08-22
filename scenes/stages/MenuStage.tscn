@@ -1,8 +1,9 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/stages/menu_stage.gd" id="1_menu"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SettingsPanel.tscn" id="2_settings"]
 
-[node name="MenuStage" type="Control" unique_id=1466210000 node_paths=PackedStringArray("new_game_button", "language_button", "music_slider", "sfx_slider", "sound_check", "quit_button")]
+[node name="MenuStage" type="Control" unique_id=1466210000 node_paths=PackedStringArray("new_game_button", "quit_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,10 +12,6 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_menu")
 new_game_button = NodePath("Center/VBoxContainer/NewGameButton")
-language_button = NodePath("Center/VBoxContainer/LanguageButton")
-music_slider = NodePath("Center/VBoxContainer/MusicRow/MusicSlider")
-sfx_slider = NodePath("Center/VBoxContainer/SfxRow/SfxSlider")
-sound_check = NodePath("Center/VBoxContainer/SoundCheck")
 quit_button = NodePath("Center/VBoxContainer/QuitButton")
 
 [node name="Center" type="CenterContainer" parent="." unique_id=1466210001]
@@ -45,53 +42,12 @@ custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 text = "MENU_NEW_GAME"
 
-[node name="LanguageButton" type="Button" parent="Center/VBoxContainer" unique_id=1466210006]
-custom_minimum_size = Vector2(0, 40)
-layout_mode = 2
-text = "English"
-
-[node name="AudioSpacer" type="Control" parent="Center/VBoxContainer" unique_id=1466210007]
+[node name="SettingsSpacer" type="Control" parent="Center/VBoxContainer" unique_id=1466210007]
 custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
 
-[node name="MusicRow" type="HBoxContainer" parent="Center/VBoxContainer" unique_id=1466210008]
+[node name="SettingsPanel" parent="Center/VBoxContainer" instance=ExtResource("2_settings")]
 layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="MusicLabel" type="Label" parent="Center/VBoxContainer/MusicRow" unique_id=1466210009]
-custom_minimum_size = Vector2(120, 0)
-layout_mode = 2
-text = "MENU_MUSIC"
-
-[node name="MusicSlider" type="HSlider" parent="Center/VBoxContainer/MusicRow" unique_id=1466210010]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-max_value = 1.0
-step = 0.01
-value = 0.8
-
-[node name="SfxRow" type="HBoxContainer" parent="Center/VBoxContainer" unique_id=1466210011]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="SfxLabel" type="Label" parent="Center/VBoxContainer/SfxRow" unique_id=1466210012]
-custom_minimum_size = Vector2(120, 0)
-layout_mode = 2
-text = "MENU_SFX"
-
-[node name="SfxSlider" type="HSlider" parent="Center/VBoxContainer/SfxRow" unique_id=1466210013]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-max_value = 1.0
-step = 0.01
-value = 0.8
-
-[node name="SoundCheck" type="CheckButton" parent="Center/VBoxContainer" unique_id=1466210014]
-layout_mode = 2
-button_pressed = true
-text = "MENU_SOUND"
 
 [node name="QuitSpacer" type="Control" parent="Center/VBoxContainer" unique_id=1466210015]
 custom_minimum_size = Vector2(0, 16)

@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://jgka00sxqvf7"]
 
 [ext_resource type="Script" uid="uid://coobpy5jlkgnf" path="res://scripts/main/stage_manager.gd" id="1_hyk8p"]
+[ext_resource type="Script" path="res://scripts/main/pause_menu.gd" id="2_pause"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SettingsPanel.tscn" id="3_settings"]
 
 [node name="Main" type="Node" unique_id=840666399]
 script = ExtResource("1_hyk8p")
@@ -18,3 +20,64 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
+
+[node name="PauseLayer" type="CanvasLayer" parent="." unique_id=1990440000 node_paths=PackedStringArray("root", "resume_button", "exit_button", "settings_panel")]
+process_mode = 3
+layer = 100
+script = ExtResource("2_pause")
+root = NodePath("Dim")
+resume_button = NodePath("Dim/Center/VBoxContainer/ResumeButton")
+exit_button = NodePath("Dim/Center/VBoxContainer/ExitButton")
+settings_panel = NodePath("Dim/Center/VBoxContainer/SettingsPanel")
+
+[node name="Dim" type="ColorRect" parent="PauseLayer" unique_id=1990440001]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.65)
+
+[node name="Center" type="CenterContainer" parent="PauseLayer/Dim" unique_id=1990440002]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PauseLayer/Dim/Center" unique_id=1990440003]
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="PauseLayer/Dim/Center/VBoxContainer" unique_id=1990440004]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "PAUSE_TITLE"
+horizontal_alignment = 1
+
+[node name="TitleSpacer" type="Control" parent="PauseLayer/Dim/Center/VBoxContainer" unique_id=1990440005]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="ResumeButton" type="Button" parent="PauseLayer/Dim/Center/VBoxContainer" unique_id=1990440006]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "PAUSE_RESUME"
+
+[node name="SettingsSpacer" type="Control" parent="PauseLayer/Dim/Center/VBoxContainer" unique_id=1990440007]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="SettingsPanel" parent="PauseLayer/Dim/Center/VBoxContainer" instance=ExtResource("3_settings")]
+layout_mode = 2
+
+[node name="ExitSpacer" type="Control" parent="PauseLayer/Dim/Center/VBoxContainer" unique_id=1990440008]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="ExitButton" type="Button" parent="PauseLayer/Dim/Center/VBoxContainer" unique_id=1990440009]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "PAUSE_EXIT"

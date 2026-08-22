@@ -61,3 +61,7 @@ MENU_MUSIC,Музыка,Music
 MENU_SFX,Звуки,Sound effects
 MENU_SOUND,Звук,Sound
 MENU_QUIT,Выход,Quit
+PAUSE_TITLE,Пауза,Paused
+PAUSE_RESUME,Продолжить,Resume
+PAUSE_EXIT,В главное меню,Main menu
+PAUSE_EXIT_CONFIRM,Точно? Партия пропадёт,Sure? The run is lost

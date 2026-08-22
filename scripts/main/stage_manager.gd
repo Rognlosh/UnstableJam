@@ -51,6 +51,9 @@ static var instance: StageManager = null
 
 ## Экземпляр текущей стадии. null, пока ничего не загружено.
 var _current_stage_node: Node = null
+## Какая стадия сейчас в контейнере. Нужна паузе: в главном меню
+## останавливать нечего, и Esc там не должен ничего открывать.
+var _current_stage: Stage = Stage.MENU
 ## Защита от повторного вызова смены стадии во время анимации перехода.
 var _is_transitioning: bool = false
 
@@ -80,6 +83,16 @@ func _ready() -> void:
 	await _fade(0.0)
 
 
+## Идёт ли сейчас переход. Пауза спрашивает: посреди перехода дерево
+## в разобранном состоянии, и останавливать его нельзя.
+func is_transitioning() -> bool:
+	return _is_transitioning
+
+
+func get_current_stage() -> Stage:
+	return _current_stage
+
+
 ## Публичная точка входа: сменить стадию с затемнением.
 ## Вызов: StageManager.instance.change_stage(StageManager.Stage.DRIVE)
 func change_stage(next_stage: Stage) -> void:
@@ -107,6 +120,7 @@ func _load_stage(stage: Stage) -> void:
 		push_error("StageManager: не удалось загрузить сцену " + scene_path)
 		return
 
+	_current_stage = stage
 	_current_stage_node = packed.instantiate()
 	_stage_container.add_child(_current_stage_node)
 

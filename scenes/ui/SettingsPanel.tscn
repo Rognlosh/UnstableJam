@@ -1,0 +1,55 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/settings_panel.gd" id="1_settings"]
+
+[node name="SettingsPanel" type="VBoxContainer" unique_id=1877340000 node_paths=PackedStringArray("language_button", "music_slider", "sfx_slider", "sound_check")]
+theme_override_constants/separation = 12
+script = ExtResource("1_settings")
+language_button = NodePath("LanguageButton")
+music_slider = NodePath("MusicRow/MusicSlider")
+sfx_slider = NodePath("SfxRow/SfxSlider")
+sound_check = NodePath("SoundCheck")
+
+[node name="LanguageButton" type="Button" parent="." unique_id=1877340001]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "English"
+
+[node name="MusicRow" type="HBoxContainer" parent="." unique_id=1877340002]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MusicLabel" type="Label" parent="MusicRow" unique_id=1877340003]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "MENU_MUSIC"
+
+[node name="MusicSlider" type="HSlider" parent="MusicRow" unique_id=1877340004]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 0.8
+
+[node name="SfxRow" type="HBoxContainer" parent="." unique_id=1877340005]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SfxLabel" type="Label" parent="SfxRow" unique_id=1877340006]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "MENU_SFX"
+
+[node name="SfxSlider" type="HSlider" parent="SfxRow" unique_id=1877340007]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 0.8
+
+[node name="SoundCheck" type="CheckButton" parent="." unique_id=1877340008]
+layout_mode = 2
+button_pressed = true
+text = "MENU_SOUND"
