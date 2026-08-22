@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 GameState="*uid://btue272bdwlel"
 Destruction="*uid://ds7gbo0mqrbxs"
+Settings="*res://scripts/autoload/settings.gd"
 
 [display]
 
@@ -70,6 +71,7 @@ restart_run={
 [internationalization]
 
 locale/translations=PackedStringArray("res://localization/ui.ru.translation", "res://localization/ui.en.translation")
+locale/fallback="en"
 
 [physics]
 
