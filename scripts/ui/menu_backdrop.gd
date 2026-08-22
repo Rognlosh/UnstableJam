@@ -1,4 +1,4 @@
-## Фон главного меню: силуэты товара, медленно падающие полосами сверху вниз.
+## Фон главного меню: силуэты товара, падающие полосами сверху вниз.
 ##
 ## Берёт формы и цвета прямо из каталога предметов, а не из отдельных
 ## декоративных ресурсов. Появятся спрайты — здесь меняется один метод
@@ -10,14 +10,16 @@
 ## ест время в вебе.
 extends Control
 
-## Сколько полос по ширине экрана и сколько предметов держим в каждой.
-## Двадцать восемь узлов на экран: плотно, но это по-прежнему рисовка
-## тридцати полигонов за кадр, а не тридцати тел в физике.
+## Полосы по ширине экрана и число предметов в каждой.
+## Тридцать пять узлов на экран — это по-прежнему рисовка тридцати
+## полигонов за кадр, а не тридцать тел в физике.
 const LANE_COUNT: int = 7
-const PER_LANE: int = 4
+const PER_LANE: int = 5
 
-## Разброс скорости падения (px/с). Скорость постоянна для предмета,
-## а не для полосы: одинаково падающая колонка читается как сетка.
+## Разброс скорости падения (px/с). Скорость принадлежит ПОЛОСЕ, а не
+## отдельной вещи: при своей скорости у каждого предмета соседи по полосе
+## догоняют друг друга, слипаются в кучки и оставляют за собой дыры —
+## ровно то, из-за чего фон выглядел рваным.
 const FALL_SPEED_MIN: float = 26.0
 const FALL_SPEED_MAX: float = 62.0
 
@@ -25,9 +27,14 @@ const FALL_SPEED_MAX: float = 62.0
 ## и мешает читать кнопки.
 const SPIN_MAX: float = 0.32
 
-## Предметы в игре мелкие (от 20×26 до 64×86 px) и на фоне 1280×720
-## теряются, поэтому на заставке они крупнее натуральной величины.
-const ITEM_SCALE: float = 1.7
+## К какому размеру подтягивать силуэт по большей стороне.
+## Предметы в игре различаются втрое (флакон 20×26 против амфоры 64×86),
+## и в натуральных пропорциях мелочь на фоне читается как пустое место.
+## Масштаб зажат, чтобы разница между вещами осталась заметной,
+## но перестала быть провалом.
+const TARGET_SIZE: float = 110.0
+const SCALE_MIN: float = 1.2
+const SCALE_MAX: float = 2.6
 
 ## Запас за краями экрана, в котором предмет ещё живёт: половина самой
 ## крупной вещи с учётом масштаба и поворота на 45°.
@@ -35,17 +42,18 @@ const MARGIN: float = 160.0
 
 
 ## Одна летящая вещь. Внутренний класс — аналог вложенного класса в C#;
-## нужен, чтобы не держать три параллельных массива и не гадать,
-## какой индекс какому узлу соответствует.
+## нужен, чтобы не держать параллельные массивы и не гадать, какой индекс
+## какому узлу соответствует.
 class Drifter:
 	var node: Polygon2D
 	var lane: int
-	var speed: float
 	var spin: float
 
 
 var _drifters: Array[Drifter] = []
 var _items: Array[ItemData] = []
+## Скорость каждой полосы, индекс = номер полосы.
+var _lane_speeds: PackedFloat32Array = PackedFloat32Array()
 var _rng := RandomNumberGenerator.new()
 
 
@@ -63,13 +71,38 @@ func _ready() -> void:
 		set_process(false)
 		return
 
+	var span: float = _span()
+	var step: float = span / float(PER_LANE)
 	for lane in LANE_COUNT:
+		_lane_speeds.append(_rng.randf_range(FALL_SPEED_MIN, FALL_SPEED_MAX))
+		# Своя фаза у каждой полосы: без неё предметы соседних полос
+		# выстроились бы в ряды и фон читался бы таблицей.
+		var phase: float = _rng.randf() * step
 		for i in PER_LANE:
 			var drifter := _make_drifter(lane)
-			# Стартовая раскладка по всей высоте, а не над экраном: иначе
-			# первые несколько секунд меню показывает пустоту.
-			drifter.node.position.y = _rng.randf_range(-MARGIN, size.y)
-			_drifters.append(drifter)
+			# Фиксированный шаг вместо случайной высоты. Вместе с общей
+			# скоростью полосы это и держит равномерность: интервал между
+			# соседями задан один раз и дальше не может разъехаться.
+			drifter.node.position.y = -MARGIN + step * float(i) + phase
+
+
+func _process(delta: float) -> void:
+	var span: float = _span()
+	for drifter: Drifter in _drifters:
+		drifter.node.position.y += _lane_speeds[drifter.lane] * delta
+		drifter.node.rotation += drifter.spin * delta
+		if drifter.node.position.y > size.y + MARGIN:
+			# Перенос ровно на длину круга, а не «поставить наверх»:
+			# так шаг между соседями по полосе сохраняется навсегда.
+			# Присвоение сбросило бы накопленный остаток, и за десяток
+			# кругов равномерность растворилась бы обратно в кучки.
+			drifter.node.position.y -= span
+			_respawn(drifter)
+
+
+## Полная длина круга: экран плюс запас сверху и снизу.
+func _span() -> float:
+	return size.y + MARGIN * 2.0
 
 
 ## Подложка. Создаётся кодом, а не кладётся в сцену цветным прямоугольником,
@@ -81,14 +114,6 @@ func _add_background() -> void:
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg)
-
-
-func _process(delta: float) -> void:
-	for drifter: Drifter in _drifters:
-		drifter.node.position.y += drifter.speed * delta
-		drifter.node.rotation += drifter.spin * delta
-		if drifter.node.position.y > size.y + MARGIN:
-			_respawn(drifter)
 
 
 ## Только предметы с нарисованным силуэтом. Пустой полигон дал бы
@@ -103,22 +128,24 @@ func _make_drifter(lane: int) -> Drifter:
 	var drifter := Drifter.new()
 	drifter.lane = lane
 	drifter.node = Polygon2D.new()
-	drifter.node.scale = Vector2.ONE * ITEM_SCALE
 	add_child(drifter.node)
+	_drifters.append(drifter)
 	_respawn(drifter)
 	return drifter
 
 
-## Выдать вещи новый предмет, новую полосу по горизонтали и вернуть наверх.
-## Тот же метод обслуживает и первое появление, и переиспользование:
-## узлы не создаются и не удаляются в процессе — их ровно LANE_COUNT × PER_LANE
-## за всё время работы меню.
+## Выдать вещи новый предмет, новое место по горизонтали и новый поворот.
+## Высоту метод не трогает: ею распоряжается вызывающая сторона, потому что
+## при переиспользовании важно не поставить предмет наверх, а сдвинуть его
+## на длину круга. Узлы при этом не создаются и не удаляются — их ровно
+## LANE_COUNT × PER_LANE за всё время работы меню.
 func _respawn(drifter: Drifter) -> void:
 	var data: ItemData = _items[_rng.randi_range(0, _items.size() - 1)]
+	var bounds: Rect2 = data.get_bounds()
 
 	# Полигон рисуем вокруг центра силуэта, а не вокруг его начала координат:
 	# иначе вещь вращалась бы вокруг угла и гуляла по экрану полумесяцем.
-	var offset: Vector2 = -data.get_bounds().get_center()
+	var offset: Vector2 = -bounds.get_center()
 	var points := PackedVector2Array()
 	for point: Vector2 in data.whole_polygon:
 		points.append(point + offset)
@@ -128,16 +155,18 @@ func _respawn(drifter: Drifter) -> void:
 	# который игрок сейчас пойдёт возить, а не абстрактный узор.
 	drifter.node.color = data.color
 
+	var longest: float = maxf(bounds.size.x, bounds.size.y)
+	var scale_factor: float = SCALE_MIN
+	if longest > 0.0:
+		scale_factor = clampf(TARGET_SIZE / longest, SCALE_MIN, SCALE_MAX)
+	drifter.node.scale = Vector2.ONE * scale_factor
+
 	# Ширина полосы считается при каждом появлении, а не при старте:
 	# так фон переживает изменение размера окна без единого сигнала.
 	var lane_width: float = size.x / float(LANE_COUNT)
 	var lane_center: float = (float(drifter.lane) + 0.5) * lane_width
-	# Разброс внутри полосы — треть её ширины: полосы должны читаться
-	# как полосы, но не выстраиваться в идеальную колонну.
-	drifter.node.position = Vector2(
-		lane_center + _rng.randf_range(-lane_width, lane_width) / 3.0,
-		-MARGIN
-	)
+	# Разброс внутри полосы — четверть её ширины. Больше — и полосы
+	# перестают читаться, начинают перекрываться и снова копить пустоты.
+	drifter.node.position.x = lane_center + _rng.randf_range(-lane_width, lane_width) / 4.0
 	drifter.node.rotation = _rng.randf_range(0.0, TAU)
-	drifter.speed = _rng.randf_range(FALL_SPEED_MIN, FALL_SPEED_MAX)
 	drifter.spin = _rng.randf_range(-SPIN_MAX, SPIN_MAX)
