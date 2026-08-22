@@ -78,6 +78,8 @@ const SOIL_MIN_THICKNESS: float = 0.35
 ## и между колёсами и песком открывался просвет в фон. Потолок оставляет
 ## разворот уклона там, где он нужен, — у самого обрыва.
 const SOIL_MAX_DROP: float = 26.0
+## Круче какого уклона участок считается отвесом и слоями не покрывается.
+const SOIL_WALL_SLOPE: float = 2.5
 
 var _body: StaticBody2D
 var _outline: CollisionPolygon2D
@@ -148,6 +150,17 @@ func _build_soil(palette: WorldPalette) -> void:
 		palette.soil_sand_edge, palette.soil_sand, palette.soil_sand_edge,
 		palette.soil_subturf, palette.soil_subturf_edge,
 	]
+	# Профиль режется на пологие участки, а отвесы пропускаются. Иначе
+	# полоса грунта пыталась бы пройти по стенке пропасти лентой нулевой
+	# ширины: у моста это обрыв в 1800 px, и весь берег оставался голой
+	# толщей. Обрыв и должен показывать срез, а не тянуть слои за собой.
+	for segment: PackedVector2Array in _split_at_walls(surface):
+		_add_soil_bands(segment, colors)
+
+
+func _add_soil_bands(surface: PackedVector2Array, colors: Array[Color]) -> void:
+	if surface.size() < 2:
+		return
 	var smoothed := _smooth(surface, SOIL_SMOOTH_WINDOW)
 	var relaxed := _limit_slope(smoothed, SOIL_MAX_SLOPE, SOIL_MAX_DROP)
 	# Границы считаем заранее и по порядку: низ каждой полосы обязан быть
@@ -179,6 +192,28 @@ func _build_soil(palette: WorldPalette) -> void:
 		band.polygon = _band(edges[i], edges[i + 1])
 		band.color = colors[i]
 		_soil.add_child(band)
+
+
+## Делит профиль на пологие участки, выбрасывая отвесы.
+##
+## Отвес — это не склон, а срез: слоям на нём делать нечего, там толща
+## показывает саму себя. Порог берём заведомо круче любого проезжаемого
+## подъёма, иначе рампа и уступы рассыпались бы на обрывки.
+static func _split_at_walls(surface: PackedVector2Array) -> Array[PackedVector2Array]:
+	var parts: Array[PackedVector2Array] = []
+	var current := PackedVector2Array()
+	for i in surface.size():
+		if i > 0:
+			var run: float = surface[i].x - surface[i - 1].x
+			var rise: float = absf(surface[i].y - surface[i - 1].y)
+			if run <= 0.01 or rise > run * SOIL_WALL_SLOPE:
+				if current.size() >= 2:
+					parts.append(current)
+				current = PackedVector2Array()
+		current.append(surface[i])
+	if current.size() >= 2:
+		parts.append(current)
+	return parts
 
 
 ## Профиль поверхности: контур без двух последних точек. Юбка в слои
