@@ -53,3 +53,11 @@ UPGRADE_WHEELS,Колёса,Wheels
 UPGRADE_WHEELS_HINT,Колёса больше: рябь не цепляет обод — но в гору тянет хуже.,Bigger wheels: ripples stop catching the rim — but worse uphill pull.
 UPGRADE_ENGINE,Мотор,Engine
 UPGRADE_ENGINE_HINT,Больше момента: подъёмы берутся внатяг.,More torque: climbs go through under load.
+MENU_TITLE,Лавка старого Вельда,Old Veld's Shop
+MENU_NEW_GAME,Новая игра,New game
+MENU_LANG_EN,English,English
+MENU_LANG_RU,Русский,Русский
+MENU_MUSIC,Музыка,Music
+MENU_SFX,Звуки,Sound effects
+MENU_SOUND,Звук,Sound
+MENU_QUIT,Выход,Quit
