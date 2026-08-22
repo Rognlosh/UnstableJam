@@ -88,7 +88,7 @@ offset_top = 24.0
 offset_right = -24.0
 offset_bottom = 92.0
 grow_horizontal = 0
-text = "Сброс (R)"
+text = "DRIVE_RESTART"
 script = ExtResource("20_hold")
 hold_action = &"restart_run"
 
@@ -111,12 +111,12 @@ theme_override_constants/separation = 8
 
 [node name="HintLabel" type="Label" parent="HUD/StartPanel/VBoxContainer" unique_id=123991984]
 layout_mode = 2
-text = "Тащи мышью · Q/E или стрелки — поворот"
+text = "DRIVE_HINT_DRAG"
 horizontal_alignment = 1
 
 [node name="StartButton" type="Button" parent="HUD/StartPanel/VBoxContainer" unique_id=897120393]
 layout_mode = 2
-text = "Поехали"
+text = "DRIVE_START"
 
 [node name="FinishPanel" type="PanelContainer" parent="HUD" unique_id=1016806020]
 visible = false
@@ -142,4 +142,4 @@ horizontal_alignment = 1
 
 [node name="ToShopButton" type="Button" parent="HUD/FinishPanel/VBoxContainer" unique_id=1803490011]
 layout_mode = 2
-text = "В лавку"
+text = "DRIVE_TO_SHOP"

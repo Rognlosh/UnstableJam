@@ -57,8 +57,8 @@ func _refresh() -> void:
 	if _data == null:
 		return
 	name_label.text = _data.get_display_name()
-	var stock_note := "" if _stock <= 0 else "   •   на складе: %d" % _stock
-	stats_label.text = "Продажа: %d   •   прочность: %s   •   вес: %s%s" % [
+	var stock_note := "" if _stock <= 0 else tr("SHOP_LOT_STOCK") % _stock
+	stats_label.text = tr("SHOP_LOT_STATS") % [
 		_data.base_price,
 		_toughness_word(_data.break_speed),
 		_format_mass(_data.mass),
@@ -67,10 +67,10 @@ func _refresh() -> void:
 	# Про нехватку места говорим прямо на кнопке: серая кнопка без причины
 	# читается как поломка.
 	if not _has_room:
-		buy_button.text = "Нет места"
+		buy_button.text = tr("SHOP_LOT_NO_ROOM")
 		buy_button.disabled = true
 	else:
-		buy_button.text = "Купить · %d" % _data.buy_price
+		buy_button.text = tr("SHOP_LOT_BUY") % _data.buy_price
 		buy_button.disabled = _money < _data.buy_price
 	_refresh_quirk()
 	_draw_silhouette()
@@ -85,7 +85,7 @@ func _refresh_quirk() -> void:
 	quirk_label.visible = quirk != null
 	if quirk == null:
 		return
-	quirk_label.text = "%s — %s" % [quirk.get_display_name(), quirk.get_hint()]
+	quirk_label.text = tr("QUIRK_LINE") % [quirk.get_display_name(), quirk.get_hint()]
 	# Оттенок берём в полную силу, а не через tint_amount: на силуэте он
 	# лишь подкрашивает вещь, а тексту нужна читаемая заливка.
 	quirk_label.add_theme_color_override(&"font_color", quirk.tint)
@@ -111,14 +111,16 @@ func _draw_silhouette() -> void:
 ## Порог удара в пикселях в секунду игроку не говорит ничего, поэтому
 ## переводим его в слово. Слова согласованы с «прочность», а не с названием
 ## товара: иначе пришлось бы хранить род у каждого предмета.
-static func _toughness_word(break_speed: float) -> String:
+## Метод не статический намеренно: tr() — метод Object, и в статическом
+## контексте звать его нечем.
+func _toughness_word(break_speed: float) -> String:
 	if break_speed < 350.0:
-		return "очень низкая"
+		return tr("TOUGHNESS_VERY_LOW")
 	if break_speed < 550.0:
-		return "низкая"
+		return tr("TOUGHNESS_LOW")
 	if break_speed < 900.0:
-		return "высокая"
-	return "очень высокая"
+		return tr("TOUGHNESS_HIGH")
+	return tr("TOUGHNESS_VERY_HIGH")
 
 
 ## Целый вес показываем без десятичной части: «2» вместо «2.0».

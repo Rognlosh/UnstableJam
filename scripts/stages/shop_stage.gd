@@ -292,18 +292,17 @@ func _refresh_handout() -> void:
 ## Строка склада. Числа пишем как «Ваза × 2», а не «2 вазы»: склонения
 ## пришлось бы хранить у каждого предмета, а выигрыш нулевой.
 func _stock_text(whole: Dictionary, fragments: int) -> String:
-	var shelves := "Полки: %d / %d" % [
-		ShelfLayout.levels_used(GameState.cargo_actual), ShelfLayout.max_levels(),
-	]
+	var used := ShelfLayout.levels_used(GameState.cargo_actual)
+	var total := ShelfLayout.max_levels()
 	var parts: PackedStringArray = PackedStringArray()
 	# Идём по каталогу, а не по ключам словаря: так порядок в строке склада
 	# совпадает с порядком витрины и не прыгает от покупки к покупке.
 	for item: ItemData in ItemCatalog.all_items():
 		var count: int = int(whole.get(item.id, 0))
 		if count > 0:
-			parts.append("%s × %d" % [item.get_display_name(), count])
+			parts.append(tr("SHOP_STOCK_ITEM") % [item.get_display_name(), count])
 	if fragments > 0:
-		parts.append("осколки × %d" % fragments)
+		parts.append(tr("SHOP_STOCK_FRAGMENTS") % fragments)
 	if parts.is_empty():
-		return shelves + "   •   склад пуст"
-	return shelves + "   •   " + ", ".join(parts)
+		return tr("SHOP_FOOTER_EMPTY") % [used, total]
+	return tr("SHOP_FOOTER") % [used, total, ", ".join(parts)]

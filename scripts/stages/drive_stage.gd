@@ -800,11 +800,14 @@ func _update_status() -> void:
 		# молча за игрока — хуже, чем попросить прибраться.
 		_start_button.disabled = stray > 0
 		_hint_label.text = (
-			"Убери с земли: %d" % stray if stray > 0
-			else "Тащи мышью · Q/E или стрелки — поворот")
-		_status_label.text = "День %d · Погрузка\nВ кузове: %d · На стеллаже: %d" % [
-			GameState.get_day(), in_bed, on_shelf,
-		]
+			tr("DRIVE_HINT_STRAY") % stray if stray > 0
+			else tr("DRIVE_HINT_DRAG"))
+		# Две строки склеиваются переводом строки, а не одним ключом с \n:
+		# перевод строки внутри поля CSV пережил бы не всякий редактор таблиц.
+		_status_label.text = "\n".join(PackedStringArray([
+			tr("DRIVE_STATUS_LOADING") % GameState.get_day(),
+			tr("DRIVE_STATUS_COUNT") % [in_bed, on_shelf],
+		]))
 		return
 	# В кузове считаем целые предметы: осколки лежат в той же группе,
 	# но местом груза уже не являются.
@@ -813,7 +816,7 @@ func _update_status() -> void:
 		var item := node as BreakableItem
 		if item != null and item.level == 0:
 			whole += 1
-	_status_label.text = "День %d · Цело: %d из %d · Пройдено: %d%%" % [
+	_status_label.text = tr("DRIVE_STATUS_DRIVING") % [
 		GameState.get_day(),
 		whole,
 		_loaded.size(),
@@ -839,8 +842,8 @@ func _update_timer_bar() -> void:
 	_timer_bar.free_share = free_time_share
 	var factor := get_payout_factor()
 	_timer_label.text = (
-		"Время: %d с" % int(_elapsed) if is_equal_approx(factor, 1.0)
-		else "Время: %d с · оплата %d%%" % [int(_elapsed), int(round(factor * 100.0))])
+		tr("DRIVE_TIME") % int(_elapsed) if is_equal_approx(factor, 1.0)
+		else tr("DRIVE_TIME_LATE") % [int(_elapsed), int(round(factor * 100.0))])
 
 
 ## Доля пройденной трассы, 0..1. Считается по X рамы между стартовой
@@ -865,11 +868,12 @@ func _on_finish_reached() -> void:
 	_truck.auto_brake = true
 	_restart_button.hide()
 	GameState.run_result = _collect_result()
-	_result_label.text = "ФИНИШ\nДоехало целыми: %d\nПовреждено: %d\nПотеряно: %d" % [
-		GameState.run_result["delivered"],
-		GameState.run_result["damaged"],
-		GameState.run_result["lost"],
-	]
+	_result_label.text = "\n".join(PackedStringArray([
+		tr("DRIVE_FINISH_TITLE"),
+		tr("DRIVE_FINISH_DELIVERED") % GameState.run_result["delivered"],
+		tr("DRIVE_FINISH_DAMAGED") % GameState.run_result["damaged"],
+		tr("DRIVE_FINISH_LOST") % GameState.run_result["lost"],
+	]))
 	_finish_panel.show()
 
 

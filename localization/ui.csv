@@ -68,3 +68,31 @@ PAUSE_EXIT_CONFIRM,Точно? Партия пропадёт,Sure? The run is lo
 MENU_CONTINUE,Продолжить партию,Continue
 MENU_CONTINUE_FAILED,Сохранение повреждено,Save file is damaged
 MENU_NEW_GAME_CONFIRM,Точно? Сохранение сотрётся,Sure? The save is erased
+SHOP_LOT_STATS,Продажа: %d   •   прочность: %s   •   вес: %s%s,Sells for %d   •   sturdiness: %s   •   weight: %s%s
+SHOP_LOT_STOCK,   •   на складе: %d,   •   in stock: %d
+SHOP_LOT_NO_ROOM,Нет места,No room
+SHOP_LOT_BUY,Купить · %d,Buy · %d
+TOUGHNESS_VERY_LOW,очень низкая,very low
+TOUGHNESS_LOW,низкая,low
+TOUGHNESS_HIGH,высокая,high
+TOUGHNESS_VERY_HIGH,очень высокая,very high
+QUIRK_LINE,%s — %s,%s — %s
+SHOP_FOOTER,Полки: %d / %d   •   %s,Shelves: %d / %d   •   %s
+SHOP_FOOTER_EMPTY,Полки: %d / %d   •   склад пуст,Shelves: %d / %d   •   store is empty
+SHOP_STOCK_ITEM,%s × %d,%s × %d
+SHOP_STOCK_FRAGMENTS,осколки × %d,shards × %d
+SHOP_DEPART,В дорогу,Set off
+DRIVE_HINT_DRAG,Тащи мышью · Q/E или стрелки — поворот,Drag with the mouse · Q/E or arrow keys to turn
+DRIVE_HINT_STRAY,Убери с земли: %d,Left on the ground: %d
+DRIVE_STATUS_LOADING,День %d · Погрузка,Day %d · Loading
+DRIVE_STATUS_COUNT,В кузове: %d · На стеллаже: %d,In the bed: %d · On the shelf: %d
+DRIVE_START,Поехали,Drive
+DRIVE_STATUS_DRIVING,День %d · Цело: %d из %d · Пройдено: %d%%,Day %d · Intact: %d of %d · Covered: %d%%
+DRIVE_TIME,Время: %d с,Time: %d s
+DRIVE_TIME_LATE,Время: %d с · оплата %d%%,Time: %d s · payout %d%%
+DRIVE_RESTART,Сброс (R),Restart (R)
+DRIVE_FINISH_TITLE,ФИНИШ,FINISH
+DRIVE_FINISH_DELIVERED,Доехало целыми: %d,Arrived intact: %d
+DRIVE_FINISH_DAMAGED,Повреждено: %d,Damaged: %d
+DRIVE_FINISH_LOST,Потеряно: %d,Lost: %d
+DRIVE_TO_SHOP,В лавку,To the shop

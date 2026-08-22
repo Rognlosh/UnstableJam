@@ -74,4 +74,4 @@ layout_mode = 2
 [node name="GoButton" type="Button" parent="Margin/VBoxContainer" unique_id=1064453453]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-text = "В дорогу"
+text = "SHOP_DEPART"
