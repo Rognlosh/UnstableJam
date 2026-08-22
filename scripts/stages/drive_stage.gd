@@ -868,13 +868,30 @@ func _on_finish_reached() -> void:
 	_truck.auto_brake = true
 	_restart_button.hide()
 	GameState.run_result = _collect_result()
+	_update_result_label()
+	_finish_panel.show()
+
+
+## Итоговая табличка вынесена в отдельный метод, потому что собирается один
+## раз, а не каждый кадр, как остальной HUD.
+func _update_result_label() -> void:
 	_result_label.text = "\n".join(PackedStringArray([
 		tr("DRIVE_FINISH_TITLE"),
 		tr("DRIVE_FINISH_DELIVERED") % GameState.run_result["delivered"],
 		tr("DRIVE_FINISH_DAMAGED") % GameState.run_result["damaged"],
 		tr("DRIVE_FINISH_LOST") % GameState.run_result["lost"],
 	]))
-	_finish_panel.show()
+
+
+## Смена языка на лету. Строки статуса и таймера обновляются каждый кадр
+## и догоняют новый язык сами; итог заезда — нет, его пересобираем руками.
+##
+## is_node_ready() обязателен: с 4.3 уведомление приходит и при входе узла
+## в дерево, то есть раньше, чем @onready-узлы разрезолвлены.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
+		if _phase == Phase.FINISHED:
+			_update_result_label()
 
 
 ## Итог заезда: сколько ценности доехало.
