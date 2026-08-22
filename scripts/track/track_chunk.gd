@@ -60,10 +60,17 @@ const SOIL_DEPTHS: Array[float] = [4.0, 30.0, 4.0, 20.0, 3.0]
 ## резко, как толстый слой под ней, её верх остался бы точным, а низ уже
 ## уплыл, и на гребёнке толщина каймы гуляла бы от нуля до полутора
 ## десятков пикселей. Кайма в 4 px обязана быть каймой в 4 px везде.
-const SOIL_RELAX_DEPTH: float = 70.0
+const SOIL_RELAX_DEPTH: float = 45.0
 ## Окно сглаживания в точках профиля. Должно перекрывать несколько кочек
 ## гребёнки, иначе среднее повторяет ту же рябь, только тише.
 const SOIL_SMOOTH_WINDOW: int = 15
+## Предельный уклон глубоких границ, тангенс. Сглаживание в среднем уступ
+## смягчает, но стенку в 90 px за 60 px длины оно оставляет почти отвесной,
+## и слои сползают по ней вертикальной лентой — та самая «лесенка».
+## Ограничение уклона разворачивает их в срез, каким обрыв и должен быть.
+const SOIL_MAX_SLOPE: float = 0.7
+## Ниже какой доли заданной толщины слою сжиматься нельзя.
+const SOIL_MIN_THICKNESS: float = 0.35
 
 var _body: StaticBody2D
 var _outline: CollisionPolygon2D
@@ -134,15 +141,31 @@ func _build_soil(palette: WorldPalette) -> void:
 		palette.soil_sand_edge, palette.soil_sand, palette.soil_sand_edge,
 		palette.soil_subturf, palette.soil_subturf_edge,
 	]
-	var relaxed := _smooth(surface, SOIL_SMOOTH_WINDOW)
+	var relaxed := _limit_slope(_smooth(surface, SOIL_SMOOTH_WINDOW), SOIL_MAX_SLOPE)
 	# Границы считаем заранее и по порядку: низ каждой полосы обязан быть
 	# ровно верхом следующей, иначе между ними проступит толща.
 	var edges: Array[PackedVector2Array] = []
 	var depth := 0.0
 	for i in SOIL_DEPTHS.size() + 1:
-		edges.append(_edge(surface, relaxed, depth, minf(depth / SOIL_RELAX_DEPTH, 1.0)))
+		# Кривая квадратичная, а не прямая: у самой поверхности отрыв должен
+		# быть почти нулевым, иначе кайма в 4 px опять начнёт гулять, —
+		# а к низу пирога, наоборот, полным.
+		var relax: float = minf(depth / SOIL_RELAX_DEPTH, 1.0)
+		edges.append(_edge(surface, relaxed, depth, relax * relax))
 		if i < SOIL_DEPTHS.size():
 			depth += SOIL_DEPTHS[i]
+	# Разная скорость отрыва у соседних границ может их пересечь: на уступе
+	# низ песка успевает уплыть сильнее, чем кайма под ним, и кайма выходит
+	# отрицательной толщины — полигон выворачивается наизнанку. Проходим
+	# сверху вниз и не даём слою стать тоньше доли от заданного.
+	for i in SOIL_DEPTHS.size():
+		var floor_thickness: float = SOIL_DEPTHS[i] * SOIL_MIN_THICKNESS
+		var upper := edges[i]
+		var lower := edges[i + 1]
+		for k in lower.size():
+			lower[k] = Vector2(lower[k].x, maxf(lower[k].y, upper[k].y + floor_thickness))
+		edges[i + 1] = lower
+
 	for i in SOIL_DEPTHS.size():
 		var band := Polygon2D.new()
 		band.polygon = _band(edges[i], edges[i + 1])
@@ -188,18 +211,42 @@ static func _band(top: PackedVector2Array, bottom: PackedVector2Array) -> Packed
 static func _smooth(surface: PackedVector2Array, window: int) -> PackedVector2Array:
 	var count := surface.size()
 	var result := PackedVector2Array(surface)
-	if count < window * 2:
+	if count < 6:
 		return result
-	var half := window / 2
+	# Короткому профилю большое окно не по размеру: у уступа всего девять
+	# точек, и окном в пятнадцать сглаживать нечего. Берём треть длины.
+	var half: int = mini(window, count / 3) / 2
+	if half < 1:
+		return result
 	for i in range(half, count - half):
 		var sum := 0.0
 		for k in range(i - half, i + half + 1):
 			sum += surface[k].y
 		# Ближе к краям отпускаем сглаживание, чтобы оно сошло на нет
 		# ровно к стыку, а не оборвалось ступенькой.
-		var edge_fade: float = minf(float(i), float(count - 1 - i)) / float(window * 2)
+		var edge_fade: float = minf(float(i), float(count - 1 - i)) / float(half * 4)
 		result[i] = Vector2(surface[i].x,
-			lerpf(surface[i].y, sum / float(window), minf(edge_fade, 1.0)))
+			lerpf(surface[i].y, sum / float(half * 2 + 1), minf(edge_fade, 1.0)))
+	return result
+
+
+## Разворачивает крутые участки до предельного уклона: два прохода,
+## слева направо и справа налево, каждый только опускает точки.
+##
+## Опускает, а не поднимает, намеренно: поднятая точка вылезла бы выше
+## дороги и слой проступил бы сквозь неё. Опущенная лишь утолщает то,
+## что лежит над ней, а это ровно то, как выглядит срез обрыва.
+static func _limit_slope(surface: PackedVector2Array, max_slope: float) -> PackedVector2Array:
+	var count := surface.size()
+	if count < 2:
+		return surface
+	var result := PackedVector2Array(surface)
+	for i in range(1, count):
+		var run: float = absf(result[i].x - result[i - 1].x) * max_slope
+		result[i] = Vector2(result[i].x, maxf(result[i].y, result[i - 1].y - run))
+	for i in range(count - 2, -1, -1):
+		var run: float = absf(result[i + 1].x - result[i].x) * max_slope
+		result[i] = Vector2(result[i].x, maxf(result[i].y, result[i + 1].y - run))
 	return result
 
 
