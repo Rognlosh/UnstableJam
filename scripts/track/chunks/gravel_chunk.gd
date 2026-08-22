@@ -12,6 +12,11 @@ extends TrackChunk
 ## лежать где лежали. Удалять и насыпать заново нельзя: стоит игроку
 ## отъехать и вернуться, как новая насыпь материализуется прямо в машине.
 
+## Какую долю ширины холста занимает сам рисунок камня. У pebble.svg
+## поля вокруг картинки почти нулевые, но считать по холсту всё равно
+## нельзя: тогда камень вышел бы чуть мельче заказанного радиуса.
+const PEBBLE_INK_WIDTH: float = 0.984
+
 ## Ровные площадки по краям — стыковочные хвосты.
 @export var flat_margin: float = 40.0
 ## Длина дна промоины.
@@ -38,6 +43,8 @@ extends TrackChunk
 ## Масса камня. Тяжёлые не разгребаются, лёгкие разлетаются от колеса.
 @export var gravel_mass: float = 1.4
 @export var gravel_color: Color = Color(0.46, 0.44, 0.41)
+## Рисунок камня. null — камни рисуются заливкой по своему контуру.
+@export var gravel_texture: Texture2D = preload("res://assets/art/track/pebble.svg")
 @export var skirt_depth: float = 1400.0
 
 var _pit_start: float = 0.0
@@ -170,12 +177,31 @@ func _spawn_gravel(rng: RandomNumberGenerator) -> void:
 		shape.shape = convex
 		stone.add_child(shape)
 
-		var visual := Polygon2D.new()
-		visual.polygon = outline
-		visual.color = gravel_color
-		stone.add_child(visual)
+		stone.add_child(_make_stone_visual(radius, outline))
 
 		add_child(stone)
+
+
+## Вид камня. Рисунок один на всю насыпь, а коллизия у каждого своя:
+## силуэты расходятся, но камень размером в двадцать пикселей лежит
+## в куче таких же, и разницу между его контуром и картинкой увидеть
+## негде. Зато обводка и блики читаются, чего плоская заливка не давала.
+##
+## Нет текстуры — возвращаемся к заливке по контуру, как было: чанк
+## должен собираться и в проекте, где рисунка ещё нет.
+func _make_stone_visual(radius: float, outline: PackedVector2Array) -> Node2D:
+	if gravel_texture != null:
+		var sprite := Sprite2D.new()
+		sprite.texture = gravel_texture
+		# Рисунок занимает почти весь холст и стоит по центру, поэтому
+		# хватает подгонки по ширине: диаметр камня против ширины картинки.
+		var ink_width: float = float(gravel_texture.get_width()) * PEBBLE_INK_WIDTH
+		sprite.scale = Vector2.ONE * (radius * 2.0 / ink_width)
+		return sprite
+	var visual := Polygon2D.new()
+	visual.polygon = outline
+	visual.color = gravel_color
+	return visual
 
 
 ## Камешек делаем угловатым, а не круглым: круги ведут себя как подшипники

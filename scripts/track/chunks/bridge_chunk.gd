@@ -19,6 +19,11 @@ extends TrackChunk
 ## Берег между хвостом и обрывом.
 @export var shore_length: float = 180.0
 ## Сколько досок в пролёте: (минимум, максимум).
+## Какую долю холста занимает сам рисунок доски. По ширине он почти
+## во весь лист, по высоте — чуть больше половины: у plank.svg квадратный
+## холст, а доска в нём лежит полосой.
+const PLANK_INK := Vector2(0.982, 0.511)
+
 @export var plank_count_range: Vector2i = Vector2i(6, 18)
 ## Насколько цепь длиннее пролёта: (минимум, максимум).
 ## 1.02 — почти струна, 1.06 — заметный провис.
@@ -31,6 +36,8 @@ extends TrackChunk
 ## в кадр оно попадать не должно.
 @export var chasm_depth: float = 1800.0
 @export var plank_color: Color = Color(0.42, 0.31, 0.2)
+## Рисунок доски. null — доски рисуются заливкой, как было.
+@export var plank_texture: Texture2D = preload("res://assets/art/track/plank.svg")
 
 
 func _ready() -> void:
@@ -119,15 +126,7 @@ func _build_planks(span: float, count: int, slack: float) -> void:
 		shape.shape = rect
 		plank.add_child(shape)
 
-		var visual := Polygon2D.new()
-		var half_x := plank_length * 0.5
-		var half_y := plank_thickness * 0.5
-		visual.polygon = PackedVector2Array([
-			Vector2(-half_x, -half_y), Vector2(half_x, -half_y),
-			Vector2(half_x, half_y), Vector2(-half_x, half_y),
-		])
-		visual.color = plank_color
-		plank.add_child(visual)
+		plank.add_child(_make_plank_visual(plank_length))
 
 		add_child(plank)
 		planks.append(plank)
@@ -164,3 +163,32 @@ func _get_configuration_warnings() -> PackedStringArray:
 			)
 			break
 	return issues
+
+
+## Вид доски. Длина пролёта делится на случайное число досок, поэтому
+## пропорции доски от моста к мосту разные, и рисунок приходится тянуть
+## по обеим осям независимо. Гвозди при этом слегка овалятся — на доске
+## толщиной восемнадцать пикселей это незаметно, а альтернативой была бы
+## повторяющаяся текстура с обрезанным на краю торцом.
+##
+## Нет текстуры — возвращаемся к заливке прямоугольником, как было.
+func _make_plank_visual(plank_length: float) -> Node2D:
+	if plank_texture != null:
+		var sprite := Sprite2D.new()
+		sprite.texture = plank_texture
+		var texture_size := Vector2(plank_texture.get_size())
+		# Рисунок занимает не весь холст: по высоте он лежит полосой
+		# посередине. Масштаб считаем от самого рисунка, иначе доска
+		# вышла бы вдвое тоньше заказанного.
+		var ink := texture_size * PLANK_INK
+		sprite.scale = Vector2(plank_length, plank_thickness) / ink
+		return sprite
+	var visual := Polygon2D.new()
+	var half_x := plank_length * 0.5
+	var half_y := plank_thickness * 0.5
+	visual.polygon = PackedVector2Array([
+		Vector2(-half_x, -half_y), Vector2(half_x, -half_y),
+		Vector2(half_x, half_y), Vector2(-half_x, half_y),
+	])
+	visual.color = plank_color
+	return visual
