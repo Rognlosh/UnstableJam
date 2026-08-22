@@ -21,9 +21,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 64
-theme_override_constants/margin_top = 64
+theme_override_constants/margin_top = 40
 theme_override_constants/margin_right = 64
-theme_override_constants/margin_bottom = 64
+theme_override_constants/margin_bottom = 40
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Margin" unique_id=1910300102]
 layout_mode = 2
@@ -34,24 +34,47 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "INTRO_TITLE"
 
-[node name="P1" type="Label" parent="Margin/VBoxContainer" unique_id=1910300104]
+[node name="Scroll" type="ScrollContainer" parent="Margin/VBoxContainer" unique_id=1910300110]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Text" type="VBoxContainer" parent="Margin/VBoxContainer/Scroll" unique_id=1910300111]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+[node name="P1" type="Label" parent="Margin/VBoxContainer/Scroll/Text" unique_id=1910300120]
 layout_mode = 2
 text = "INTRO_P1"
 autowrap_mode = 3
 
-[node name="P2" type="Label" parent="Margin/VBoxContainer" unique_id=1910300105]
+[node name="P2" type="Label" parent="Margin/VBoxContainer/Scroll/Text" unique_id=1910300121]
 layout_mode = 2
 text = "INTRO_P2"
 autowrap_mode = 3
 
-[node name="P3" type="Label" parent="Margin/VBoxContainer" unique_id=1910300106]
+[node name="P3" type="Label" parent="Margin/VBoxContainer/Scroll/Text" unique_id=1910300122]
 layout_mode = 2
 text = "INTRO_P3"
 autowrap_mode = 3
 
-[node name="Spacer" type="Control" parent="Margin/VBoxContainer" unique_id=1910300107]
+[node name="P4" type="Label" parent="Margin/VBoxContainer/Scroll/Text" unique_id=1910300123]
 layout_mode = 2
-size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.76, 0.58, 0.98, 1)
+text = "INTRO_P4"
+autowrap_mode = 3
+
+[node name="P5" type="Label" parent="Margin/VBoxContainer/Scroll/Text" unique_id=1910300124]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.58, 0.98, 1)
+text = "INTRO_P5"
+autowrap_mode = 3
+
+[node name="P6" type="Label" parent="Margin/VBoxContainer/Scroll/Text" unique_id=1910300125]
+layout_mode = 2
+text = "INTRO_P6"
+autowrap_mode = 3
 
 [node name="ContinueButton" type="Button" parent="Margin/VBoxContainer" unique_id=1910300108]
 custom_minimum_size = Vector2(0, 48)
