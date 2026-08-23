@@ -40,23 +40,24 @@ angular_damp = 1.5
 shape = SubResource("RectangleShape2D_chhu4")
 
 [node name="FrameVisual" type="Sprite2D" parent="Chassis/Frame" unique_id=670920823]
-scale = Vector2(0.98773, 0.94698)
+position = Vector2(0, -0.79)
+scale = Vector2(0.98773, 1.05325)
 texture = ExtResource("2_frame")
 
 [node name="Cabin" type="CollisionPolygon2D" parent="Chassis" unique_id=613948532]
 polygon = PackedVector2Array(104, -18, 200, -18, 200, -104, 104, -104)
 
 [node name="CabinBack" type="Sprite2D" parent="Chassis/Cabin" unique_id=1066967060]
-position = Vector2(152, -61)
+position = Vector2(152, -58)
 scale = Vector2(0.99732, 1.00122)
 texture = ExtResource("2_cabback")
 
 [node name="CabinIn" type="Sprite2D" parent="Chassis/Cabin" unique_id=1615944285]
-position = Vector2(143.6, -60.1)
+position = Vector2(143.6, -57.1)
 texture = ExtResource("2_cabin")
 
 [node name="CabinFront" type="Sprite2D" parent="Chassis/Cabin" unique_id=1615944286]
-position = Vector2(152, -61)
+position = Vector2(152, -58)
 scale = Vector2(0.99732, 1.00122)
 texture = ExtResource("2_cabfront")
 
