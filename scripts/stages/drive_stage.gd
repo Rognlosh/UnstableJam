@@ -706,6 +706,7 @@ func _grab_at(at: Vector2) -> void:
 		# Непрерывная проверка столкновений — страховка от проскакивания
 		# сквозь борт на быстром движении мыши.
 		item.continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE
+		Audio.play(&"pickup")
 		return
 
 
@@ -717,6 +718,7 @@ func _release() -> void:
 		_dragged.continuous_cd = RigidBody2D.CCD_MODE_DISABLED
 		_dragged.linear_velocity = _dragged.linear_velocity.limit_length(RELEASE_MAX_SPEED)
 		_dragged.angular_velocity = 0.0
+		Audio.play(&"place")
 	_dragged = null
 
 

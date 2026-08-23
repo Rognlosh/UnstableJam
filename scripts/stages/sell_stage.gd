@@ -44,8 +44,15 @@ const SKIP_SPEED: float = 40.0
 ## сравнение — сортировка зовёт компаратор куда чаще, чем есть строк.
 var _catalog_order: Dictionary = {}
 
+## Как часто тикает монета на набегающем счётчике. Цифры бегут быстрее,
+## чем ухо различает отдельные удары, поэтому звук идёт по времени,
+## а не по шагу счётчика — иначе вместо монет получилась бы дробь.
+const COIN_TICK: float = 0.07
+
 var _rows: Array[SellRow] = []
 var _tween: Tween = null
+var _coin_tick_at: float = 0.0
+var _gross_target: float = 0.0
 
 
 ## Числа итогового блока держим отдельными свойствами: твин присваивает
@@ -53,9 +60,12 @@ var _tween: Tween = null
 ## не требуют ни _process, ни ручного обновления.
 var shown_gross: float = 0.0:
 	set(value):
+		var rising := value > shown_gross + 0.001
 		shown_gross = value
 		if gross_label != null:
 			gross_label.text = tr("SELL_GROSS") % int(round(value))
+		if rising:
+			_tick_coin(value)
 
 var shown_total: float = 0.0:
 	set(value):
@@ -115,6 +125,7 @@ func _sell_cargo() -> void:
 ## ударом. Покажи мы уменьшенную сумму сразу, штраф не ощущался бы вовсе;
 ## а когда деньги на глазах утекают, в следующий раз игрок поедет быстрее.
 func _play(gross: int, total: int, payout: float) -> void:
+	_gross_target = float(gross)
 	_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 	var gap: float = minf(ROW_GAP_MAX, ROWS_BUDGET / maxf(float(_rows.size()), 1.0))
@@ -149,6 +160,18 @@ func _play(gross: int, total: int, payout: float) -> void:
 	_tween.tween_callback(_reveal_button)
 
 
+## Монета под набегающую сумму. Тон ползёт вверх по мере набора: так счётчик
+## слышится как нарастание, а не как ровная дробь. Уровень занижен — это
+## подложка под цифры, а не событие.
+func _tick_coin(value: float) -> void:
+	var now: float = float(Time.get_ticks_msec()) / 1000.0
+	if now - _coin_tick_at < COIN_TICK:
+		return
+	_coin_tick_at = now
+	var ratio: float = clampf(value / maxf(_gross_target, 1.0), 0.0, 1.0)
+	Audio.play(&"coin", -7.0, lerpf(0.85, 1.3, ratio))
+
+
 func _reveal_button() -> void:
 	next_day_button.disabled = false
 	create_tween().tween_property(next_day_button, "modulate:a", 1.0, 0.2)
@@ -157,6 +180,7 @@ func _reveal_button() -> void:
 ## Штраф за опоздание объявляется в тот же миг, когда сумма поехала вниз:
 ## без подписи игрок увидит только меньшее число и не поймёт, за что.
 func _show_late(payout: float) -> void:
+	Audio.play(&"penalty")
 	time_label.text = tr("SELL_TIME_LATE") % [
 		int(GameState.run_result.get("run_time", 0.0)),
 		int(round(payout * 100.0)),

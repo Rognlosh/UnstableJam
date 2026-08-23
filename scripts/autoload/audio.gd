@@ -107,6 +107,10 @@ const SFX_GROUP: Dictionary = {
 ## Ключ здесь — группа, а не отдельный звук.
 const SFX_COOLDOWN: Dictionary = {
 	&"cargo_hit": 0.06,
+	# Счётчик на экране продажи бьёт монетой каждые 70 мс, и общее окно
+	# в 40 мс его не сдерживает. Тут оно и не нужно: ритм задаёт счётчик,
+	# а окно лишь страхует от наложения покупки на тик.
+	&"coin": 0.03,
 }
 
 ## Каталог зацикленных эффектов. Отдельно от SFX_LIBRARY: петля живёт
@@ -153,13 +157,34 @@ func _ready() -> void:
 		add_child(track)
 		_music.append(track)
 
+	# Щелчок вешаем на все кнопки разом, а не на каждый обработчик нажатия.
+	# Автозагрузка готова раньше главной сцены, поэтому ни одна кнопка
+	# не проскочит мимо, и новые экраны получают звук даром.
+	get_tree().node_added.connect(_on_node_added)
+
+
+func _on_node_added(node: Node) -> void:
+	var button := node as BaseButton
+	if button == null:
+		return
+	if not button.pressed.is_connected(_on_button_pressed):
+		button.pressed.connect(_on_button_pressed)
+
+
+func _on_button_pressed() -> void:
+	play(&"ui_click")
+
 
 ## --- Эффекты ---
 
 ## Проиграть эффект по ключу. volume_db — поправка на силу события
 ## (удар груза тем громче, чем сильнее), 0.0 означает «как записано».
 ## Возвращает занятый плеер или null, если играть было нечего.
-func play(key: StringName, volume_db: float = 0.0) -> AudioStreamPlayer:
+## pitch_mul сдвигает высоту тона поверх случайного разброса: тем же семплом
+## монеты можно отбить и мелкую покупку, и дорогой апгрейд — второй ниже,
+## и это слышно как «потратил больше», без второго файла.
+func play(key: StringName, volume_db: float = 0.0,
+		pitch_mul: float = 1.0) -> AudioStreamPlayer:
 	var group: StringName = SFX_GROUP.get(key, key)
 	var now: float = float(Time.get_ticks_msec()) / 1000.0
 	var window: float = float(SFX_COOLDOWN.get(group, DEFAULT_COOLDOWN))
@@ -179,7 +204,7 @@ func play(key: StringName, volume_db: float = 0.0) -> AudioStreamPlayer:
 	_last_played[group] = now
 	voice.stream = stream
 	voice.volume_db = volume_db
-	voice.pitch_scale = randf_range(1.0 - PITCH_SPREAD, 1.0 + PITCH_SPREAD)
+	voice.pitch_scale = randf_range(1.0 - PITCH_SPREAD, 1.0 + PITCH_SPREAD) * pitch_mul
 	voice.play()
 	return voice
 

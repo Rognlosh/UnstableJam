@@ -142,11 +142,14 @@ func _on_buy_pressed(item: ItemData) -> void:
 	# Витрина гасит кнопку сама, но полагаться на состояние UI нельзя:
 	# решение о месте принимает раскладка.
 	if not ShelfLayout.fits(GameState.cargo_actual, item):
+		Audio.play(&"ui_denied")
 		return
 	# Проверка и списание — одной операцией: spend_money() возвращает false,
 	# если не хватило, и тогда состояние не меняется вовсе.
 	if not GameState.spend_money(item.buy_price):
+		Audio.play(&"ui_denied")
 		return
+	Audio.play(&"coin")
 	GameState.cargo_actual.append(GameState.cargo_entry(item.id))
 	_refresh()
 
@@ -160,11 +163,15 @@ func _on_upgrade_pressed(upgrade: UpgradeData) -> void:
 		return
 	var level := GameState.upgrade_level(upgrade.id)
 	if level >= upgrade.level_count():
+		Audio.play(&"ui_denied")
 		return
 	# Проверка и списание — одной операцией: spend_money() возвращает false,
 	# если не хватило, и тогда состояние не меняется вовсе.
 	if not GameState.spend_money(upgrade.price_at(level + 1)):
+		Audio.play(&"ui_denied")
 		return
+	# Апгрейд дороже склянки, и тот же семпл ниже тоном это и означает.
+	Audio.play(&"coin", 0.0, 0.78)
 	GameState.set_upgrade_level(upgrade.id, level + 1)
 	if upgrade.id == UpgradeCatalog.SHOP_DEED_ID:
 		# Смена стадии сама перерисует всё, что нужно; обновлять витрину,
