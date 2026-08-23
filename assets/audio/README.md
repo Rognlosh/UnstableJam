@@ -24,6 +24,7 @@
 | `sfx/break_clay_1..4.wav` | freesound 399080, kinoton — «clay pottery drop n break»; четыре дубля из одной записи, нарезаны и выровнены по уровню | **уточнить на странице** |
 | `sfx/break_wood_1.wav` | freesound 667655, deltacode — «wooden crate impact 1» | **уточнить на странице** |
 | `sfx/break_glass_1.ogg` | Kenney (`glass_004`) | CC0 |
+| `sfx/coin_1.wav` | freesound 343462, rocotilos — «real coin drop» | **уточнить на странице** |
 | `sfx/ui_click_1.ogg` | Kenney, Interface Sounds (`click4`) | CC0 |
 | `sfx/place_1.ogg` | Kenney, Interface Sounds (`switch3`) | CC0 |
 | `sfx/cargo_hit_glass_1.wav` | freesound 672671, janzigdoplin — «bottle 7» | **уточнить на странице** |
