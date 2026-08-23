@@ -24,6 +24,7 @@
 | `sfx/break_glass_1.ogg` | Kenney (`glass_004`) | CC0 |
 | `sfx/ui_click_1.ogg` | Kenney, Interface Sounds (`click4`) | CC0 |
 | `sfx/place_1.ogg` | Kenney, Interface Sounds (`switch3`) | CC0 |
+| `sfx/cargo_hit_glass_1.wav` | freesound 672671, janzigdoplin — «bottle 7» | **уточнить на странице** |
 | `sfx/finish_1.ogg` | Kenney, Jingles (`jingles_SAX10`) | CC0 |
 
 Файлы с freesound требуют проверки: там встречается и CC0, и CC BY —

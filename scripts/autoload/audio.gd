@@ -86,7 +86,6 @@ const SFX_LIBRARY: Dictionary = {
 ## глухое к глухому. Стекло падает в глину, а не в дерево, потому что
 ## черепок и осколок звучат похоже, а доска — нет.
 const SFX_FALLBACK: Dictionary = {
-	&"cargo_hit_glass": &"cargo_hit_clay",
 	&"break_wood": &"break_clay",
 	&"break_clay": &"break_glass",
 }
