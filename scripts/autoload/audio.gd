@@ -49,6 +49,7 @@ const SFX_LIBRARY: Dictionary = {
 		"res://assets/audio/sfx/break_clay_1",
 		"res://assets/audio/sfx/break_clay_2",
 		"res://assets/audio/sfx/break_clay_3",
+		"res://assets/audio/sfx/break_clay_4",
 	],
 	&"break_wood": [
 		"res://assets/audio/sfx/break_wood_1",
