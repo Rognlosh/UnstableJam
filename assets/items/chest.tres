@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dlhunjdv6d2mp" path="res://scripts/items/item_data.gd" id="1_item"]
 [ext_resource type="Script" uid="uid://b2i0e702clsfw" path="res://scripts/items/item_piece_data.gd" id="2_piece"]
-[ext_resource type="Texture2D" path="res://assets/art/items/chest.svg" id="9_tex"]
+[ext_resource type="Texture2D" uid="uid://btunbmbexj31f" path="res://assets/art/items/chest.svg" id="9_tex"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_chest"]
 friction = 0.9
@@ -11,25 +11,25 @@ bounce = 0.02
 [sub_resource type="Resource" id="Piece_chest_lid_left"]
 script = ExtResource("2_piece")
 piece_id = &"lid_left"
-polygon = PackedVector2Array(0.0, -18.0, -32.1, -18.0, -34.3, -14.8, -34.3, -5.5, 0.0, -5.5)
+polygon = PackedVector2Array(0, -18, -32.1, -18, -34.3, -14.8, -34.3, -5.5, 0, -5.5)
 value_share = 0.15
 
 [sub_resource type="Resource" id="Piece_chest_lid_right"]
 script = ExtResource("2_piece")
 piece_id = &"lid_right"
-polygon = PackedVector2Array(0.0, -5.5, 34.3, -5.5, 34.3, -14.8, 32.1, -18.0, 0.0, -18.0)
+polygon = PackedVector2Array(0, -5.5, 34.3, -5.5, 34.3, -14.8, 32.1, -18, 0, -18)
 value_share = 0.15
 
 [sub_resource type="Resource" id="Piece_chest_box_left"]
 script = ExtResource("2_piece")
 piece_id = &"box_left"
-polygon = PackedVector2Array(0.0, -5.5, -34.3, -5.5, -34.3, -5.4, -34.2, 16.8, -32.0, 20.0, 0.0, 20.0)
+polygon = PackedVector2Array(0, -5.5, -34.3, -5.5, -34.3, -5.4, -34.2, 16.8, -32, 20, 0, 20)
 value_share = 0.35
 
 [sub_resource type="Resource" id="Piece_chest_box_right"]
 script = ExtResource("2_piece")
 piece_id = &"box_right"
-polygon = PackedVector2Array(0.0, 20.0, 32.0, 20.0, 34.2, 16.8, 34.3, -5.4, 34.3, -5.5, 0.0, -5.5)
+polygon = PackedVector2Array(0, 20, 32, 20, 34.2, 16.8, 34.3, -5.4, 34.3, -5.5, 0, -5.5)
 value_share = 0.35
 
 [resource]
@@ -42,9 +42,9 @@ mass = 4.0
 break_speed = 850.0
 piece_toughness = 1.4
 piece_value_factor = 0.6
-whole_polygon = PackedVector2Array(-32.1, -18.0, -34.3, -14.8, -34.3, -5.5, -34.3, -5.4, -34.2, 16.8, -32.0, 20.0, 32.0, 20.0, 34.2, 16.8, 34.3, -5.4, 34.3, -5.5, 34.3, -14.8, 32.1, -18.0)
+whole_polygon = PackedVector2Array(-32.1, -18, -34.3, -14.8, -34.3, -5.5, -34.3, -5.4, -34.2, 16.8, -32, 20, 32, 20, 34.2, 16.8, 34.3, -5.4, 34.3, -5.5, 34.3, -14.8, 32.1, -18)
 pieces = Array[ExtResource("2_piece")]([SubResource("Piece_chest_lid_left"), SubResource("Piece_chest_lid_right"), SubResource("Piece_chest_box_left"), SubResource("Piece_chest_box_right")])
 color = Color(0.55, 0.4, 0.25, 1)
-physics_material = SubResource("PhysicsMaterial_chest")
 texture = ExtResource("9_tex")
 texture_rect = Rect2(-36.553, -21.586, 72.288, 45.656)
+physics_material = SubResource("PhysicsMaterial_chest")

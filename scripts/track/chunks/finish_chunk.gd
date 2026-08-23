@@ -21,7 +21,7 @@ signal crossed
 ##
 ## Отдельно от высоты: масштаб и посадка — разные вещи, и подгонять одно
 ## другим значит каждый раз пересчитывать оба.
-@export var gate_offset_y: float = 0.0:
+@export var gate_offset_y: float = 10.0:
 	set(value):
 		gate_offset_y = value
 		_place_gate()

@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dlhunjdv6d2mp" path="res://scripts/items/item_data.gd" id="1_item"]
 [ext_resource type="Script" uid="uid://b2i0e702clsfw" path="res://scripts/items/item_piece_data.gd" id="2_piece"]
 [ext_resource type="Resource" uid="uid://cux3vox8e5vlv" path="res://assets/quirks/levitation.tres" id="3_lev"]
-[ext_resource type="Texture2D" path="res://assets/art/items/chalice.svg" id="9_tex"]
+[ext_resource type="Texture2D" uid="uid://cpj5eac5o8xic" path="res://assets/art/items/chalice.svg" id="9_tex"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_chalice"]
 friction = 0.7
@@ -12,25 +12,25 @@ bounce = 0.1
 [sub_resource type="Resource" id="Piece_chalice_cup_left"]
 script = ExtResource("2_piece")
 piece_id = &"cup_left"
-polygon = PackedVector2Array(0.0, -26.0, -2.6, -26.0, -17.1, -22.8, -18.5, -0.1, -10.8, 3.2, -9.5, 5.2, 0.0, 5.2)
+polygon = PackedVector2Array(0, -26, -2.6, -26, -17.1, -22.8, -18.5, -0.1, -10.8, 3.2, -9.5, 5.2, 0, 5.2)
 value_share = 0.28
 
 [sub_resource type="Resource" id="Piece_chalice_cup_right"]
 script = ExtResource("2_piece")
 piece_id = &"cup_right"
-polygon = PackedVector2Array(0.0, 5.2, 9.5, 5.2, 10.8, 3.2, 18.5, -0.1, 17.1, -22.8, 2.6, -26.0, 0.0, -26.0)
+polygon = PackedVector2Array(0, 5.2, 9.5, 5.2, 10.8, 3.2, 18.5, -0.1, 17.1, -22.8, 2.6, -26, 0, -26)
 value_share = 0.28
 
 [sub_resource type="Resource" id="Piece_chalice_foot_left"]
 script = ExtResource("2_piece")
 piece_id = &"foot_left"
-polygon = PackedVector2Array(0.0, 5.2, -9.5, 5.2, -6.5, 9.7, -6.5, 13.0, -13.4, 16.2, -15.6, 19.4, -13.8, 22.7, -1.7, 25.9, 0.0, 25.9)
+polygon = PackedVector2Array(0, 5.2, -9.5, 5.2, -6.5, 9.7, -6.5, 13, -13.4, 16.2, -15.6, 19.4, -13.8, 22.7, -1.7, 25.9, 0, 25.9)
 value_share = 0.22
 
 [sub_resource type="Resource" id="Piece_chalice_foot_right"]
 script = ExtResource("2_piece")
 piece_id = &"foot_right"
-polygon = PackedVector2Array(0.0, 25.9, 1.7, 25.9, 13.8, 22.7, 15.6, 19.4, 13.4, 16.2, 6.5, 13.0, 6.5, 9.7, 9.5, 5.2, 0.0, 5.2)
+polygon = PackedVector2Array(0, 25.9, 1.7, 25.9, 13.8, 22.7, 15.6, 19.4, 13.4, 16.2, 6.5, 13, 6.5, 9.7, 9.5, 5.2, 0, 5.2)
 value_share = 0.22
 
 [resource]
@@ -41,10 +41,10 @@ base_price = 90
 buy_price = 55
 mass = 1.6
 break_speed = 300.0
-whole_polygon = PackedVector2Array(-2.6, -26.0, -17.1, -22.8, -18.5, -0.1, -10.8, 3.2, -9.5, 5.2, -6.5, 9.7, -6.5, 13.0, -13.4, 16.2, -15.6, 19.4, -13.8, 22.7, -1.7, 25.9, 1.7, 25.9, 13.8, 22.7, 15.6, 19.4, 13.4, 16.2, 6.5, 13.0, 6.5, 9.7, 9.5, 5.2, 10.8, 3.2, 18.5, -0.1, 17.1, -22.8, 2.6, -26.0)
+whole_polygon = PackedVector2Array(-2.6, -26, -17.1, -22.8, -18.5, -0.1, -10.8, 3.2, -9.5, 5.2, -6.5, 9.7, -6.5, 13, -13.4, 16.2, -15.6, 19.4, -13.8, 22.7, -1.7, 25.9, 1.7, 25.9, 13.8, 22.7, 15.6, 19.4, 13.4, 16.2, 6.5, 13, 6.5, 9.7, 9.5, 5.2, 10.8, 3.2, 18.5, -0.1, 17.1, -22.8, 2.6, -26)
 pieces = Array[ExtResource("2_piece")]([SubResource("Piece_chalice_cup_left"), SubResource("Piece_chalice_cup_right"), SubResource("Piece_chalice_foot_left"), SubResource("Piece_chalice_foot_right")])
 color = Color(0.86, 0.74, 0.38, 1)
-physics_material = SubResource("PhysicsMaterial_chalice")
-quirk = ExtResource("3_lev")
 texture = ExtResource("9_tex")
 texture_rect = Rect2(-37.024, -43.148, 74.047, 97.608)
+physics_material = SubResource("PhysicsMaterial_chalice")
+quirk = ExtResource("3_lev")
