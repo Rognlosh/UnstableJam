@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" uid="uid://ckt5n8pwjr3qv" path="res://scripts/track/chunks/finish_chunk.gd" id="1_finish"]
+[ext_resource type="Texture2D" path="res://assets/art/track/finish.svg" id="2_gate"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_zone"]
 size = Vector2(40, 700)
@@ -26,3 +27,10 @@ position = Vector2(300, -300)
 
 [node name="Shape" type="CollisionShape2D" parent="FinishZone"]
 shape = SubResource("RectangleShape2D_zone")
+
+[node name="Gate" type="Sprite2D" parent="." unique_id=771003001]
+z_index = -1
+position = Vector2(209.17, -420.90)
+scale = Vector2(1.41051, 1.41051)
+centered = false
+texture = ExtResource("2_gate")
