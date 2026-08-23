@@ -1,7 +1,12 @@
 [gd_scene format=3 uid="uid://xqnjgajvj31k"]
 
 [ext_resource type="Script" uid="uid://djryh52yiipuh" path="res://scripts/vehicle/truck.gd" id="1_bnfew"]
-[ext_resource type="Script" uid="uid://5wxv1gs56ldx" path="res://scripts/dev/debug_shape.gd" id="1_chhu4"]
+[ext_resource type="Texture2D" path="res://assets/art/vehicle/frame.svg" id="2_frame"]
+[ext_resource type="Texture2D" path="res://assets/art/vehicle/bed_wall.svg" id="2_wall"]
+[ext_resource type="Texture2D" path="res://assets/art/vehicle/wheel.svg" id="2_wheel"]
+[ext_resource type="Texture2D" path="res://assets/art/vehicle/cabin_back.svg" id="2_cabback"]
+[ext_resource type="Texture2D" path="res://assets/art/vehicle/cabin_in.svg" id="2_cabin"]
+[ext_resource type="Texture2D" path="res://assets/art/vehicle/cabin_front.svg" id="2_cabfront"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_g4v7s"]
 friction = 0.4
@@ -34,45 +39,40 @@ angular_damp = 1.5
 [node name="Frame" type="CollisionShape2D" parent="Chassis" unique_id=910165287]
 shape = SubResource("RectangleShape2D_chhu4")
 
-[node name="FrameVisual" type="Node2D" parent="Chassis/Frame" unique_id=670920823]
-script = ExtResource("1_chhu4")
-size = Vector2(400, 36)
-metadata/_custom_type_script = "uid://5wxv1gs56ldx"
+[node name="FrameVisual" type="Sprite2D" parent="Chassis/Frame" unique_id=670920823]
+scale = Vector2(0.98773, 0.94698)
+texture = ExtResource("2_frame")
 
 [node name="Cabin" type="CollisionPolygon2D" parent="Chassis" unique_id=613948532]
-polygon = PackedVector2Array(104, -18, 200, -18, 176, -102, 104, -102)
+polygon = PackedVector2Array(104, -18, 200, -18, 200, -104, 104, -104)
 
-[node name="CabinVisual" type="Node2D" parent="Chassis/Cabin" unique_id=1066967060]
-script = ExtResource("1_chhu4")
-kind = 2
-polygon = PackedVector2Array(104, -18, 200, -18, 176, -102, 104, -102)
-color = Color(0.83133495, 0.7165336, 0.73769706, 1)
-metadata/_custom_type_script = "uid://5wxv1gs56ldx"
+[node name="CabinBack" type="Sprite2D" parent="Chassis/Cabin" unique_id=1066967060]
+position = Vector2(152, -61)
+scale = Vector2(0.99732, 1.00122)
+texture = ExtResource("2_cabback")
 
-[node name="CabinWindow" type="Node2D" parent="Chassis/Cabin" unique_id=1615944285]
-script = ExtResource("1_chhu4")
-kind = 2
-polygon = PackedVector2Array(118, -38, 172, -38, 158, -90, 118, -90)
-color = Color(0.46932214, 0.49055445, 0.8775456, 1)
-metadata/_custom_type_script = "uid://5wxv1gs56ldx"
+[node name="CabinIn" type="Sprite2D" parent="Chassis/Cabin" unique_id=1615944285]
+position = Vector2(143.6, -60.1)
+texture = ExtResource("2_cabin")
+
+[node name="CabinFront" type="Sprite2D" parent="Chassis/Cabin" unique_id=1615944286]
+position = Vector2(152, -61)
+scale = Vector2(0.99732, 1.00122)
+texture = ExtResource("2_cabfront")
 
 [node name="BedWallRear" type="CollisionShape2D" parent="Chassis" unique_id=1084818749]
 position = Vector2(-196, -50)
 shape = SubResource("RectangleShape2D_bnfew")
 
-[node name="BedWallRearVisual" type="Node2D" parent="Chassis/BedWallRear" unique_id=273825004]
-script = ExtResource("1_chhu4")
-size = Vector2(8, 64)
-metadata/_custom_type_script = "uid://5wxv1gs56ldx"
+[node name="BedWallRearVisual" type="Sprite2D" parent="Chassis/BedWallRear" unique_id=273825004]
+texture = ExtResource("2_wall")
 
 [node name="BedWallFront" type="CollisionShape2D" parent="Chassis" unique_id=556789065]
 position = Vector2(108, -50)
 shape = SubResource("RectangleShape2D_01dag")
 
-[node name="BedWallFrontVisual" type="Node2D" parent="Chassis/BedWallFront" unique_id=352823232]
-script = ExtResource("1_chhu4")
-size = Vector2(8, 64)
-metadata/_custom_type_script = "uid://5wxv1gs56ldx"
+[node name="BedWallFrontVisual" type="Sprite2D" parent="Chassis/BedWallFront" unique_id=352823232]
+texture = ExtResource("2_wall")
 
 [node name="GrooveRear" type="GrooveJoint2D" parent="Chassis" unique_id=1565570365]
 position = Vector2(-160, 24)
@@ -115,11 +115,8 @@ angular_damp = 0.3
 [node name="Shape" type="CollisionShape2D" parent="WheelRear" unique_id=2113671368]
 shape = SubResource("CircleShape2D_f4ujx")
 
-[node name="Visual" type="Node2D" parent="WheelRear/Shape" unique_id=141094887]
-script = ExtResource("1_chhu4")
-kind = 1
-radius = 34.0
-metadata/_custom_type_script = "uid://5wxv1gs56ldx"
+[node name="Visual" type="Sprite2D" parent="WheelRear/Shape" unique_id=141094887]
+texture = ExtResource("2_wheel")
 
 [node name="WheelFront" type="RigidBody2D" parent="." unique_id=639193781]
 position = Vector2(160, 54)
@@ -130,8 +127,5 @@ angular_damp = 0.3
 [node name="Shape" type="CollisionShape2D" parent="WheelFront" unique_id=92956155]
 shape = SubResource("CircleShape2D_f4ujx")
 
-[node name="Visual" type="Node2D" parent="WheelFront/Shape" unique_id=1842547281]
-script = ExtResource("1_chhu4")
-kind = 1
-radius = 34.0
-metadata/_custom_type_script = "uid://5wxv1gs56ldx"
+[node name="Visual" type="Sprite2D" parent="WheelFront/Shape" unique_id=1842547281]
+texture = ExtResource("2_wheel")

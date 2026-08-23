@@ -250,11 +250,14 @@ func _apply_bed_walls() -> void:
 		# Визуал — ребёнок самой коллизии, поэтому едет за ней и координаты
 		# задаются в одном месте.
 		for child in wall.get_children():
-			var visual := child as DebugShape
-			if visual == null:
+			var visual := child as Sprite2D
+			if visual == null or visual.texture == null:
 				continue
-			visual.kind = DebugShape.Kind.RECTANGLE
-			visual.size = rect.size
+			# Борт растёт прокачкой с 64 до 256 px, поэтому рисунок тянется
+			# по высоте. Тянется целиком, вместе с торцами: делить доску
+			# на три части ради ровной окантовки не стоит того на девяти
+			# пикселях ширины.
+			visual.scale = rect.size / Vector2(visual.texture.get_size())
 			visual.position = Vector2.ZERO
 
 
@@ -279,11 +282,13 @@ func _apply_wheel_radius() -> void:
 
 			# Визуал — ребёнок самой коллизии, поэтому едет за ней.
 			for sub in shape.get_children():
-				var visual := sub as DebugShape
-				if visual == null:
+				var visual := sub as Sprite2D
+				if visual == null or visual.texture == null:
 					continue
-				visual.kind = DebugShape.Kind.CIRCLE
-				visual.radius = wheel_radius
+				# Рисунок колеса квадратный и центрированный, так что хватает
+				# диаметра: колесо от прокачки растёт равномерно.
+				var diameter: float = wheel_radius * 2.0
+				visual.scale = Vector2.ONE * (diameter / float(visual.texture.get_width()))
 
 
 ## Внутренние границы кузова по X, в координатах рамы: x — задняя стенка,
