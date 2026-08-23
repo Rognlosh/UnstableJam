@@ -43,6 +43,8 @@ class Runtime extends QuirkRuntime:
 		if reach <= 1.0:
 			return
 
+		Audio.play(&"explosion")
+
 		var world := item.get_world_2d()
 		if world == null:
 			return

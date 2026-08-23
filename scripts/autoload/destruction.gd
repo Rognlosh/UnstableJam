@@ -51,6 +51,15 @@ func break_item(item: BreakableItem, impact: float) -> void:
 	var instance_id := item.instance_id
 	var was_piece := item.level > 0
 
+	# Звук берётся здесь, а не подпиской на сигналы: сигнал item_broken несёт
+	# только идентификатор, и слушателю пришлось бы лезть в каталог за тем,
+	# что тут уже лежит под рукой. Заодно озвучивается и ветка перерасхода
+	# бюджета, где сигнал item_broken не испускается вовсе.
+	if was_piece:
+		# Осколок не бьётся заново, он рассыпается — звук тише и глуше.
+		Audio.play(&"dust", -4.0)
+	else:
+		Audio.play(StringName("break_" + item_data.sound_material))
 	_spawn_dust(parent, xform.origin, item_data.color)
 	item.queue_free()
 

@@ -13,6 +13,14 @@ signal broke(item: BreakableItem, impact: float)
 ## друг друга и иначе разлетелись бы в крошку в момент появления.
 const GRACE_FRAMES: int = 5
 
+## С какой доли порога разбития удар становится слышен. Ниже — вещь просто
+## лежит и подрагивает в кузове, и озвучивать это значит получить непрерывный
+## треск на всю дорогу.
+const HIT_AUDIBLE: float = 0.22
+## Громкость самого слабого слышимого удара, доля от полной. Не ноль:
+## иначе порог слышимости выдаёт себя щелчками на грани тишины.
+const HIT_QUIET: float = 0.35
+
 ## Множитель порога разрушения. Больше единицы — вещь терпит сильнее.
 ## Нужно фазе погрузки: мышь неточна, и бить игрока по тем же правилам,
 ## что и на дороге, несправедливо.
@@ -91,13 +99,31 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 
 	if _is_broken or _frames_alive <= GRACE_FRAMES:
 		return
-	if impact < break_threshold():
+
+	var threshold: float = break_threshold()
+	if impact < threshold:
+		_play_hit(impact, threshold)
 		return
 
 	_is_broken = true
 	broke.emit(self, impact)
 	# Удалять тело внутри физического колбэка нельзя — откладываем на кадр.
 	Destruction.call_deferred(&"break_item", self, impact)
+
+
+## Стук груза, не дошедший до разбития. Громкость растёт с силой удара:
+## так слышно разницу между «повозку тряхнуло» и «ваза чудом уцелела».
+##
+## Ограничитель частоты живёт в Audio и общий на все предметы: двадцать вещей
+## в кузове бьются о борта в одном кадре, и без окна это сплошной треск.
+func _play_hit(impact: float, threshold: float) -> void:
+	if threshold <= 0.0 or is_inf(threshold):
+		return
+	var ratio: float = impact / threshold
+	if ratio < HIT_AUDIBLE:
+		return
+	var loudness: float = remap(ratio, HIT_AUDIBLE, 1.0, HIT_QUIET, 1.0)
+	Audio.play(&"cargo_hit", linear_to_db(loudness))
 
 
 func break_threshold() -> float:
