@@ -54,13 +54,10 @@ const SFX_LIBRARY: Dictionary = {
 		"res://assets/audio/sfx/break_wood_1",
 		"res://assets/audio/sfx/break_wood_2",
 	],
-	# Общий стук: он же звук удара о доски кузова, он же запасной вариант
-	# для материалов, которым своего набора не записали.
-	&"cargo_hit": [
-		"res://assets/audio/sfx/cargo_hit_1",
-		"res://assets/audio/sfx/cargo_hit_2",
+	&"cargo_hit_wood": [
+		"res://assets/audio/sfx/cargo_hit_wood_1",
+		"res://assets/audio/sfx/cargo_hit_wood_2",
 	],
-	&"cargo_hit_wood": [],  # дерево — это и есть кузов, свои файлы не нужны
 	&"cargo_hit_clay": ["res://assets/audio/sfx/cargo_hit_clay_1"],
 	&"cargo_hit_glass": ["res://assets/audio/sfx/cargo_hit_glass_1"],
 	&"dust": ["res://assets/audio/sfx/dust_1"],
@@ -89,8 +86,6 @@ const SFX_LIBRARY: Dictionary = {
 ## глухое к глухому. Стекло падает в глину, а не в дерево, потому что
 ## черепок и осколок звучат похоже, а доска — нет.
 const SFX_FALLBACK: Dictionary = {
-	&"cargo_hit_wood": &"cargo_hit",
-	&"cargo_hit_clay": &"cargo_hit",
 	&"cargo_hit_glass": &"cargo_hit_clay",
 	&"break_wood": &"break_clay",
 	&"break_clay": &"break_glass",
@@ -98,8 +93,10 @@ const SFX_FALLBACK: Dictionary = {
 
 ## Группа ограничителя частоты. Отдельно от запасного варианта: там речь
 ## о том, какой файл взять, здесь — о том, кто с кем делит окно. Все стуки
-## груза считаются одним потоком, иначе глина, дерево и стекло получили бы
+## груза считаются одним потоком, иначе дерево, керамика и стекло получили бы
 ## по своему окну и вместе застучали бы втрое чаще.
+##
+## Значение — только имя корзины, в каталоге звуков его быть не обязано.
 const SFX_GROUP: Dictionary = {
 	&"cargo_hit_wood": &"cargo_hit",
 	&"cargo_hit_clay": &"cargo_hit",

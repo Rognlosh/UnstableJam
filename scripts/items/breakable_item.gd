@@ -123,12 +123,11 @@ func _play_hit(impact: float, threshold: float) -> void:
 	if ratio < HIT_AUDIBLE:
 		return
 	var loudness: float = remap(ratio, HIT_AUDIBLE, 1.0, HIT_QUIET, 1.0)
-	# Ключ собирается из материала вещи. Своего набора у материала может
-	# и не быть — тогда Audio сам возьмёт общий стук.
-	var key: StringName = &"cargo_hit"
-	if data != null:
-		key = StringName("cargo_hit_" + data.sound_material)
-	Audio.play(key, linear_to_db(loudness))
+	# Ключ собирается из материала вещи. Общего набора нет: у каждого
+	# материала свой, а чем крыть недостающий, решает цепочка в Audio.
+	if data == null:
+		return
+	Audio.play(StringName("cargo_hit_" + data.sound_material), linear_to_db(loudness))
 
 
 func break_threshold() -> float:
