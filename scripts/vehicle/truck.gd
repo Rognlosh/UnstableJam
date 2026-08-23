@@ -117,6 +117,26 @@ var auto_brake: bool = false
 const BRAKE_LINEAR_STEP: float = 14.0
 const BRAKE_SPIN_STEP: float = 0.6
 
+## --- Звук мотора ---
+## Высота тона на холостом ходу и на потолке оборотов. Тянуть семпл сильнее
+## чем вдвое нельзя: выше начинает звучать не грузовик, а бензопила.
+const ENGINE_PITCH_IDLE: float = 0.72
+const ENGINE_PITCH_MAX: float = 1.55
+## Громкость холостого хода, доля от полной.
+const ENGINE_VOLUME_IDLE: float = 0.45
+## Общий уровень петли. Мотор играет всю дорогу и обязан быть подложкой,
+## а не событием: он не должен перекрывать звон груза.
+const ENGINE_VOLUME: float = 0.6
+## Скорость сглаживания оборотов и газа, 1/с. Обороты на кочках скачут кадр
+## в кадр, и без сглаживания мотор квакает вместо того, чтобы тарахтеть.
+const ENGINE_SPIN_SMOOTH: float = 7.0
+const ENGINE_LOAD_SMOOTH: float = 5.0
+
+var _engine: AudioStreamPlayer = null
+var _engine_running: bool = false
+var _engine_spin: float = 0.0
+var _engine_load: float = 0.0
+
 var chassis: RigidBody2D
 var _wheels: Array[RigidBody2D] = []
 var _springs: Array[DampedSpringJoint2D] = []
@@ -128,24 +148,29 @@ func _ready() -> void:
 	_push_spring_params()
 	_apply_bed_walls()
 	_apply_wheel_radius()
+	_setup_engine()
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if chassis == null:
 		return
+
+	# Газ нужен и мотору, поэтому ранних выходов больше нет: ветки развели
+	# в if/elif, а обновление звука стоит в конце и работает всегда.
+	var throttle := 0.0
 	if auto_brake:
 		_brake_to_stop()
-		return
-	if not controls_enabled:
-		return
-	# get_axis(отрицательное_действие, положительное_действие) → -1..1.
-	# W даёт +1, S даёт -1; A даёт -1, D даёт +1.
-	var throttle := Input.get_axis(&"brake", &"accelerate")
-	var lean := Input.get_axis(&"lean_left", &"lean_right")
+	elif controls_enabled:
+		# get_axis(отрицательное_действие, положительное_действие) → -1..1.
+		# W даёт +1, S даёт -1; A даёт -1, D даёт +1.
+		throttle = Input.get_axis(&"brake", &"accelerate")
+		var lean := Input.get_axis(&"lean_left", &"lean_right")
 
-	_drive(throttle)
-	if not is_zero_approx(lean):
-		chassis.apply_torque(lean * lean_torque)
+		_drive(throttle)
+		if not is_zero_approx(lean):
+			chassis.apply_torque(lean * lean_torque)
+
+	_update_engine(throttle, delta)
 
 
 func _drive(throttle: float) -> void:
@@ -159,6 +184,58 @@ func _drive(throttle: float) -> void:
 		# Газ против текущего вращения — это торможение, оно резче тяги.
 		var is_braking := spin * throttle < 0.0
 		wheel.apply_torque(throttle * (brake_torque if is_braking else motor_torque))
+
+
+## --- Мотор (звук) ---
+
+## Заводит плеер под петлю мотора. Файла нет — плеера нет, и весь остальной
+## код мотора превращается в один ранний выход.
+func _setup_engine() -> void:
+	var stream: AudioStream = Audio.loop_stream(&"engine")
+	if stream == null:
+		return
+	_engine = AudioStreamPlayer.new()
+	_engine.stream = stream
+	_engine.bus = Audio.BUS_SFX
+	_engine.volume_db = Audio.SILENT_DB
+	add_child(_engine)
+
+
+## Включает и глушит мотор. Зовётся стадией заезда по фазам: на погрузке
+## машина стоит с заглушенным двигателем, на финише он смолкает.
+func set_engine_running(value: bool) -> void:
+	_engine_running = value
+
+
+## Высота тона идёт от оборотов колёс, громкость — от большего из газа
+## и оборотов. Только от газа нельзя: машина, катящаяся под гору накатом,
+## замолкала бы совсем. Только от оборотов — тоже: буксующий на месте мотор
+## под полным газом звучал бы как холостой ход.
+func _update_engine(throttle: float, delta: float) -> void:
+	if _engine == null:
+		return
+	if not _engine_running:
+		if _engine.playing:
+			_engine.stop()
+			_engine_spin = 0.0
+			_engine_load = 0.0
+		return
+
+	var spin: float = 0.0
+	for wheel: RigidBody2D in _wheels:
+		spin = maxf(spin, absf(wheel.angular_velocity))
+	var spin_ratio: float = clampf(spin / maxf(max_wheel_speed, 0.001), 0.0, 1.0)
+
+	_engine_spin = lerpf(_engine_spin, spin_ratio, minf(delta * ENGINE_SPIN_SMOOTH, 1.0))
+	_engine_load = lerpf(_engine_load, absf(throttle), minf(delta * ENGINE_LOAD_SMOOTH, 1.0))
+
+	_engine.pitch_scale = lerpf(ENGINE_PITCH_IDLE, ENGINE_PITCH_MAX, _engine_spin)
+	var loudness: float = lerpf(
+		ENGINE_VOLUME_IDLE, 1.0, maxf(_engine_load, _engine_spin)
+	)
+	_engine.volume_db = linear_to_db(loudness * ENGINE_VOLUME)
+	if not _engine.playing:
+		_engine.play()
 
 
 ## Плавная остановка: скорость и вращение сводим к нулю шагами, а не

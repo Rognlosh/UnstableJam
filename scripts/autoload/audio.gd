@@ -73,6 +73,16 @@ const SFX_COOLDOWN: Dictionary = {
 	&"cargo_hit": 0.06,
 }
 
+## Каталог зацикленных эффектов. Отдельно от SFX_LIBRARY: петля живёт
+## на своём плеере у того, кто её завёл (мотор — у грузовика), а не в общем
+## пуле, где её в любой момент вытеснил бы очередной звяк.
+const LOOP_LIBRARY: Dictionary = {
+	&"engine": [
+		"res://assets/audio/sfx/engine_loop.wav",
+		"res://assets/audio/sfx/engine_loop.ogg",
+	],
+}
+
 ## Каталог музыки. Один файл на ключ: вариантов у трека не бывает.
 const MUSIC_LIBRARY: Dictionary = {
 	&"road": "res://assets/audio/music/road.ogg",
@@ -176,6 +186,20 @@ func _free_voice() -> AudioStreamPlayer:
 	for voice: AudioStreamPlayer in _voices:
 		if not voice.playing:
 			return voice
+	return null
+
+
+## Поток для зацикленного эффекта или null, если файла нет. Плеер под него
+## заводит вызывающий: петле нужна своя жизнь, привязанная к объекту, который
+## её издаёт.
+##
+## Зацикливание задаётся при импорте файла, а не здесь: включать его кодом
+## значит править общий ресурс, а он один на всех, кто его загрузил.
+func loop_stream(key: StringName) -> AudioStream:
+	for path: String in LOOP_LIBRARY.get(key, []):
+		var stream: AudioStream = _stream(path)
+		if stream != null:
+			return stream
 	return null
 
 
