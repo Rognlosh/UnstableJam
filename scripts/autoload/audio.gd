@@ -74,6 +74,7 @@ const SFX_LIBRARY: Dictionary = {
 	],
 	&"ui_click": ["res://assets/audio/sfx/ui_click_1"],
 	&"ui_denied": ["res://assets/audio/sfx/ui_denied_1"],
+	&"engine_start": ["res://assets/audio/sfx/engine_start_1"],
 	&"finish": ["res://assets/audio/sfx/finish_1"],
 	&"penalty": ["res://assets/audio/sfx/penalty_1"],
 }
