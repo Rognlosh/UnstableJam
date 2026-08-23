@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 GameState="*uid://btue272bdwlel"
 Destruction="*uid://ds7gbo0mqrbxs"
 Settings="*res://scripts/autoload/settings.gd"
+Audio="*res://scripts/autoload/audio.gd"
 
 [display]
 
