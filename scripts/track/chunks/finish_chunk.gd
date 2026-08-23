@@ -10,11 +10,19 @@ signal crossed
 
 ## Полная высота ворот вместе с полями холста, в пикселях. Художник заложил
 ## запас снизу под стойки, поэтому на землю садится низ холста, а не низ
-## рисунка: подошва у створа именно там.
-const GATE_HEIGHT: float = 282.0
-## Где стоит створ. Совпадает с зоной пересечения намеренно: разъедься они,
-## и финиш засчитается не там, где его видно.
-const GATE_X: float = 300.0
+## рисунка: подошва у створа именно там. Видимая часть выходит примерно
+## на девять десятых от этого числа.
+@export_range(80.0, 800.0, 2.0) var gate_height: float = 282.0:
+	set(value):
+		gate_height = maxf(20.0, value)
+		_place_gate()
+
+## Где стоит створ по длине куска. Совпадает с зоной пересечения намеренно:
+## разъедься они, и финиш засчитается не там, где его видно.
+@export var gate_x: float = 300.0:
+	set(value):
+		gate_x = value
+		_place_gate()
 
 var _zone: Area2D
 
@@ -45,17 +53,21 @@ func _on_body_entered(body: Node2D) -> void:
 ## вчетверо крупнее чисел из viewBox. Ворота от такой ошибки уехали под землю
 ## целиком, вместе с половиной флага.
 func _place_gate() -> void:
+	# Сеттеры экспортов срабатывают при загрузке сцены, когда детей ещё нет,
+	# поэтому отсутствие узла — обычное дело, а не ошибка.
+	if not is_inside_tree():
+		return
 	var gate := get_node_or_null(^"Gate") as Sprite2D
 	if gate == null or gate.texture == null:
 		return
 	var size := Vector2(gate.texture.get_size())
 	if size.y <= 0.0:
 		return
-	var factor: float = GATE_HEIGHT / size.y
+	var factor: float = gate_height / size.y
 	gate.centered = false
 	gate.scale = Vector2(factor, factor)
 	# Низ холста — на уровень земли куска, то есть в ноль по Y.
-	gate.position = Vector2(GATE_X - size.x * factor * 0.5, -GATE_HEIGHT)
+	gate.position = Vector2(gate_x - size.x * factor * 0.5, -gate_height)
 
 
 func _find_zone() -> Area2D:
