@@ -30,7 +30,7 @@ shape = SubResource("RectangleShape2D_zone")
 
 [node name="Gate" type="Sprite2D" parent="." unique_id=771003001]
 z_index = -1
-position = Vector2(240.96, -282.39)
-scale = Vector2(0.91685, 0.91685)
+position = Vector2(240.96, -282.24)
+scale = Vector2(0.24247, 0.24247)
 centered = false
 texture = ExtResource("2_gate")
