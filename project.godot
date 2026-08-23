@@ -72,7 +72,6 @@ restart_run={
 [internationalization]
 
 locale/translations=PackedStringArray("res://localization/ui.ru.translation", "res://localization/ui.en.translation")
-locale/fallback="en"
 
 [physics]
 
