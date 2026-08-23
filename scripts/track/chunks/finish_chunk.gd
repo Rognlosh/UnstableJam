@@ -17,6 +17,15 @@ signal crossed
 		gate_height = maxf(20.0, value)
 		_place_gate()
 
+## Насколько опустить створ относительно земли куска, в пикселях.
+##
+## Отдельно от высоты: масштаб и посадка — разные вещи, и подгонять одно
+## другим значит каждый раз пересчитывать оба.
+@export var gate_offset_y: float = 0.0:
+	set(value):
+		gate_offset_y = value
+		_place_gate()
+
 ## Где стоит створ по длине куска. Совпадает с зоной пересечения намеренно:
 ## разъедься они, и финиш засчитается не там, где его видно.
 @export var gate_x: float = 300.0:
@@ -67,7 +76,7 @@ func _place_gate() -> void:
 	gate.centered = false
 	gate.scale = Vector2(factor, factor)
 	# Низ холста — на уровень земли куска, то есть в ноль по Y.
-	gate.position = Vector2(gate_x - size.x * factor * 0.5, -gate_height)
+	gate.position = Vector2(gate_x - size.x * factor * 0.5, -gate_height + gate_offset_y)
 
 
 func _find_zone() -> Area2D:
