@@ -20,7 +20,7 @@
 |---|---|---|
 | `sfx/cargo_hit_1.ogg` | freesound 569495, blazewasbored — «punch wood table» | **уточнить на странице** |
 | `sfx/cargo_hit_2.ogg` | Kenney, Impact Sounds (`impactWood_heavy_004`) | CC0 |
-| `sfx/cargo_hit_3.wav` | freesound 865052, imataco — «hollow hit» | **уточнить на странице** |
+| `sfx/cargo_hit_clay_1.wav` | freesound 865052, imataco — «hollow hit» | **уточнить на странице** |
 | `sfx/break_glass_1.ogg` | Kenney (`glass_004`) | CC0 |
 | `sfx/ui_click_1.ogg` | Kenney, Interface Sounds (`click4`) | CC0 |
 | `sfx/place_1.ogg` | Kenney, Interface Sounds (`switch3`) | CC0 |

@@ -50,12 +50,14 @@ const SFX_LIBRARY: Dictionary = {
 		"res://assets/audio/sfx/break_clay_2",
 		"res://assets/audio/sfx/break_clay_3",
 	],
+	# Общий стук: он же звук удара о доски кузова, он же запасной вариант
+	# для материалов, которым своего набора не записали.
 	&"cargo_hit": [
 		"res://assets/audio/sfx/cargo_hit_1",
 		"res://assets/audio/sfx/cargo_hit_2",
-		"res://assets/audio/sfx/cargo_hit_3",
-		"res://assets/audio/sfx/cargo_hit_4",
 	],
+	&"cargo_hit_clay": ["res://assets/audio/sfx/cargo_hit_clay_1"],
+	&"cargo_hit_glass": ["res://assets/audio/sfx/cargo_hit_glass_1"],
 	&"dust": ["res://assets/audio/sfx/dust_1"],
 	&"explosion": [
 		"res://assets/audio/sfx/explosion_1",
@@ -73,7 +75,19 @@ const SFX_LIBRARY: Dictionary = {
 	&"penalty": ["res://assets/audio/sfx/penalty_1"],
 }
 
+## Куда падать, если для ключа не нашлось ни одного файла. Это же значение
+## служит группой для ограничителя частоты: без него стук глины и стук
+## дерева имели бы каждый своё окно и вместе стучали бы вдвое чаще.
+##
+## Благодаря запасному варианту материал можно завести в предметах раньше,
+## чем найден звук: пока файла нет, вещь стучит общим стуком.
+const SFX_FALLBACK: Dictionary = {
+	&"cargo_hit_clay": &"cargo_hit",
+	&"cargo_hit_glass": &"cargo_hit",
+}
+
 ## Отдельные окна для тех ключей, которым мало умолчания.
+## Ключ здесь — группа, а не отдельный звук.
 const SFX_COOLDOWN: Dictionary = {
 	&"cargo_hit": 0.06,
 }
@@ -129,12 +143,15 @@ func _ready() -> void:
 ## (удар груза тем громче, чем сильнее), 0.0 означает «как записано».
 ## Возвращает занятый плеер или null, если играть было нечего.
 func play(key: StringName, volume_db: float = 0.0) -> AudioStreamPlayer:
+	var group: StringName = SFX_FALLBACK.get(key, key)
 	var now: float = float(Time.get_ticks_msec()) / 1000.0
-	var window: float = float(SFX_COOLDOWN.get(key, DEFAULT_COOLDOWN))
-	if now - float(_last_played.get(key, -999.0)) < window:
+	var window: float = float(SFX_COOLDOWN.get(group, DEFAULT_COOLDOWN))
+	if now - float(_last_played.get(group, -999.0)) < window:
 		return null
 
 	var stream: AudioStream = _pick(key)
+	if stream == null and group != key:
+		stream = _pick(group)
 	if stream == null:
 		return null
 
@@ -144,7 +161,7 @@ func play(key: StringName, volume_db: float = 0.0) -> AudioStreamPlayer:
 		# значит услышать обрыв, а он заметнее пропажи.
 		return null
 
-	_last_played[key] = now
+	_last_played[group] = now
 	voice.stream = stream
 	voice.volume_db = volume_db
 	voice.pitch_scale = randf_range(1.0 - PITCH_SPREAD, 1.0 + PITCH_SPREAD)
