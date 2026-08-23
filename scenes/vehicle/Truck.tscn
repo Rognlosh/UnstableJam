@@ -53,7 +53,7 @@ scale = Vector2(0.99732, 1.00122)
 texture = ExtResource("2_cabback")
 
 [node name="CabinIn" type="Sprite2D" parent="Chassis/Cabin" unique_id=1615944285]
-position = Vector2(151.6, -49.1)
+position = Vector2(166.6, -42.1)
 texture = ExtResource("2_cabin")
 
 [node name="CabinFront" type="Sprite2D" parent="Chassis/Cabin" unique_id=1615944286]
