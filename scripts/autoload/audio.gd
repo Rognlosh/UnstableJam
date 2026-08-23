@@ -50,12 +50,17 @@ const SFX_LIBRARY: Dictionary = {
 		"res://assets/audio/sfx/break_clay_2",
 		"res://assets/audio/sfx/break_clay_3",
 	],
+	&"break_wood": [
+		"res://assets/audio/sfx/break_wood_1",
+		"res://assets/audio/sfx/break_wood_2",
+	],
 	# Общий стук: он же звук удара о доски кузова, он же запасной вариант
 	# для материалов, которым своего набора не записали.
 	&"cargo_hit": [
 		"res://assets/audio/sfx/cargo_hit_1",
 		"res://assets/audio/sfx/cargo_hit_2",
 	],
+	&"cargo_hit_wood": [],  # дерево — это и есть кузов, свои файлы не нужны
 	&"cargo_hit_clay": ["res://assets/audio/sfx/cargo_hit_clay_1"],
 	&"cargo_hit_glass": ["res://assets/audio/sfx/cargo_hit_glass_1"],
 	&"dust": ["res://assets/audio/sfx/dust_1"],
@@ -75,13 +80,28 @@ const SFX_LIBRARY: Dictionary = {
 	&"penalty": ["res://assets/audio/sfx/penalty_1"],
 }
 
-## Куда падать, если для ключа не нашлось ни одного файла. Это же значение
-## служит группой для ограничителя частоты: без него стук глины и стук
-## дерева имели бы каждый своё окно и вместе стучали бы вдвое чаще.
+## Куда падать, если для ключа не нашлось ни одного файла. Цепочка
+## разрешается по шагам, так что стекло через глину дотягивается до общего
+## стука. Благодаря этому материал заводится в предметах раньше, чем найден
+## звук: пока файла нет, вещь звучит ближайшим родственником.
 ##
-## Благодаря запасному варианту материал можно завести в предметах раньше,
-## чем найден звук: пока файла нет, вещь стучит общим стуком.
+## Порядок родства выбран по слуху, а не по физике: звонкое ближе к звонкому,
+## глухое к глухому. Стекло падает в глину, а не в дерево, потому что
+## черепок и осколок звучат похоже, а доска — нет.
 const SFX_FALLBACK: Dictionary = {
+	&"cargo_hit_wood": &"cargo_hit",
+	&"cargo_hit_clay": &"cargo_hit",
+	&"cargo_hit_glass": &"cargo_hit_clay",
+	&"break_wood": &"break_clay",
+	&"break_clay": &"break_glass",
+}
+
+## Группа ограничителя частоты. Отдельно от запасного варианта: там речь
+## о том, какой файл взять, здесь — о том, кто с кем делит окно. Все стуки
+## груза считаются одним потоком, иначе глина, дерево и стекло получили бы
+## по своему окну и вместе застучали бы втрое чаще.
+const SFX_GROUP: Dictionary = {
+	&"cargo_hit_wood": &"cargo_hit",
 	&"cargo_hit_clay": &"cargo_hit",
 	&"cargo_hit_glass": &"cargo_hit",
 }
@@ -143,15 +163,13 @@ func _ready() -> void:
 ## (удар груза тем громче, чем сильнее), 0.0 означает «как записано».
 ## Возвращает занятый плеер или null, если играть было нечего.
 func play(key: StringName, volume_db: float = 0.0) -> AudioStreamPlayer:
-	var group: StringName = SFX_FALLBACK.get(key, key)
+	var group: StringName = SFX_GROUP.get(key, key)
 	var now: float = float(Time.get_ticks_msec()) / 1000.0
 	var window: float = float(SFX_COOLDOWN.get(group, DEFAULT_COOLDOWN))
 	if now - float(_last_played.get(group, -999.0)) < window:
 		return null
 
-	var stream: AudioStream = _pick(key)
-	if stream == null and group != key:
-		stream = _pick(group)
+	var stream: AudioStream = _pick_with_fallback(key)
 	if stream == null:
 		return null
 
@@ -174,6 +192,21 @@ func play(key: StringName, volume_db: float = 0.0) -> AudioStreamPlayer:
 func stop_sfx() -> void:
 	for voice: AudioStreamPlayer in _voices:
 		voice.stop()
+
+
+## Идёт по цепочке родства, пока не найдёт хоть один существующий файл.
+## Счётчик шагов — страховка от кольца в SFX_FALLBACK: опечатка там иначе
+## подвесила бы игру намертво.
+func _pick_with_fallback(key: StringName) -> AudioStream:
+	var current: StringName = key
+	for _step: int in 4:
+		var stream: AudioStream = _pick(current)
+		if stream != null:
+			return stream
+		if not SFX_FALLBACK.has(current):
+			return null
+		current = SFX_FALLBACK[current]
+	return null
 
 
 func _pick(key: StringName) -> AudioStream:

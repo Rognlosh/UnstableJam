@@ -45,6 +45,7 @@ piece_value_factor = 0.6
 whole_polygon = PackedVector2Array(-32.1, -18.0, -34.3, -14.8, -34.3, -5.5, -34.3, -5.4, -34.2, 16.8, -32.0, 20.0, 32.0, 20.0, 34.2, 16.8, 34.3, -5.4, 34.3, -5.5, 34.3, -14.8, 32.1, -18.0)
 pieces = Array[ExtResource("2_piece")]([SubResource("Piece_chest_lid_left"), SubResource("Piece_chest_lid_right"), SubResource("Piece_chest_box_left"), SubResource("Piece_chest_box_right")])
 color = Color(0.55, 0.4, 0.25, 1)
+sound_material = &"wood"
 physics_material = SubResource("PhysicsMaterial_chest")
 texture = ExtResource("9_tex")
 texture_rect = Rect2(-36.553, -21.586, 72.288, 45.656)

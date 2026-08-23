@@ -46,6 +46,7 @@ piece_value_factor = 0.75
 whole_polygon = PackedVector2Array(-14.0, -34.0, -16.2, -28.3, -14.7, -11.4, -14.8, -10.9, -16.2, 28.3, -14.0, 34.0, 14.0, 34.0, 16.2, 28.3, 14.8, -10.9, 14.7, -11.4, 16.2, -28.3, 14.0, -34.0)
 pieces = Array[ExtResource("2_piece")]([SubResource("Piece_totem_head_left"), SubResource("Piece_totem_head_right"), SubResource("Piece_totem_base_left"), SubResource("Piece_totem_base_right")])
 color = Color(0.62, 0.31, 0.2, 1)
+sound_material = &"wood"
 physics_material = SubResource("PhysicsMaterial_totem")
 quirk = ExtResource("3_expl")
 texture = ExtResource("9_tex")
