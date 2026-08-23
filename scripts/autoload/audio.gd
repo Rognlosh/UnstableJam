@@ -32,40 +32,45 @@ const MUSIC_FADE: float = 1.2
 ## Уровень «выключено» для музыкального плеера.
 const SILENT_DB: float = -60.0
 
+## Расширения, которые пробуются по очереди. Пути в каталогах — без расширения:
+## звук может прийти из библиотеки хоть в ogg, хоть в wav, и переписывать
+## из-за этого код бессмысленно.
+const AUDIO_EXTENSIONS: PackedStringArray = [".wav", ".ogg"]
+
 ## Каталог эффектов: ключ → варианты. Вариант выбирается случайно.
 ## Массив из одного элемента — нормально, разброс тона всё равно работает.
 const SFX_LIBRARY: Dictionary = {
 	&"break_glass": [
-		"res://assets/audio/sfx/break_glass_1.wav",
-		"res://assets/audio/sfx/break_glass_2.wav",
-		"res://assets/audio/sfx/break_glass_3.wav",
+		"res://assets/audio/sfx/break_glass_1",
+		"res://assets/audio/sfx/break_glass_2",
+		"res://assets/audio/sfx/break_glass_3",
 	],
 	&"break_clay": [
-		"res://assets/audio/sfx/break_clay_1.wav",
-		"res://assets/audio/sfx/break_clay_2.wav",
-		"res://assets/audio/sfx/break_clay_3.wav",
+		"res://assets/audio/sfx/break_clay_1",
+		"res://assets/audio/sfx/break_clay_2",
+		"res://assets/audio/sfx/break_clay_3",
 	],
 	&"cargo_hit": [
-		"res://assets/audio/sfx/cargo_hit_1.wav",
-		"res://assets/audio/sfx/cargo_hit_2.wav",
-		"res://assets/audio/sfx/cargo_hit_3.wav",
-		"res://assets/audio/sfx/cargo_hit_4.wav",
+		"res://assets/audio/sfx/cargo_hit_1",
+		"res://assets/audio/sfx/cargo_hit_2",
+		"res://assets/audio/sfx/cargo_hit_3",
+		"res://assets/audio/sfx/cargo_hit_4",
 	],
-	&"dust": ["res://assets/audio/sfx/dust_1.wav"],
+	&"dust": ["res://assets/audio/sfx/dust_1"],
 	&"explosion": [
-		"res://assets/audio/sfx/explosion_1.wav",
-		"res://assets/audio/sfx/explosion_2.wav",
+		"res://assets/audio/sfx/explosion_1",
+		"res://assets/audio/sfx/explosion_2",
 	],
-	&"pickup": ["res://assets/audio/sfx/pickup_1.wav"],
-	&"place": ["res://assets/audio/sfx/place_1.wav"],
+	&"pickup": ["res://assets/audio/sfx/pickup_1"],
+	&"place": ["res://assets/audio/sfx/place_1"],
 	&"coin": [
-		"res://assets/audio/sfx/coin_1.wav",
-		"res://assets/audio/sfx/coin_2.wav",
+		"res://assets/audio/sfx/coin_1",
+		"res://assets/audio/sfx/coin_2",
 	],
-	&"ui_click": ["res://assets/audio/sfx/ui_click_1.wav"],
-	&"ui_denied": ["res://assets/audio/sfx/ui_denied_1.wav"],
-	&"finish": ["res://assets/audio/sfx/finish_1.wav"],
-	&"penalty": ["res://assets/audio/sfx/penalty_1.wav"],
+	&"ui_click": ["res://assets/audio/sfx/ui_click_1"],
+	&"ui_denied": ["res://assets/audio/sfx/ui_denied_1"],
+	&"finish": ["res://assets/audio/sfx/finish_1"],
+	&"penalty": ["res://assets/audio/sfx/penalty_1"],
 }
 
 ## Отдельные окна для тех ключей, которым мало умолчания.
@@ -77,16 +82,13 @@ const SFX_COOLDOWN: Dictionary = {
 ## на своём плеере у того, кто её завёл (мотор — у грузовика), а не в общем
 ## пуле, где её в любой момент вытеснил бы очередной звяк.
 const LOOP_LIBRARY: Dictionary = {
-	&"engine": [
-		"res://assets/audio/sfx/engine_loop.wav",
-		"res://assets/audio/sfx/engine_loop.ogg",
-	],
+	&"engine": ["res://assets/audio/sfx/engine_loop"],
 }
 
 ## Каталог музыки. Один файл на ключ: вариантов у трека не бывает.
 const MUSIC_LIBRARY: Dictionary = {
-	&"road": "res://assets/audio/music/road.ogg",
-	&"shop": "res://assets/audio/music/shop.ogg",
+	&"road": "res://assets/audio/music/road",
+	&"shop": "res://assets/audio/music/shop",
 }
 
 var _voices: Array[AudioStreamPlayer] = []
@@ -172,13 +174,19 @@ func _pick(key: StringName) -> AudioStream:
 	return found[randi() % found.size()]
 
 
-func _stream(path: String) -> AudioStream:
-	if _cache.has(path):
-		return _cache[path]
+## Грузит поток по пути без расширения, перебирая AUDIO_EXTENSIONS.
+## Промах кэшируется как null — иначе каждый удар груза дёргал бы
+## файловую систему заново.
+func _stream(base_path: String) -> AudioStream:
+	if _cache.has(base_path):
+		return _cache[base_path]
 	var stream: AudioStream = null
-	if ResourceLoader.exists(path):
-		stream = load(path) as AudioStream
-	_cache[path] = stream
+	for ext: String in AUDIO_EXTENSIONS:
+		var path: String = base_path + ext
+		if ResourceLoader.exists(path):
+			stream = load(path) as AudioStream
+			break
+	_cache[base_path] = stream
 	return stream
 
 
