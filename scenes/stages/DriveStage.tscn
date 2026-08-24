@@ -31,6 +31,7 @@ run_time = 110.0
 position = Vector2(0, 320)
 script = ExtResource("2_track")
 chunk_scenes = Array[PackedScene]([ExtResource("4_flat"), ExtResource("5_bramp"), ExtResource("6_bround"), ExtResource("7_bsharp"), ExtResource("8_wash"), ExtResource("9_stepup"), ExtResource("10_stepdown"), ExtResource("11_hills"), ExtResource("12_hillsdown"), ExtResource("13_hillsup"), ExtResource("14_bighill"), ExtResource("15_bridge"), ExtResource("16_ramp")])
+target_length = 4000.0
 start_scene = ExtResource("18_start")
 finish_scene = ExtResource("19_finish")
 surface_material = SubResource("PhysicsMaterial_surface")

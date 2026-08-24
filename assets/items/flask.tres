@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dlhunjdv6d2mp" path="res://scripts/items/item_data.gd" id="1_item"]
 [ext_resource type="Script" uid="uid://b2i0e702clsfw" path="res://scripts/items/item_piece_data.gd" id="2_piece"]
-[ext_resource type="Texture2D" path="res://assets/art/items/flask.svg" id="9_tex"]
+[ext_resource type="Texture2D" uid="uid://cndeatvb36rdd" path="res://assets/art/items/flask.svg" id="9_tex"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_flask"]
 friction = 0.55
@@ -11,19 +11,19 @@ bounce = 0.12
 [sub_resource type="Resource" id="Piece_flask_top"]
 script = ExtResource("2_piece")
 piece_id = &"top"
-polygon = PackedVector2Array(-4.0, -12.7, -5.4, -10.6, -3.3, -6.4, -6.3, -3.1, 6.3, -3.1, 3.3, -6.4, 5.4, -10.6, 4.0, -12.7)
+polygon = PackedVector2Array(-4, -12.7, -5.4, -10.6, -3.3, -6.4, -6.3, -3.1, 6.3, -3.1, 3.3, -6.4, 5.4, -10.6, 4, -12.7)
 value_share = 0.4
 
 [sub_resource type="Resource" id="Piece_flask_bottom_left"]
 script = ExtResource("2_piece")
 piece_id = &"bottom_left"
-polygon = PackedVector2Array(0.0, -3.1, -6.3, -3.1, -9.1, -0.0, -10.0, 4.2, -6.7, 10.5, -1.1, 12.6, 0.0, 12.6)
+polygon = PackedVector2Array(0, -3.1, -6.3, -3.1, -9.1, 0, -10, 4.2, -6.7, 10.5, -1.1, 12.6, 0, 12.6)
 value_share = 0.3
 
 [sub_resource type="Resource" id="Piece_flask_bottom_right"]
 script = ExtResource("2_piece")
 piece_id = &"bottom_right"
-polygon = PackedVector2Array(0.0, 12.6, 1.1, 12.6, 6.7, 10.5, 10.0, 4.2, 9.1, -0.0, 6.3, -3.1, 0.0, -3.1)
+polygon = PackedVector2Array(0, 12.6, 1.1, 12.6, 6.7, 10.5, 10, 4.2, 9.1, 0, 6.3, -3.1, 0, -3.1)
 value_share = 0.3
 
 [resource]
@@ -36,10 +36,10 @@ mass = 0.5
 break_speed = 260.0
 piece_toughness = 1.5
 piece_value_factor = 0.6
-whole_polygon = PackedVector2Array(-4.0, -12.7, -5.4, -10.6, -3.3, -6.4, -6.3, -3.1, -9.1, -0.0, -10.0, 4.2, -6.7, 10.5, -1.1, 12.6, 1.1, 12.6, 6.7, 10.5, 10.0, 4.2, 9.1, -0.0, 6.3, -3.1, 3.3, -6.4, 5.4, -10.6, 4.0, -12.7)
+whole_polygon = PackedVector2Array(-4, -12.7, -5.4, -10.6, -3.3, -6.4, -6.3, -3.1, -9.1, 0, -10, 4.2, -6.7, 10.5, -1.1, 12.6, 1.1, 12.6, 6.7, 10.5, 10, 4.2, 9.1, 0, 6.3, -3.1, 3.3, -6.4, 5.4, -10.6, 4, -12.7)
 pieces = Array[ExtResource("2_piece")]([SubResource("Piece_flask_top"), SubResource("Piece_flask_bottom_left"), SubResource("Piece_flask_bottom_right")])
 color = Color(0.45, 0.6, 0.52, 1)
-sound_material = &"glass"
-physics_material = SubResource("PhysicsMaterial_flask")
 texture = ExtResource("9_tex")
-texture_rect = Rect2(-12.032, -13.529, 22.620, 27.468)
+texture_rect = Rect2(-12.032, -13.529, 22.62, 27.468)
+physics_material = SubResource("PhysicsMaterial_flask")
+sound_material = &"glass"

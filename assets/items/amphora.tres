@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dlhunjdv6d2mp" path="res://scripts/items/item_data.gd" id="1_item"]
 [ext_resource type="Script" uid="uid://b2i0e702clsfw" path="res://scripts/items/item_piece_data.gd" id="2_piece"]
-[ext_resource type="Texture2D" path="res://assets/art/items/amphora.svg" id="9_tex"]
+[ext_resource type="Texture2D" uid="uid://uw2q2jjc7xqj" path="res://assets/art/items/amphora.svg" id="9_tex"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_amphora"]
 friction = 0.6
@@ -11,25 +11,25 @@ bounce = 0.08
 [sub_resource type="Resource" id="Piece_amphora_neck_left"]
 script = ExtResource("2_piece")
 piece_id = &"neck_left"
-polygon = PackedVector2Array(0.0, -53.8, -10.8, -53.8, -16.5, -44.9, -11.1, -35.9, -24.0, -26.9, -28.2, -17.9, -27.9, -0.0, 0.0, -0.0)
+polygon = PackedVector2Array(0, -53.8, -10.8, -53.8, -16.5, -44.9, -11.1, -35.9, -24, -26.9, -28.2, -17.9, -27.9, 0, 0, 0)
 value_share = 0.27
 
 [sub_resource type="Resource" id="Piece_amphora_neck_right"]
 script = ExtResource("2_piece")
 piece_id = &"neck_right"
-polygon = PackedVector2Array(0.0, -0.0, 27.9, -0.0, 28.2, -17.9, 24.0, -26.9, 11.1, -35.9, 16.5, -44.9, 10.8, -53.8, 0.0, -53.8)
+polygon = PackedVector2Array(0, 0, 27.9, 0, 28.2, -17.9, 24, -26.9, 11.1, -35.9, 16.5, -44.9, 10.8, -53.8, 0, -53.8)
 value_share = 0.27
 
 [sub_resource type="Resource" id="Piece_amphora_body_left"]
 script = ExtResource("2_piece")
 piece_id = &"body_left"
-polygon = PackedVector2Array(0.0, -0.0, -27.9, -0.0, -27.5, 17.9, -18.0, 35.8, -13.8, 53.8, 0.0, 53.8)
+polygon = PackedVector2Array(0, 0, -27.9, 0, -27.5, 17.9, -18, 35.8, -13.8, 53.8, 0, 53.8)
 value_share = 0.23
 
 [sub_resource type="Resource" id="Piece_amphora_body_right"]
 script = ExtResource("2_piece")
 piece_id = &"body_right"
-polygon = PackedVector2Array(0.0, 53.8, 13.8, 53.8, 18.0, 35.8, 27.5, 17.9, 27.9, -0.0, 0.0, -0.0)
+polygon = PackedVector2Array(0, 53.8, 13.8, 53.8, 18, 35.8, 27.5, 17.9, 27.9, 0, 0, 0)
 value_share = 0.23
 
 [resource]
@@ -42,10 +42,9 @@ mass = 8.0
 break_speed = 480.0
 piece_toughness = 1.3
 piece_value_factor = 0.7
-whole_polygon = PackedVector2Array(-10.8, -53.8, -16.5, -44.9, -11.1, -35.9, -24.0, -26.9, -28.2, -17.9, -27.9, -0.0, -27.5, 17.9, -18.0, 35.8, -13.8, 53.8, 13.8, 53.8, 18.0, 35.8, 27.5, 17.9, 27.9, -0.0, 28.2, -17.9, 24.0, -26.9, 11.1, -35.9, 16.5, -44.9, 10.8, -53.8)
+whole_polygon = PackedVector2Array(-10.8, -53.8, -16.5, -44.9, -11.1, -35.9, -24, -26.9, -28.2, -17.9, -27.9, 0, -27.5, 17.9, -18, 35.8, -13.8, 53.8, 13.8, 53.8, 18, 35.8, 27.5, 17.9, 27.9, 0, 28.2, -17.9, 24, -26.9, 11.1, -35.9, 16.5, -44.9, 10.8, -53.8)
 pieces = Array[ExtResource("2_piece")]([SubResource("Piece_amphora_neck_left"), SubResource("Piece_amphora_neck_right"), SubResource("Piece_amphora_body_left"), SubResource("Piece_amphora_body_right")])
 color = Color(0.55, 0.42, 0.3, 1)
-sound_material = &"clay"
-physics_material = SubResource("PhysicsMaterial_amphora")
 texture = ExtResource("9_tex")
-texture_rect = Rect2(-36.093, -54.996, 69.070, 109.884)
+texture_rect = Rect2(-36.093, -54.996, 69.07, 109.884)
+physics_material = SubResource("PhysicsMaterial_amphora")
