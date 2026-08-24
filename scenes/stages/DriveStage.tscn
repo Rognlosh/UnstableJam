@@ -99,7 +99,7 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -200.0
-offset_top = -104.0
+offset_top = -148.0
 offset_right = 200.0
 offset_bottom = -16.0
 grow_horizontal = 2
@@ -117,6 +117,11 @@ horizontal_alignment = 1
 [node name="StartButton" type="Button" parent="HUD/StartPanel/VBoxContainer" unique_id=897120393]
 layout_mode = 2
 text = "DRIVE_START"
+
+[node name="BackButton" type="Button" parent="HUD/StartPanel/VBoxContainer" unique_id=897120394]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "DRIVE_BACK_TO_SHOP"
 
 [node name="FinishPanel" type="PanelContainer" parent="HUD" unique_id=1016806020]
 visible = false

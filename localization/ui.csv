@@ -89,6 +89,7 @@ DRIVE_HINT_STRAY,Убери с земли: %d,Left on the ground: %d
 DRIVE_STATUS_LOADING,День %d · Погрузка,Day %d · Loading
 DRIVE_STATUS_COUNT,В кузове: %d · На стеллаже: %d,In the bed: %d · On the shelf: %d
 DRIVE_START,Поехали,Drive
+DRIVE_BACK_TO_SHOP,Вернуться в лавку,Back to the shop
 DRIVE_STATUS_DRIVING,День %d · Цело: %d из %d · Пройдено: %d из %d м,Day %d · Intact: %d of %d · Covered: %d of %d m
 DRIVE_TIME,Время: %d с,Time: %d s
 DRIVE_TIME_LATE,Время: %d с · оплата %d%%,Time: %d s · payout %d%%

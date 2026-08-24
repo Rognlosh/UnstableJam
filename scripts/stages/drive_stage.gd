@@ -143,6 +143,10 @@ var _hill_layers: Array[Node2D] = []
 @onready var _start_panel: PanelContainer = $HUD/StartPanel
 @onready var _start_button: Button = $HUD/StartPanel/VBoxContainer/StartButton
 @onready var _hint_label: Label = $HUD/StartPanel/VBoxContainer/HintLabel
+## Возврат в закуп с погрузки. Товар при этом никуда не девается: заезд
+## читает склад при входе, а перезаписывает только на старте, — то есть
+## до нажатия «Поехали» GameState.cargo_actual остаётся нетронутым.
+@onready var _back_button: Button = $HUD/StartPanel/VBoxContainer/BackButton
 ## Подсказка по управлению машиной. Живёт отдельной панелью, а не строкой
 ## в StartPanel: та висит только на погрузке, а клавиши нужны именно
 ## на дороге, где спросить уже не у кого.
@@ -208,6 +212,7 @@ func _ready() -> void:
 	_finish_panel.hide()
 	_to_shop_button.pressed.connect(_on_to_shop_pressed)
 	_start_button.pressed.connect(_start_run)
+	_back_button.pressed.connect(_on_back_to_shop_pressed)
 	_restart_button.hold_completed.connect(_restart_run)
 	_restart_button.hide()
 	_timer_bar.hide()
@@ -1182,6 +1187,14 @@ func _is_recovered(item: BreakableItem) -> bool:
 	# в предел и стоит не там, куда её просили встать.
 	var offset := item.global_position - _camera.get_screen_center_position()
 	return absf(offset.x) <= half.x and absf(offset.y) <= half.y
+
+
+## Уйти в лавку можно только с погрузки: на дороге это было бы отменой
+## неудачного заезда задним числом, а сброс для этого уже есть.
+func _on_back_to_shop_pressed() -> void:
+	if _phase != Phase.LOADING:
+		return
+	StageManager.instance.change_stage(StageManager.Stage.SHOP)
 
 
 func _on_to_shop_pressed() -> void:
