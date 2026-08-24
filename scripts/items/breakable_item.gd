@@ -22,9 +22,15 @@ const HIT_AUDIBLE: float = 0.22
 const HIT_QUIET: float = 0.35
 
 ## Множитель порога разрушения. Больше единицы — вещь терпит сильнее.
-## Нужно фазе погрузки: мышь неточна, и бить игрока по тем же правилам,
-## что и на дороге, несправедливо.
+## Нужно прокачке обивки кузова.
 var toughness_bonus: float = 1.0
+
+## Пока выключено, вещь не бьётся вовсе, каким бы сильным ни был удар.
+## Нужно фазе погрузки: мышь неточна, а терять товар до выезда со двора —
+## это наказание за интерфейс, а не за езду. Порог при этом продолжает
+## считаться: по нему озвучивается стук, и вещь честно гремит о борт,
+## просто остаётся целой.
+var can_break: bool = true
 
 var data: ItemData
 var level: int = 0                       # 0 — целое, 1 — осколок
@@ -101,7 +107,7 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 		return
 
 	var threshold: float = break_threshold()
-	if impact < threshold:
+	if impact < threshold or not can_break:
 		_play_hit(impact, threshold)
 		return
 
@@ -122,7 +128,9 @@ func _play_hit(impact: float, threshold: float) -> void:
 	var ratio: float = impact / threshold
 	if ratio < HIT_AUDIBLE:
 		return
-	var loudness: float = remap(ratio, HIT_AUDIBLE, 1.0, HIT_QUIET, 1.0)
+	# Зажим обязателен: у неуязвимой вещи удар бывает и сильнее порога,
+	# а remap за единицей уходит в положительные децибелы.
+	var loudness: float = clampf(remap(ratio, HIT_AUDIBLE, 1.0, HIT_QUIET, 1.0), 0.0, 1.0)
 	# Ключ собирается из материала вещи. Общего набора нет: у каждого
 	# материала свой, а чем крыть недостающий, решает цепочка в Audio.
 	if data == null:

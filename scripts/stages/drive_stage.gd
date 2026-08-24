@@ -82,10 +82,6 @@ const DRAG_GAIN: float = 14.0
 const DRAG_MAX_SPEED: float = 1400.0
 ## Скорость поворота на Q/E и стрелках, рад/с.
 const ROTATE_SPEED: float = 3.0
-## Во сколько раз товар прочнее на погрузке. Швырнуть вазу об борт всё ещё
-## можно, а вот уронить её с полки — уже не смертельно. Множится на обивку,
-## а не заменяет её: поблажка погрузки и прокачка отвечают за разное.
-const LOADING_TOUGHNESS: float = 1.25
 ## С какой скоростью вещь выпускается из руки: остаток разгона гасим,
 ## иначе отпущенная на замахе ваза улетает через весь кузов.
 const RELEASE_MAX_SPEED: float = 260.0
@@ -520,7 +516,9 @@ func _unload_to_shelf(returned: Array[BreakableItem] = []) -> void:
 		item.place_at(Transform2D(0.0, Vector2(
 			slot.x - rect.position.x,
 			slot.y - CARGO_LIFT - rect.end.y)))
-		item.toughness_bonus = _cargo_toughness * LOADING_TOUGHNESS
+		item.toughness_bonus = _cargo_toughness
+		# На погрузке товар не бьётся вовсе — см. BreakableItem.can_break.
+		item.can_break = false
 
 	_add_posts(_shelf_left, _shelf_ground, _shelf_level, _shelf_level_height)
 	_stack_debris(debris)
@@ -572,7 +570,9 @@ func _stack_rows(items: Array[BreakableItem], left_x: float, bottom_y: float,
 		item.place_at(Transform2D(0.0, Vector2(
 			cursor - rect.position.x,
 			bottom_y - float(row) * step - CARGO_LIFT - rect.end.y)))
-		item.toughness_bonus = _cargo_toughness * LOADING_TOUGHNESS
+		item.toughness_bonus = _cargo_toughness
+		# На погрузке товар не бьётся вовсе — см. BreakableItem.can_break.
+		item.can_break = false
 		cursor += rect.size.x + ShelfLayout.GAP
 	return leftover
 
@@ -766,8 +766,9 @@ func _start_run() -> void:
 		if item == null:
 			continue
 		if _is_in_bed(item):
-			# С этого момента поблажка кончается — заезд начался.
+			# С этого момента вещь уязвима — заезд начался.
 			item.toughness_bonus = _cargo_toughness
+			item.can_break = true
 			# Осколки одного разбития наследуют номер родительской вещи:
 			# в дороге это правильно, они складываются обратно в её долю.
 			# Но в кузове каждый из них — отдельное место, и под общим
@@ -857,7 +858,9 @@ func _restart_run() -> void:
 	var relocate := _truck.chassis.global_transform * was.affine_inverse()
 	for item: BreakableItem in in_bed:
 		item.place_at(relocate * item.global_transform)
-		item.toughness_bonus = _cargo_toughness * LOADING_TOUGHNESS
+		item.toughness_bonus = _cargo_toughness
+		# На погрузке товар не бьётся вовсе — см. BreakableItem.can_break.
+		item.can_break = false
 
 	# Склад снова под рукой: непогруженное можно доложить.
 	_unload_to_shelf(returned)
