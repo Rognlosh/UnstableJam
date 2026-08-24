@@ -82,6 +82,26 @@ extends Node2D
 ## Момент, которым A/D крутят раму.
 @export_range(50000.0, 4000000.0, 10000.0) var lean_torque: float = 1800000.0
 
+@export_group("Водитель")
+
+## Голова водителя. Качается от продольного ускорения рамы: разгон откидывает
+## её назад, торможение и удар о кочку кидают вперёд. Узел вращается вокруг
+## своего начала координат, поэтому он стоит в точке шеи, а картинка сдвинута
+## вверх через offset спрайта — иначе голова крутилась бы вокруг переносицы.
+@export var driver_head: Node2D
+
+## Предельный отклон головы, градусы. Нарочно маленький: водитель должен
+## оживать на кочках, а не мотать головой как болванчик.
+@export_range(0.0, 12.0, 0.5) var head_sway_degrees: float = 3.5
+
+## Ускорение, при котором отклон достигает предела, px/с².
+## Удар о кочку выдаёт десятки тысяч, поэтому отношение всё равно зажимается
+## в ±1 — этот порог задаёт лишь то, с какого толчка голова уже на упоре.
+const HEAD_SWAY_REFERENCE: float = 1600.0
+## Скорость возврата, 1/с. Разность скоростей за физкадр шумит кадр в кадр,
+## и без сглаживания голова дрожала бы вместо того, чтобы качаться.
+const HEAD_SWAY_SMOOTH: float = 9.0
+
 @export_group("Кузов")
 
 ## Высота бортов над полом кузова. Прокачиваемый параметр:
@@ -140,6 +160,9 @@ var _engine_running: bool = false
 var _engine_spin: float = 0.0
 var _engine_load: float = 0.0
 
+var _head_angle: float = 0.0
+var _head_prev_velocity: Vector2 = Vector2.ZERO
+
 var chassis: RigidBody2D
 var _wheels: Array[RigidBody2D] = []
 var _springs: Array[DampedSpringJoint2D] = []
@@ -174,6 +197,25 @@ func _physics_process(delta: float) -> void:
 			chassis.apply_torque(lean * lean_torque)
 
 	_update_engine(throttle, delta)
+	_update_driver_head(delta)
+
+
+## Качает голову водителя от продольного ускорения рамы.
+## Ускорение считается разностью скоростей за физкадр — тем же способом, каким
+## груз ловит удары: контактных импульсов в 2D для этого нет.
+func _update_driver_head(delta: float) -> void:
+	if driver_head == null or delta <= 0.0:
+		return
+	var velocity := chassis.linear_velocity
+	var accel := (velocity - _head_prev_velocity) / delta
+	_head_prev_velocity = velocity
+	# Продольная составляющая в системе рамы: на склоне «вперёд» — не по оси X мира.
+	var along := accel.rotated(-chassis.rotation).x
+	var ratio := clampf(along / HEAD_SWAY_REFERENCE, -1.0, 1.0)
+	# Разгон (+X) откидывает голову назад, то есть против часовой — отсюда минус.
+	var target := -ratio * deg_to_rad(head_sway_degrees)
+	_head_angle = lerpf(_head_angle, target, 1.0 - exp(-HEAD_SWAY_SMOOTH * delta))
+	driver_head.rotation = _head_angle
 
 
 func _drive(throttle: float) -> void:

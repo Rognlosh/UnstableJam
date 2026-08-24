@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- ШАБЛОН UnstableJam: кабина
+     Размер холста менять НЕЛЬЗЯ. 1 единица SVG = 1 пиксель игры.
+     Рисовать в слое "art". Розовый контур = внешний край обводки.
+     Пунктир — место окна, обязательным не считается.
+     Задняя стенка (слева) служит передним бортом кузова. -->
+<svg
+   width="10.483902"
+   height="37.364304"
+   viewBox="0 0 10.483902 37.364304"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="truck_cabin.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:sodipodi0="http://sodipodi.sourceforge.net/DTD/sodipodi-0.0.dtd">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="char"
+     transform="translate(-36.25433,-4.4607716)">
+    <path
+       id="rect3"
+       style="fill:#784421;stroke:#000000;stroke-width:0.377953;stroke-linecap:round;stroke-linejoin:round"
+       inkscape:label="hand"
+       inkscape:transform-center-x="0.14230512"
+       d="m 46.54874,9.0211674 c -0.03852,-2.427164 -2.292767,-4.347801 -4.795273,-4.371203 -2.669337,-0.02496 -5.199134,2.124859 -4.863205,4.773093 0.626214,4.9366396 1.70508,21.3631436 0.997132,25.1666736 -0.07499,0.402863 -0.10113,0.786092 -0.09085,1.151544 a 4.5957637,3.3477759 6.0458216 0 0 -1.339506,2.046158 4.5957637,3.3477759 6.0458216 0 0 4.218436,3.813051 4.5957637,3.3477759 6.0458216 0 0 4.9233,-2.844711 4.5957637,3.3477759 6.0458216 0 0 -1.140397,-2.536166 c 0.170869,-0.769895 0.244771,-1.620635 0.27304,-2.462398 0.310621,-9.249344 0.566946,-12.741383 1.795145,-24.2440386 0.01771,-0.165898 0.02475,-0.330191 0.02218,-0.492003 z"
+       inkscape:transform-center-y="14.791248" />
+  </g>
+</svg>

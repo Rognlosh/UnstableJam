@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- ШАБЛОН UnstableJam: кабина
+     Размер холста менять НЕЛЬЗЯ. 1 единица SVG = 1 пиксель игры.
+     Рисовать в слое "art". Розовый контур = внешний край обводки.
+     Пунктир — место окна, обязательным не считается.
+     Задняя стенка (слева) служит передним бортом кузова. -->
+<svg
+   width="23.965012"
+   height="37.358463"
+   viewBox="0 0 23.965012 37.358463"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="truck_cabin.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:sodipodi0="http://sodipodi.sourceforge.net/DTD/sodipodi-0.0.dtd">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="char"
+     transform="translate(-69.391518,-24.144356)">
+    <g
+       id="g18"
+       inkscape:label="body"
+       transform="translate(46.999382,-21.274049)">
+      <path
+         id="rect1"
+         style="fill:#784421;stroke:#000000;stroke-width:0.377953;stroke-linecap:round;stroke-linejoin:round"
+         inkscape:label="body"
+         d="m 33.785629,45.663825 c 5.897637,0 11.519315,5.949091 10.645555,10.645554 -0.896468,4.818514 -0.392205,15.632156 -0.392205,15.632156 0,5.897637 -4.747918,10.645555 -10.645555,10.645555 -5.897637,0 -10.645555,-4.747918 -10.645555,-10.645555 0,0 1.232643,-4.762485 1.176614,-7.676005 -0.05603,-2.857491 -1.176614,-8.01218 -1.176614,-8.01218 0,-5.897637 5.140123,-10.589525 11.03776,-10.589525 z"
+         sodipodi:nodetypes="ssssscss" />
+      <path
+         id="rect5"
+         style="fill:#cccccc;stroke:#000000;stroke-width:0.377953;stroke-linecap:round;stroke-linejoin:round"
+         inkscape:label="shirt"
+         d="m 33.392578,45.607422 c -5.897631,0 -10.644531,4.748853 -10.644531,10.646484 0,0 0.78441,3.697373 0.896468,7.955595 -0.112058,4.034105 -0.896468,7.731905 -0.896468,7.731905 -1.252852,5.763021 4.7469,10.646485 10.644531,10.646485 5.897631,0 10.758542,-4.188562 12.439419,-9.637959 0,0 0.336175,-3.753829 0.336176,-7.283671 0,-2.689403 -2.129111,-6.242433 -2.129111,-6.242433 -1.774083,-0.860627 -3.331537,-2.223951 -4.439453,-4.039062 l -5.964843,-9.771485 c -0.0806,-0.0018 -0.161149,-0.0059 -0.242188,-0.0059 z"
+         sodipodi:nodetypes="sscsssccccss" />
+    </g>
+  </g>
+</svg>
