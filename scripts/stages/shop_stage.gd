@@ -317,6 +317,21 @@ func _refresh_upgrades(money: int) -> void:
 		else:
 			lot.set_action(tr("UPGRADE_BUY") % price, true)
 
+	# Вкладку прокачек игроки пропускали, поэтому при доступной покупке
+	# к её заголовку дописывается точка. Держится на тех же данных, что
+	# и кнопки строк, лишнего состояния не заводит; перетирает заголовок,
+	# который поставил _setup_tabs(), и это ожидаемо — оба зовутся вместе
+	# и при смене языка, и при каждом изменении денег.
+	if tabs != null:
+		var affordable := false
+		for offer: OfferLot in _upgrade_lots:
+			var line: UpgradeData = _upgrade_lots[offer]
+			var owned := GameState.upgrade_level(line.id)
+			if owned < line.level_count() and money >= line.price_at(owned + 1):
+				affordable = true
+				break
+		tabs.set_tab_title(1, tr("SHOP_TAB_UPGRADES") + (" •" if affordable else ""))
+
 
 ## Заголовок строки. Ступень дописывается к названию, а не отдельной меткой:
 ## иначе пришлось бы править сцену строки ради одного числа, а строка

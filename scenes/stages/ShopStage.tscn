@@ -41,11 +41,13 @@ theme_override_constants/separation = 12
 
 [node name="HeaderLabel" type="Label" parent="Margin/VBoxContainer" unique_id=1147486931]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.85, 0.55, 1)
 theme_override_font_sizes/font_size = 24
 
 [node name="Tabs" type="TabContainer" parent="Margin/VBoxContainer" unique_id=1930200001]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/font_size = 18
 
 [node name="Goods" type="ScrollContainer" parent="Margin/VBoxContainer/Tabs" unique_id=1801053780]
 layout_mode = 2

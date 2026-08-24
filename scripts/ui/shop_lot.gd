@@ -88,7 +88,9 @@ func _refresh_quirk() -> void:
 	quirk_label.visible = quirk != null
 	if quirk == null:
 		return
-	quirk_label.text = tr("QUIRK_LINE") % [quirk.get_display_name(), quirk.get_hint()]
+	# Одно слово вместо «имя — длинное описание»: строку с объяснением
+	# никто не дочитывал, а что делает «Левитация», игрок узнаёт в кузове.
+	quirk_label.text = quirk.get_display_name()
 	# Оттенок берём в полную силу, а не через tint_amount: на силуэте он
 	# лишь подкрашивает вещь, а тексту нужна читаемая заливка.
 	quirk_label.add_theme_color_override(&"font_color", quirk.tint)

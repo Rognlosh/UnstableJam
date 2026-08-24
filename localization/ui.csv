@@ -15,7 +15,7 @@ ITEM_VASE,Ваза,Vase
 ITEM_CHEST,Ларец,Casket
 ITEM_CHALICE,Кубок,Chalice
 ITEM_TOTEM,Тотем огненного бога,Totem of the fire god
-QUIRK_EXPLOSION,Гнев огня,Wrath of fire
+QUIRK_EXPLOSION,Взрывоопасное,Explosive
 QUIRK_EXPLOSION_HINT,"Разбившись, расшвыривает всё вокруг — соседям по кузову достаётся первым.",When it breaks it hurls everything aside — its neighbours in the bed get it first.
 ITEM_AMPHORA,Большая амфора,Great amphora
 ITEM_FLASK,Флакон,Flask
@@ -38,7 +38,7 @@ UPGRADE_BUY,Купить · %d,Buy · %d
 UPGRADE_OWNED,Куплено,Owned
 UPGRADE_SHORT,Не хватает %d,Short by %d
 SHOP_TAB_GOODS,Товар,Goods
-SHOP_TAB_UPGRADES,Лавка,Shop
+SHOP_TAB_UPGRADES,Прокачки,Upgrades
 SHOP_HANDOUT,Ящик от Вельда,A crate from Veld
 SHOP_HANDOUT_HINT,"Старик собрал, что нашлось на задах склада. Бери, когда совсем пусто.",The old man scraped together whatever was at the back of the store. Take it when you have nothing.
 SHOP_HANDOUT_TAKE,Взять,Take it
@@ -79,7 +79,6 @@ TOUGHNESS_VERY_LOW,очень низкая,very low
 TOUGHNESS_LOW,низкая,low
 TOUGHNESS_HIGH,высокая,high
 TOUGHNESS_VERY_HIGH,очень высокая,very high
-QUIRK_LINE,%s — %s,%s — %s
 SHOP_FOOTER,Полки: %d / %d   •   %s,Shelves: %d / %d   •   %s
 SHOP_FOOTER_EMPTY,Полки: %d / %d   •   склад пуст,Shelves: %d / %d   •   store is empty
 SHOP_STOCK_ITEM,%s × %d,%s × %d
