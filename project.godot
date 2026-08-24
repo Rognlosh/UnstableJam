@@ -73,6 +73,10 @@ restart_run={
 
 locale/translations=PackedStringArray("res://localization/ui.ru.translation", "res://localization/ui.en.translation")
 
+[gui]
+
+theme/custom="res://assets/ui/theme.tres"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"
