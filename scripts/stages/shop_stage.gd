@@ -12,6 +12,10 @@
 extends Control
 
 @export var header_label: Label
+## Кнопка «перечитать предысторию». Ведёт на тот же INTRO, что показывается
+## при старте партии: его кнопка возвращает в закуп, поэтому обратный путь
+## писать не нужно — экран сам знает, куда идти дальше.
+@export var story_button: Button
 @export var tabs: TabContainer
 @export var lots_container: VBoxContainer
 @export var upgrades_container: VBoxContainer
@@ -47,6 +51,8 @@ const CHEAT_MONEY: int = 1000
 func _ready() -> void:
 	Audio.play_music(&"shop")
 	go_button.pressed.connect(_on_go_pressed)
+	if story_button != null:
+		story_button.pressed.connect(_on_story_pressed)
 	GameState.money_changed.connect(_on_money_changed)
 	_setup_tabs()
 	_build_handout()
@@ -246,6 +252,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	GameState.earn_money(CHEAT_MONEY)
 	_refresh()
 	get_viewport().set_input_as_handled()
+
+
+func _on_story_pressed() -> void:
+	StageManager.instance.change_stage(StageManager.Stage.INTRO)
 
 
 func _refresh() -> void:

@@ -37,6 +37,7 @@ UPGRADE_SHOP_DEED_HINT,Вельд отдаёт дело целиком и заб
 UPGRADE_BUY,Купить · %d,Buy · %d
 UPGRADE_OWNED,Куплено,Owned
 UPGRADE_SHORT,Не хватает %d,Short by %d
+SHOP_STORY,Перечитать предысторию,Read the intro again
 SHOP_TAB_GOODS,Товар,Goods
 SHOP_TAB_UPGRADES,Прокачки,Upgrades
 SHOP_HANDOUT,Ящик от Вельда,A crate from Veld

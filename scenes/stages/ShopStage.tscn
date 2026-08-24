@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/OfferLot.tscn" id="3_offer"]
 [ext_resource type="Resource" path="res://assets/items/handout.tres" id="4_handout"]
 
-[node name="ShopStage" type="Control" unique_id=1788116682 node_paths=PackedStringArray("header_label", "tabs", "lots_container", "upgrades_container", "stock_label", "go_button")]
+[node name="ShopStage" type="Control" unique_id=1788116682 node_paths=PackedStringArray("header_label", "tabs", "lots_container", "upgrades_container", "stock_label", "go_button", "story_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -13,12 +13,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_amwyn")
-header_label = NodePath("Margin/VBoxContainer/HeaderLabel")
+header_label = NodePath("Margin/VBoxContainer/HeaderRow/HeaderLabel")
 tabs = NodePath("Margin/VBoxContainer/Tabs")
 lots_container = NodePath("Margin/VBoxContainer/Tabs/Goods/Lots")
 upgrades_container = NodePath("Margin/VBoxContainer/Tabs/Upgrades/UpgradeLots")
 stock_label = NodePath("Margin/VBoxContainer/StockLabel")
 go_button = NodePath("Margin/VBoxContainer/GoButton")
+story_button = NodePath("Margin/VBoxContainer/HeaderRow/StoryButton")
 lot_scene = ExtResource("2_2qxyq")
 offer_lot_scene = ExtResource("3_offer")
 handout = ExtResource("4_handout")
@@ -39,10 +40,22 @@ theme_override_constants/margin_bottom = 32
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="HeaderLabel" type="Label" parent="Margin/VBoxContainer" unique_id=1147486931]
+[node name="HeaderRow" type="HBoxContainer" parent="Margin/VBoxContainer" unique_id=1147486930]
 layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderLabel" type="Label" parent="Margin/VBoxContainer/HeaderRow" unique_id=1147486931]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
 theme_override_colors/font_color = Color(0.96, 0.85, 0.55, 1)
 theme_override_font_sizes/font_size = 24
+
+[node name="StoryButton" type="Button" parent="Margin/VBoxContainer/HeaderRow" unique_id=1147486932]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 14
+text = "SHOP_STORY"
 
 [node name="Tabs" type="TabContainer" parent="Margin/VBoxContainer" unique_id=1930200001]
 layout_mode = 2
