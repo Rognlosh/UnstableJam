@@ -745,6 +745,7 @@ func _enter_loading() -> void:
 	_truck.controls_enabled = false
 	_truck.set_frozen(true)
 	_truck.set_engine_running(false)
+	Audio.play_music(&"shop")
 	_finish_panel.hide()
 	_controls_panel.hide()
 	_start_panel.show()
@@ -803,6 +804,7 @@ func _start_run() -> void:
 	_truck.controls_enabled = true
 	_truck.auto_brake = false
 	_truck.set_engine_running(true)
+	Audio.play_music(&"road")
 	_start_panel.hide()
 	_controls_panel.show()
 	_restart_button.show()
@@ -1053,6 +1055,7 @@ func _on_finish_reached() -> void:
 	_truck.controls_enabled = false
 	_truck.auto_brake = true
 	_truck.set_engine_running(false)
+	Audio.play_music(&"shop")
 	Audio.play(&"finish")
 	_controls_panel.hide()
 	_restart_button.hide()

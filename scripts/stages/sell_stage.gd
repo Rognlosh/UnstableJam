@@ -83,6 +83,7 @@ var shown_money: float = 0.0:
 
 
 func _ready() -> void:
+	Audio.play_music(&"shop")
 	next_day_button.pressed.connect(_on_next_day_pressed)
 	_sell_cargo()
 

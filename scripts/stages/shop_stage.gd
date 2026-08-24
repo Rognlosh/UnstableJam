@@ -45,6 +45,7 @@ const CHEAT_MONEY: int = 1000
 
 
 func _ready() -> void:
+	Audio.play_music(&"shop")
 	go_button.pressed.connect(_on_go_pressed)
 	GameState.money_changed.connect(_on_money_changed)
 	_setup_tabs()

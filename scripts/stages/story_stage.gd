@@ -14,6 +14,7 @@ extends Control
 
 
 func _ready() -> void:
+	Audio.play_music(&"shop")
 	if continue_button == null:
 		push_error("StoryStage: не назначена кнопка продолжения")
 		return
