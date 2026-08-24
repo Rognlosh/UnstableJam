@@ -41,5 +41,5 @@ pieces = Array[ExtResource("2_piece")]([SubResource("Piece_flask_top"), SubResou
 color = Color(0.45, 0.6, 0.52, 1)
 texture = ExtResource("9_tex")
 texture_rect = Rect2(-12.032, -13.529, 22.62, 27.468)
-sound_material = &"glass"
 physics_material = SubResource("PhysicsMaterial_flask")
+sound_material = &"glass"

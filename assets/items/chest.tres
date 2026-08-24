@@ -47,5 +47,5 @@ pieces = Array[ExtResource("2_piece")]([SubResource("Piece_chest_lid_left"), Sub
 color = Color(0.55, 0.4, 0.25, 1)
 texture = ExtResource("9_tex")
 texture_rect = Rect2(-36.553, -21.586, 72.288, 45.656)
-sound_material = &"wood"
 physics_material = SubResource("PhysicsMaterial_chest")
+sound_material = &"wood"
