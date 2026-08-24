@@ -10,4 +10,4 @@
 script = ExtResource("1_hand")
 name_key = "SHOP_HANDOUT"
 hint_key = "SHOP_HANDOUT_HINT"
-items = Array[ExtResource("2_item")]([ExtResource("5_flask"), ExtResource("5_flask"), ExtResource("4_chest"), ExtResource("3_vase")])
+items = Array[ExtResource("2_item")]([ExtResource("4_chest"), ExtResource("4_chest"), ExtResource("3_vase"), ExtResource("3_vase"), ExtResource("5_flask"), ExtResource("5_flask")])
