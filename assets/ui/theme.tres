@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=12 format=3]
+[gd_resource type="Theme" load_steps=14 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/Rubik.ttf" id="1_font"]
 
@@ -63,7 +63,12 @@ content_margin_left = 10.0
 content_margin_top = 8.0
 content_margin_right = 10.0
 content_margin_bottom = 8.0
-bg_color = Color(0.17, 0.14, 0.12, 0.92)
+bg_color = Color(0.28, 0.2, 0.16, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.71, 0.42, 0.2, 0.85)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
@@ -74,7 +79,7 @@ content_margin_left = 8.0
 content_margin_top = 8.0
 content_margin_right = 8.0
 content_margin_bottom = 8.0
-bg_color = Color(0.15, 0.125, 0.11, 0.9)
+bg_color = Color(0.2, 0.16, 0.14, 0.92)
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
@@ -106,6 +111,25 @@ bg_color = Color(0.34, 0.27, 0.22, 0.95)
 corner_radius_top_left = 7
 corner_radius_top_right = 7
 
+[sub_resource type="StyleBoxFlat" id="Bar_bg"]
+bg_color = Color(0.19, 0.16, 0.14, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.3, 0.18, 0.9)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="Bar_fill"]
+bg_color = Color(0.85, 0.64, 0.2, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
 [resource]
 default_font = ExtResource("1_font")
 default_font_size = 16
@@ -126,3 +150,5 @@ TabContainer/styles/panel = SubResource("Tab_panel")
 TabContainer/styles/tab_selected = SubResource("Tab_selected")
 TabContainer/styles/tab_unselected = SubResource("Tab_unselected")
 TabContainer/styles/tab_hovered = SubResource("Tab_hovered")
+ProgressBar/styles/background = SubResource("Bar_bg")
+ProgressBar/styles/fill = SubResource("Bar_fill")

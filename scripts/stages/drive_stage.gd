@@ -1052,7 +1052,7 @@ func get_progress_metres() -> Vector2i:
 	if _truck.chassis == null:
 		return Vector2i.ZERO
 	var start_x := _track.get_start_position().x
-	var span := maxf(_track.get_end_position().x - start_x, 0.0)
+	var span := maxf(_track.get_finish_position().x - start_x, 0.0)
 	var covered := clampf(_truck.chassis.global_position.x - start_x, 0.0, span)
 	return Vector2i(
 		int(round(covered / PIXELS_PER_METER)),

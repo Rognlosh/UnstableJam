@@ -70,6 +70,8 @@ const START_HEIGHT: float = 90.0
 var _rng := RandomNumberGenerator.new()
 var _chunks: Array[TrackChunk] = []
 var _end_point: Vector2 = Vector2.ZERO
+## Точка створа финиша. Ноль означает «финиша на трассе нет».
+var _finish_point: Vector2 = Vector2.ZERO
 
 
 ## Описание куска, вытащенное из сцены один раз. Вложенный класс —
@@ -124,6 +126,12 @@ func build() -> void:
 				(finish_chunk as FinishChunk).crossed.connect(_on_finish_crossed)
 			else:
 				push_warning("TrackBuilder: Finish Scene не является FinishChunk, сигнала о финише не будет.")
+			# Створ стоит не в конце куска, а на gate_x внутри него: за ним
+			# ещё тянется посадочная площадка. Игрок едет до створа, и
+			# считать дистанцию надо до него же.
+			if finish_chunk is FinishChunk:
+				_finish_point = cursor + Vector2(
+					(finish_chunk as FinishChunk).gate_x, 0.0)
 			cursor += finish_chunk.get_exit_position()
 
 	_level_skirts()
@@ -168,6 +176,16 @@ func get_end_position() -> Vector2:
 	return to_global(_end_point)
 
 
+## Глобальная точка створа — то, до чего игрок реально едет. Отличается от
+## конца трассы на длину посадочной площадки за воротами, и разница заметная:
+## по концу куска дистанция не добиралась до полной, даже когда заезд уже
+## закончился. Створа нет — отвечаем концом трассы, чтобы не отдавать ноль.
+func get_finish_position() -> Vector2:
+	if _finish_point == Vector2.ZERO:
+		return get_end_position()
+	return to_global(_finish_point)
+
+
 func get_total_length() -> float:
 	return _end_point.x
 
@@ -186,6 +204,7 @@ func _clear() -> void:
 			chunk.queue_free()
 	_chunks.clear()
 	_end_point = Vector2.ZERO
+	_finish_point = Vector2.ZERO
 
 
 ## Читаем длину и сложность каждой сцены один раз, на пробном экземпляре.
