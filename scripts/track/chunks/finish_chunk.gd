@@ -33,12 +33,36 @@ signal crossed
 		gate_x = value
 		_place_gate()
 
+@export_group("Лавка")
+
+## Высота домика лавки в пикселях. Для сравнения: рама грузовика — 400 px
+## в длину, так что при 320 постройка выходит вровень с машиной и читается
+## как придорожная лавка, а не как город на горизонте.
+@export_range(80.0, 900.0, 4.0) var shop_height: float = 320.0:
+	set(value):
+		shop_height = maxf(20.0, value)
+		_place_shop()
+
+## Где стоит лавка по длине куска. Правее створа намеренно: игрок финиширует
+## и видит, куда везёт товар, — цель дня становится местом на карте.
+@export var shop_x: float = 760.0:
+	set(value):
+		shop_x = value
+		_place_shop()
+
+## Посадка домика по вертикали относительно земли куска.
+@export var shop_offset_y: float = 4.0:
+	set(value):
+		shop_offset_y = value
+		_place_shop()
+
 var _zone: Area2D
 
 
 func _ready() -> void:
 	super()
 	_place_gate()
+	_place_shop()
 	_zone = _find_zone()
 	if _zone == null:
 		return
@@ -77,6 +101,25 @@ func _place_gate() -> void:
 	gate.scale = Vector2(factor, factor)
 	# Низ холста — на уровень земли куска, то есть в ноль по Y.
 	gate.position = Vector2(gate_x - size.x * factor * 0.5, -gate_height + gate_offset_y)
+
+
+## Ставит домик лавки на землю. Правило то же, что у створа, и по той же
+## причине: масштаб только от фактического размера текстуры, никогда числом
+## в сцене — SVG в миллиметрах приезжает вчетверо крупнее своего viewBox.
+func _place_shop() -> void:
+	if not is_inside_tree():
+		return
+	var shop := get_node_or_null(^"Shop") as Sprite2D
+	if shop == null or shop.texture == null:
+		return
+	var size := Vector2(shop.texture.get_size())
+	if size.y <= 0.0:
+		return
+	var factor: float = shop_height / size.y
+	shop.centered = false
+	shop.scale = Vector2(factor, factor)
+	shop.position = Vector2(
+		shop_x - size.x * factor * 0.5, -shop_height + shop_offset_y)
 
 
 func _find_zone() -> Area2D:
