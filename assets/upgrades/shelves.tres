@@ -15,12 +15,12 @@ value = 3.0
 
 [sub_resource type="Resource" id="Resource_lv3"]
 script = ExtResource("2_lvl")
-price = 700
+price = 560
 value = 4.0
 
 [sub_resource type="Resource" id="Resource_lv4"]
 script = ExtResource("2_lvl")
-price = 1400
+price = 999
 value = 5.0
 
 [resource]
