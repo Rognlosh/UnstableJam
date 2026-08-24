@@ -1007,11 +1007,13 @@ func _update_status() -> void:
 		var item := node as BreakableItem
 		if item != null and item.level == 0:
 			whole += 1
+	var covered := get_progress_metres()
 	_status_label.text = tr("DRIVE_STATUS_DRIVING") % [
 		GameState.get_day(),
 		whole,
 		_loaded.size(),
-		int(round(get_progress() * 100.0)),
+		covered.x,
+		covered.y,
 	]
 
 
@@ -1035,6 +1037,26 @@ func _update_timer_bar() -> void:
 	_timer_label.text = (
 		tr("DRIVE_TIME") % int(_elapsed) if is_equal_approx(factor, 1.0)
 		else tr("DRIVE_TIME_LATE") % [int(_elapsed), int(round(factor * 100.0))])
+
+
+## Пикселей в игровом метре. Подобрано по машине: рама в 400 px — это
+## восьмиметровый грузовик, и полный ход на этом масштабе выходит около
+## 50 км/ч — правдоподобно для грунтовки. Метры в HUD живут на этом же числе.
+const PIXELS_PER_METER: float = 50.0
+
+
+## Дистанция в метрах: x — пройдено, y — вся трасса. Для HUD, где проценты
+## ничего не говорили: «43%» не отвечает, долго ли ещё, а «320 из 740 м» —
+## отвечает.
+func get_progress_metres() -> Vector2i:
+	if _truck.chassis == null:
+		return Vector2i.ZERO
+	var start_x := _track.get_start_position().x
+	var span := maxf(_track.get_end_position().x - start_x, 0.0)
+	var covered := clampf(_truck.chassis.global_position.x - start_x, 0.0, span)
+	return Vector2i(
+		int(round(covered / PIXELS_PER_METER)),
+		int(round(span / PIXELS_PER_METER)))
 
 
 ## Доля пройденной трассы, 0..1. Считается по X рамы между стартовой
