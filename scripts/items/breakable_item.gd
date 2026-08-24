@@ -79,6 +79,12 @@ func _ready() -> void:
 	_shape.polygon = _polygon
 	_apply_look()
 	mass = maxf(0.05, data.mass * area_ratio())
+	# Непрерывный детект: осколок размером в несколько пикселей на скорости
+	# кузова успевает за один физкадр перепрыгнуть борт толщиной 12 px,
+	# и обычная проверка пересечений его пролёт просто не увидит.
+	# Луч дешевле формы, а для тела, которое туннелирует центром,
+	# этого достаточно; на вебе разница в цене заметна.
+	continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
 	physics_material_override = data.physics_material
 	add_to_group(&"cargo")
 	if level > 0:
