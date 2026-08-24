@@ -91,7 +91,18 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 	# Свободное падение тоже меняет скорость — эту часть вычитаем,
 	# иначе предмет «разбивался» бы в воздухе.
 	var gravity_step: Vector2 = state.total_gravity * state.step
-	var impact: float = (state.linear_velocity - _prev_velocity - gravity_step).length()
+	# Скорость, которая была бы у тела, не встреть оно ничего.
+	var free_velocity: Vector2 = _prev_velocity + gravity_step
+	# Удар — это ТОРМОЖЕНИЕ, а не любое изменение скорости за кадр.
+	# Разница важна: солвер, выталкивая тело из чужой формы, тоже меняет
+	# скорость, и после перекройки полигонов такие толчки стали сильными —
+	# осколок с острым углом заходит в борт глубоко и вылетает оттуда
+	# быстрее, чем в него заходил. Поэтому величина удара зажимается
+	# падением модуля скорости: разгон в порог не попадает вовсе,
+	# а вещь, упёршаяся в стенку, перестала биться на ровном месте.
+	var change: float = (state.linear_velocity - free_velocity).length()
+	var slowdown: float = free_velocity.length() - state.linear_velocity.length()
+	var impact: float = minf(change, maxf(slowdown, 0.0))
 	_frames_alive += 1
 
 	# Свойство работает и у помеченного на слом тела: обрывать левитацию
