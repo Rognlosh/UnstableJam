@@ -48,6 +48,6 @@ pieces = Array[ExtResource("2_piece")]([SubResource("Piece_totem_head_left"), Su
 color = Color(0.62, 0.31, 0.2, 1)
 texture = ExtResource("9_tex")
 texture_rect = Rect2(-21.423, -39.275, 42.781, 73.895)
-physics_material = SubResource("PhysicsMaterial_totem")
 sound_material = &"wood"
+physics_material = SubResource("PhysicsMaterial_totem")
 quirk = ExtResource("3_expl")

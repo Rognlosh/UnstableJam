@@ -98,6 +98,9 @@ extends Node2D
 ## Уровень пола кузова в координатах рамы — верхняя грань рамы.
 const BED_FLOOR_Y: float = -18.0
 ## Толщина борта.
+## Насколько накладки садятся на раму внахлёст, в пикселях.
+const VISUAL_OVERLAP: float = 3.0
+
 const BED_WALL_THICKNESS: float = 8.0
 
 ## Запас паза на отбой: чтобы колесо не упиралось в конец направляющей,
@@ -331,12 +334,17 @@ func _apply_bed_walls() -> void:
 		# Визуал — ребёнок самой коллизии, поэтому едет за ней и координаты
 		# задаются в одном месте.
 		for child in wall.get_children():
-			var visual := child as DebugShape
-			if visual == null:
+			var visual := child as Sprite2D
+			if visual == null or visual.texture == null:
 				continue
-			visual.kind = DebugShape.Kind.RECTANGLE
-			visual.size = rect.size
-			visual.position = Vector2.ZERO
+			# Борт растёт прокачкой с 64 до 256 px, поэтому рисунок тянется
+			# по высоте. Тянется целиком, вместе с торцами: делить доску
+			# на три части ради ровной окантовки не стоит того на девяти
+			# пикселях ширины.
+			visual.scale = rect.size / Vector2(visual.texture.get_size())
+			# Внахлёст на раму: стык встык оставляет волосяную щель —
+			# спрайты фильтруются, и на краю набегает полупрозрачный пиксель.
+			visual.position = Vector2(0.0, VISUAL_OVERLAP)
 
 
 ## Перестраивает колёса под текущий радиус: и форму, и её визуал.
@@ -360,11 +368,13 @@ func _apply_wheel_radius() -> void:
 
 			# Визуал — ребёнок самой коллизии, поэтому едет за ней.
 			for sub in shape.get_children():
-				var visual := sub as DebugShape
-				if visual == null:
+				var visual := sub as Sprite2D
+				if visual == null or visual.texture == null:
 					continue
-				visual.kind = DebugShape.Kind.CIRCLE
-				visual.radius = wheel_radius
+				# Рисунок колеса квадратный и центрированный, так что хватает
+				# диаметра: колесо от прокачки растёт равномерно.
+				var diameter: float = wheel_radius * 2.0
+				visual.scale = Vector2.ONE * (diameter / float(visual.texture.get_width()))
 
 
 ## Внутренние границы кузова по X, в координатах рамы: x — задняя стенка,

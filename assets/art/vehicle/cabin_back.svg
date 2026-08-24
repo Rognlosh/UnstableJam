@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- ШАБЛОН UnstableJam: кабина
+     Размер холста менять НЕЛЬЗЯ. 1 единица SVG = 1 пиксель игры.
+     Рисовать в слое "art". Розовый контур = внешний край обводки.
+     Пунктир — место окна, обязательным не считается.
+     Задняя стенка (слева) служит передним бортом кузова. -->
+
+<svg
+   width="96.257561"
+   height="85.894547"
+   viewBox="0 0 96.257561 85.894547"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="truck_cabin.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:sodipodi0="http://sodipodi.sourceforge.net/DTD/sodipodi-0.0.dtd">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <g
+     id="art"
+     inkscape:groupmode="layer"
+     inkscape:label="art"
+     transform="translate(-3.6830132,-2.98103)">
+    <path
+       id="path4"
+       style="display:inline;fill:#870000;stroke:#000000;stroke-width:1.21428;stroke-linecap:round;stroke-linejoin:round"
+       inkscape:label="cabinback"
+       d="M 4.4492188,3.7109375 V 16.546875 31.285156 75.527344 88.363281 H 86.992188 99.828125 V 75.527344 31.285156 16.546875 c 0,-7.1113752 -5.724563,-12.8359375 -12.835937,-12.8359375 H 71.935547 17.285156 Z" />
+    <g
+       id="g27"
+       inkscape:label="cabinin"
+       style="display:none"
+       inkscape:export-filename="..\cabinin.svg"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96">
+      <rect
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         id="rect27"
+         width="2.6516504"
+         height="11.402097"
+         x="-0.94882697"
+         y="76.651459"
+         ry="1.3258252"
+         transform="rotate(-41.866618)" />
+      <path
+         id="rect25"
+         style="display:inline;fill:#333333;fill-opacity:1;stroke:none;stroke-width:1.26991;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         d="m 67.810163,58.023438 v 0.11775 h -4.818734 c -6.495007,0 -11.723851,5.234459 -11.723851,11.736441 v 6.238845 c 0,6.501982 5.228844,11.736441 11.723851,11.736441 h 4.818734 v 0.117751 H 99.258235 V 58.023438 Z"
+         inkscape:label="cabin_in" />
+      <rect
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         id="rect26"
+         width="3.625"
+         height="19.125"
+         x="75.327324"
+         y="-7.4663444"
+         ry="1.8125"
+         transform="rotate(46.266536)" />
+    </g>
+    <g
+       id="g25"
+       inkscape:label="cabinfront"
+       style="display:none;opacity:1"
+       inkscape:export-filename="..\cabinfront.svg"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96">
+      <path
+         id="rect4"
+         style="fill:#a70000;fill-opacity:1;stroke:#000000;stroke-width:1.29413;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         d="M 4.3300781,3.6347656 V 71.257812 H 4.5527344 V 88.228516 H 99.228516 V 66.646484 H 16.507812 V 13.451172 H 70.423828 V 3.6347656 H 16.507812 4.3320312 Z"
+         inkscape:label="cabinfront" />
+      <g
+         id="g24"
+         inkscape:label="glass">
+        <path
+           id="rect2"
+           style="display:inline;fill:#b0ffff;fill-opacity:1;stroke:#000000;stroke-width:1.00836;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+           inkscape:label="glass"
+           d="M 70.504177,3.5089797 V 66.352464 h 28.84324 v -34.91964 l 0.08875,-15.327945 C 99.477858,8.9034722 93.858504,3.4692446 86.718376,3.485245 Z"
+           sodipodi:nodetypes="ccccssc" />
+        <path
+           style="fill:#f9f9f9;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+           id="path13"
+           d="m 78.13306,38.36694 c 0.182951,0.151057 2.528915,2.096189 2.824336,2.310688 0.651603,0.473116 1.346837,0.883514 2.005846,1.346259 1.022171,0.717751 1.962108,1.526313 2.948337,2.288649 0.72688,0.653191 1.41301,1.369898 2.172002,1.986542 0.737358,0.599066 1.532534,1.10236 2.306844,1.647629 3.342192,0.886809 0.111089,-0.0799 0.05015,-0.07506 -0.23448,0.0186 0.385696,0.271243 0.560837,0.428252 0.06625,0.05939 0.104911,0.143734 0.157367,0.215601 1.701299,1.809763 4.260691,-0.596236 2.559393,-2.406 v 0 c -0.223261,-0.221427 -0.437366,-0.452486 -0.669782,-0.664282 -0.524932,-0.47836 -3.24334,-1.110597 -0.638036,-0.372394 -0.651042,-0.456851 -1.345139,-0.86994 -1.962686,-1.371902 -0.833096,-0.677166 -1.575332,-1.471213 -2.390498,-2.169709 -1.052795,-0.810266 -2.054227,-1.666659 -3.145413,-2.4301 -0.57116,-0.399609 -1.179756,-0.744639 -1.744154,-1.153742 C 82.282,37.305444 81.5012,36.526759 80.616939,35.88306 78.86057,34.126691 76.37669,36.610571 78.13306,38.36694 Z" />
+        <path
+           style="fill:#f9f9f9;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+           id="path18"
+           d="m 79.72405,27.053231 c 0.182951,0.151057 2.528915,2.096189 2.824336,2.310688 0.651603,0.473116 1.346837,0.883514 2.005846,1.346259 1.022171,0.717751 1.962108,1.526313 2.948337,2.288649 0.72688,0.653191 1.41301,1.369898 2.172002,1.986542 0.737358,0.599066 1.532534,1.10236 2.306844,1.647629 3.342192,0.886809 0.111089,-0.0799 0.05015,-0.07506 -0.23448,0.0186 0.385696,0.271243 0.560837,0.428252 0.06625,0.05939 0.104911,0.143734 0.157367,0.215601 1.701299,1.809763 4.260691,-0.596236 2.559393,-2.406 v 0 C 95.085901,34.574364 94.871796,34.343305 94.63938,34.131509 94.114448,33.653149 91.39604,33.020912 94.001344,33.759115 93.350302,33.302264 92.656205,32.889175 92.038658,32.387213 91.205562,31.710047 90.463326,30.916 89.64816,30.217504 88.595365,29.407238 87.593933,28.550845 86.502747,27.787404 85.931587,27.387795 85.322991,27.042765 84.758593,26.633662 83.87299,25.991735 83.09219,25.21305 82.207929,24.569351 80.45156,22.812982 77.96768,25.296862 79.72405,27.053231 Z" />
+        <path
+           style="fill:#f9f9f9;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+           id="path19"
+           d="m 79.72405,15.209193 c 0.182951,0.151057 2.528915,2.096189 2.824336,2.310688 0.651603,0.473116 1.346837,0.883514 2.005846,1.346259 1.022171,0.717751 1.962108,1.526313 2.948337,2.288649 0.72688,0.653191 1.41301,1.369898 2.172002,1.986542 0.737358,0.599066 1.532534,1.10236 2.306844,1.647629 3.342192,0.886809 0.111089,-0.0799 0.05015,-0.07506 -0.23448,0.0186 0.385696,0.271243 0.560837,0.428252 0.06625,0.05939 0.104911,0.143734 0.157367,0.215601 1.701299,1.809763 4.260691,-0.596236 2.559393,-2.406 v 0 C 95.085901,22.730326 94.871796,22.499267 94.63938,22.287471 94.114448,21.809111 91.39604,21.176874 94.001344,21.915077 93.350302,21.458226 92.656205,21.045137 92.038658,20.543175 91.205562,19.866009 90.463326,19.071962 89.64816,18.373466 88.595365,17.5632 87.593933,16.706807 86.502747,15.943366 85.931587,15.543757 85.322991,15.198727 84.758593,14.789624 83.87299,14.147697 83.09219,13.369012 82.207929,12.725313 80.45156,10.968944 77.96768,13.452824 79.72405,15.209193 Z" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="guide"
+     inkscape:groupmode="layer"
+     inkscape:label="guide"
+     sodipodi0:insensitive="true"
+     opacity="0.85"
+     style="display:none;opacity:0.402"
+     sodipodi:insensitive="true"
+     transform="translate(-3.6830132,-2.98103)">
+    <path
+       d="m 4,88 h 96 L 76,4 H 4 Z"
+       fill="#ff00ff"
+       fill-opacity="0.05"
+       stroke="#ff00ff"
+       stroke-width="1.92"
+       id="path1" />
+    <path
+       d="M 18,68 H 72 L 58,16 H 18 Z"
+       fill="#ff00ff"
+       fill-opacity="0"
+       stroke="#ff00ff"
+       stroke-width="1.92"
+       stroke-dasharray="3, 3"
+       id="path2" />
+  </g>
+</svg>
