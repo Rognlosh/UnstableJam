@@ -84,7 +84,7 @@ SHOP_FOOTER_EMPTY,Полки: %d / %d   •   склад пуст,Shelves: %d / 
 SHOP_STOCK_ITEM,%s × %d,%s × %d
 SHOP_STOCK_FRAGMENTS,осколки × %d,shards × %d
 SHOP_DEPART,В дорогу,Set off
-DRIVE_HINT_DRAG,Тащи мышью · Q/E или стрелки — поворот,Drag with the mouse · Q/E or arrow keys to turn
+DRIVE_HINT_DRAG,Перетаскивай груз в грузовик мышью · Q/E — поворот,Drag the goods into the truck with your mouse · Q/E to rotate
 DRIVE_HINT_STRAY,Убери с земли: %d,Left on the ground: %d
 DRIVE_STATUS_LOADING,День %d · Погрузка,Day %d · Loading
 DRIVE_STATUS_COUNT,В кузове: %d · На стеллаже: %d,In the bed: %d · On the shelf: %d

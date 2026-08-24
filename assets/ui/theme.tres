@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=7 format=3]
+[gd_resource type="Theme" load_steps=12 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/Rubik.ttf" id="1_font"]
 
@@ -58,15 +58,71 @@ corner_radius_top_right = 7
 corner_radius_bottom_right = 7
 corner_radius_bottom_left = 7
 
+[sub_resource type="StyleBoxFlat" id="Panel_warm"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.17, 0.14, 0.12, 0.92)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="Tab_panel"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.15, 0.125, 0.11, 0.9)
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="Tab_selected"]
+content_margin_left = 16.0
+content_margin_top = 7.0
+content_margin_right = 16.0
+content_margin_bottom = 7.0
+bg_color = Color(0.71, 0.42, 0.2, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+
+[sub_resource type="StyleBoxFlat" id="Tab_unselected"]
+content_margin_left = 16.0
+content_margin_top = 7.0
+content_margin_right = 16.0
+content_margin_bottom = 7.0
+bg_color = Color(0.23, 0.2, 0.18, 0.9)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+
+[sub_resource type="StyleBoxFlat" id="Tab_hovered"]
+content_margin_left = 16.0
+content_margin_top = 7.0
+content_margin_right = 16.0
+content_margin_bottom = 7.0
+bg_color = Color(0.34, 0.27, 0.22, 0.95)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+
 [resource]
 default_font = ExtResource("1_font")
 default_font_size = 16
 Button/colors/font_color = Color(0.98, 0.93, 0.85, 1)
 Button/colors/font_hover_color = Color(1, 0.97, 0.9, 1)
 Button/colors/font_pressed_color = Color(0.93, 0.86, 0.76, 1)
+Button/colors/font_disabled_color = Color(0.55, 0.56, 0.62, 1)
 Button/styles/normal = SubResource("Btn_normal")
 Button/styles/hover = SubResource("Btn_hover")
 Button/styles/pressed = SubResource("Btn_pressed")
 Button/styles/disabled = SubResource("Btn_disabled")
 Button/styles/focus = SubResource("Btn_focus")
-Button/colors/font_disabled_color = Color(0.55, 0.56, 0.62, 1)
+PanelContainer/styles/panel = SubResource("Panel_warm")
+TabContainer/colors/font_selected_color = Color(0.99, 0.95, 0.88, 1)
+TabContainer/colors/font_unselected_color = Color(0.78, 0.73, 0.68, 1)
+TabContainer/colors/font_hovered_color = Color(0.92, 0.86, 0.78, 1)
+TabContainer/styles/panel = SubResource("Tab_panel")
+TabContainer/styles/tab_selected = SubResource("Tab_selected")
+TabContainer/styles/tab_unselected = SubResource("Tab_unselected")
+TabContainer/styles/tab_hovered = SubResource("Tab_hovered")
